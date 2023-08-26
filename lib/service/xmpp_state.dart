@@ -117,6 +117,7 @@ class XmppStateService {
 
   Future<void> initializeXmppState() async {
     // NOTE: Called only once at the start so we don't have to worry about aquiring a lock
+    await _loadAccountJid();
     final state = await _loadXmppState(_accountJid);
     if (_accountJid == null || state == null) {
       _log.finest(

@@ -155,11 +155,12 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<LanguageService>(LanguageService());
 
   // Initialize the database
-  final xss = XmppStateService();
-  await xss.initializeXmppState();
-  GetIt.I.registerSingleton<XmppStateService>(xss);
+  GetIt.I.registerSingleton<XmppStateService>(XmppStateService());
   GetIt.I.registerSingleton<DatabaseService>(DatabaseService());
   await GetIt.I.get<DatabaseService>().initialize();
+
+  // Initialize the account state
+  await GetIt.I.get<XmppStateService>().initializeXmppState();
 
   // Initialize services
   GetIt.I.registerSingleton<ConnectivityWatcherService>(

@@ -39,13 +39,13 @@ class RequestDialog extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
-                      onPressed: () {
+                      onPressed: () async {
                         switch (request) {
                           case Request.notifications:
-                            Permission.notification.request();
+                            await Permission.notification.request();
                             break;
                           case Request.batterySavingExcemption:
-                            MoxplatformPlugin.platform
+                            await MoxplatformPlugin.platform
                                 .openBatteryOptimisationSettings();
                             break;
                         }
