@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
@@ -16,6 +17,7 @@ import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/cryptography/cryptography.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/database/migration.dart';
 import 'package:moxxyv2/service/events.dart';
 import 'package:moxxyv2/service/files.dart';
 import 'package:moxxyv2/service/groupchat.dart';
@@ -26,6 +28,7 @@ import 'package:moxxyv2/service/moxxmpp/connectivity.dart';
 import 'package:moxxyv2/service/moxxmpp/roster.dart';
 import 'package:moxxyv2/service/moxxmpp/socket.dart';
 import 'package:moxxyv2/service/moxxmpp/stream.dart';
+import 'package:moxxyv2/service/non_database_migrations/0000_notification_channels.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/permissions.dart';
@@ -70,6 +73,25 @@ Future<void> initializeServiceIfNeeded() async {
         );
   } else {
     logger.info('Service is not running. Initializing service... ');
+
+    // Run non-db migrations
+    const storage = FlutterSecureStorage();
+    const versionKey = 'non_database_migrations_version';
+    final currentVersion = int.parse(
+      await storage.read(key: versionKey) ?? '0',
+    );
+    await runMigrations(
+      logger,
+      42,
+      const [
+        Migration(1, upgradeV0ToV1NonDb),
+      ],
+      currentVersion,
+      'non-database',
+      commitVersion: (version) async =>
+          storage.write(key: versionKey, value: version.toString()),
+    );
+
     await handler.start(
       entrypoint,
       receiveUIEvent,

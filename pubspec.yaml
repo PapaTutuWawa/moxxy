@@ -135,10 +135,10 @@ dependency_overrides:
   #   path: ../../Personal/omemo_dart
   moxplatform:
     path: ../moxplatform/packages/moxplatform
-  moxplatform_platform_interface:
-    path: ../moxplatform/packages/moxplatform_platform_interface
   moxplatform_android:
     path: ../moxplatform/packages/moxplatform_android
+  moxplatform_platform_interface:
+    path: ../moxplatform/packages/moxplatform_platform_interface
 
   moxxmpp:
     git:

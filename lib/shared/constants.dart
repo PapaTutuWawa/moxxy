@@ -23,4 +23,14 @@ const maxStickerPackPages = 2;
 
 /// An "invalid" fake JID to make share_handler happy when adding the self-chat
 /// to the direct share list.
-const String selfChatShareFakeJid = '{{ self-chat }}';
+const selfChatShareFakeJid = '{{ self-chat }}';
+
+/// Keys for grouping notifications
+const messageNotificationGroupId = 'message';
+const warningNotificationGroupId = 'warning';
+const foregroundServiceNotificationGroupId = 'service';
+
+/// Notification channel ids
+const foregroundServiceNotificationChannelId = 'FOREGROUND_DEFAULT';
+const messageNotificationChannelId = 'message_channel';
+const warningNotificationChannelId = 'warning_channel';

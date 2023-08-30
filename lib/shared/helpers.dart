@@ -11,7 +11,6 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:synchronized/synchronized.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
 
 /// Add a leading zero, if required, to ensure that an integer is rendered
 /// as a two "digit" string.
@@ -400,25 +399,14 @@ Future<String?> getVideoThumbnailPath(
   final file = File(thumbnailPath);
   if (file.existsSync()) return thumbnailPath;
 
-  try {
-    final generatedThumbnailPath = await VideoThumbnail.thumbnailFile(
-      video: path,
-      thumbnailPath: thumbnailPath,
-      imageFormat: ImageFormat.JPEG,
-      quality: 75,
-    );
-
-    assert(
-      generatedThumbnailPath == thumbnailPath,
-      'The generated video thumbnail has a different path than we expected: $generatedThumbnailPath vs. $thumbnailPath',
-    );
-    return thumbnailPath;
-  } catch (ex) {
-    GetIt.I
-        .get<Logger>()
-        .warning('Failed to generate thumbnail for $path: $ex');
+  final success = await MoxplatformPlugin.platform
+      .generateVideoThumbnail(path, thumbnailPath, 720);
+  if (!success) {
+    GetIt.I.get<Logger>().warning('Failed to generate thumbnail for $path');
     return null;
   }
+
+  return thumbnailPath;
 }
 
 Future<String> getContactProfilePicturePath(String id) async {

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -11,6 +12,7 @@ import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
+import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -21,8 +23,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
 const _maxNotificationId = 2147483647;
-const _messageChannelKey = 'message_channel';
-const _warningChannelKey = 'warning_channel';
 
 /// Message payload keys.
 const _conversationJidKey = 'conversationJid';
@@ -129,19 +129,57 @@ class NotificationsService {
   }
 
   Future<void> initialize() async {
+    // Set up notification groups
+    await MoxplatformPlugin.notifications.createNotificationGroups(
+      [
+        NotificationGroup(
+          id: messageNotificationGroupId,
+          description: 'Chat messages',
+        ),
+        NotificationGroup(
+          id: warningNotificationChannelId,
+          description: 'Warnings',
+        ),
+        NotificationGroup(
+          id: foregroundServiceNotificationGroupId,
+          description: 'Foreground service',
+        ),
+      ],
+    );
+
     // Set up the notitifcation channels.
-    await MoxplatformPlugin.notifications.createNotificationChannel(
-      t.notifications.channels.messagesChannelName,
-      t.notifications.channels.messagesChannelDescription,
-      _messageChannelKey,
-      true,
-    );
-    await MoxplatformPlugin.notifications.createNotificationChannel(
-      t.notifications.channels.warningChannelName,
-      t.notifications.channels.warningChannelDescription,
-      _warningChannelKey,
-      false,
-    );
+    await MoxplatformPlugin.notifications.createNotificationChannels([
+      NotificationChannel(
+        title: t.notifications.channels.messagesChannelName,
+        description: t.notifications.channels.messagesChannelDescription,
+        id: messageNotificationChannelId,
+        importance: NotificationChannelImportance.HIGH,
+        showBadge: true,
+        vibration: true,
+        enableLights: true,
+      ),
+      NotificationChannel(
+        title: t.notifications.channels.warningChannelName,
+        description: t.notifications.channels.warningChannelDescription,
+        id: messageNotificationChannelId,
+        importance: NotificationChannelImportance.DEFAULT,
+        showBadge: false,
+        vibration: true,
+        enableLights: false,
+      ),
+      // The foreground notification channel is only required on Android
+      if (Platform.isAndroid)
+        NotificationChannel(
+          // TODO: i18n
+          title: 'Foreground Service',
+          description: 'Holds the persistent foreground service notification',
+          id: foregroundServiceNotificationChannelId,
+          importance: NotificationChannelImportance.MIN,
+          showBadge: false,
+          vibration: false,
+          enableLights: false,
+        ),
+    ]);
 
     // Configure i18n
     await configureNotificationI18n();
@@ -280,7 +318,7 @@ class NotificationsService {
       MessagingNotification(
         title: await c.titleWithOptionalContactService,
         id: id,
-        channelId: _messageChannelKey,
+        channelId: messageNotificationChannelId,
         jid: c.jid,
         messages: [
           ...notifications.map((n) {
@@ -296,6 +334,7 @@ class NotificationsService {
           }),
         ],
         isGroupchat: c.isGroupchat,
+        groupId: messageNotificationGroupId,
         extra: {
           _conversationJidKey: c.jid,
           _messageIdKey: m.id,
@@ -331,7 +370,7 @@ class NotificationsService {
       MessagingNotification(
         title: title,
         id: id,
-        channelId: _messageChannelKey,
+        channelId: messageNotificationChannelId,
         jid: c.jid,
         messages: [
           ...notifications.map((n) => n.toNotificationMessage()),
@@ -346,6 +385,7 @@ class NotificationsService {
               .toNotificationMessage(),
         ],
         isGroupchat: c.isGroupchat,
+        groupId: messageNotificationGroupId,
         extra: {
           _conversationJidKey: c.jid,
           _messageIdKey: m.id,
@@ -370,9 +410,10 @@ class NotificationsService {
       RegularNotification(
         title: title,
         body: body,
-        channelId: _warningChannelKey,
+        channelId: warningNotificationChannelId,
         id: Random().nextInt(_maxNotificationId),
         icon: NotificationIcon.warning,
+        groupId: warningNotificationGroupId,
       ),
     );
   }
@@ -408,9 +449,10 @@ class NotificationsService {
         title: t.notifications.errors.messageError.title,
         body: t.notifications.errors.messageError
             .body(conversationTitle: conversation!.title),
-        channelId: _warningChannelKey,
+        channelId: warningNotificationChannelId,
         id: Random().nextInt(_maxNotificationId),
         icon: NotificationIcon.error,
+        groupId: warningNotificationGroupId,
       ),
     );
   }
