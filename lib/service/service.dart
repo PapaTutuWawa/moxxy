@@ -84,7 +84,7 @@ Future<void> initializeServiceIfNeeded() async {
       logger,
       42,
       const [
-        Migration(1, upgradeV0ToV1NonDb),
+        Migration(2, upgradeV1ToV2NonDb),
       ],
       currentVersion,
       'non-database',

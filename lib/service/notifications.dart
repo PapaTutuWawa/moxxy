@@ -161,7 +161,7 @@ class NotificationsService {
       NotificationChannel(
         title: t.notifications.channels.warningChannelName,
         description: t.notifications.channels.warningChannelDescription,
-        id: messageNotificationChannelId,
+        id: warningNotificationChannelId,
         importance: NotificationChannelImportance.DEFAULT,
         showBadge: false,
         vibration: true,

@@ -5,7 +5,7 @@ import 'package:moxxyv2/shared/constants.dart';
 
 /// Recreate all notification channels to apply settings that cannot be applied after the notification
 /// channel has been created.
-Future<void> upgradeV0ToV1NonDb(int _) async {
+Future<void> upgradeV1ToV2NonDb(int _) async {
   // Remove all notification channels, so that we can recreate them
   await MoxplatformPlugin.notifications.deleteNotificationChannels([
     foregroundServiceNotificationChannelId,
@@ -45,7 +45,7 @@ Future<void> upgradeV0ToV1NonDb(int _) async {
     NotificationChannel(
       title: t.notifications.channels.warningChannelName,
       description: t.notifications.channels.warningChannelDescription,
-      id: messageNotificationChannelId,
+      id: warningNotificationGroupId,
       importance: NotificationChannelImportance.DEFAULT,
       showBadge: false,
       vibration: true,
