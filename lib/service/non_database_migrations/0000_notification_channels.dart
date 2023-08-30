@@ -54,9 +54,8 @@ Future<void> upgradeV1ToV2NonDb(int _) async {
     // The foreground notification channel is only required on Android
     if (Platform.isAndroid)
       NotificationChannel(
-        // TODO: i18n
-        title: 'Foreground Service',
-        description: 'Holds the persistent foreground service notification',
+        title: t.notifications.channels.serviceChannelName,
+        description: t.notifications.channels.serviceChannelDescription,
         id: foregroundServiceNotificationChannelId,
         importance: NotificationChannelImportance.MIN,
         showBadge: false,

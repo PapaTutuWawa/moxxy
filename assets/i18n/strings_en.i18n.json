@@ -24,7 +24,9 @@
             "messagesChannelName": "Messages",
             "messagesChannelDescription": "The notification channel for received messages",
             "warningChannelName": "Warnings",
-            "warningChannelDescription": "Warnings related to Moxxy"
+            "warningChannelDescription": "Warnings related to Moxxy",
+            "serviceChannelName": "Foreground Service",
+            "serviceChannelDescription": "Holds the persistent foreground service notification"
         },
         "titles": {
             "error": "Error"
