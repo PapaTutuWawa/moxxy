@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/widgets.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
@@ -6,6 +7,10 @@ import 'package:moxxyv2/shared/constants.dart';
 /// Recreate all notification channels to apply settings that cannot be applied after the notification
 /// channel has been created.
 Future<void> upgradeV1ToV2NonDb(int _) async {
+  // Ensure that we can use the device locale
+  WidgetsFlutterBinding.ensureInitialized();
+  LocaleSettings.useDeviceLocale();
+
   // Remove all notification channels, so that we can recreate them
   await MoxplatformPlugin.notifications.deleteNotificationChannels([
     foregroundServiceNotificationChannelId,
