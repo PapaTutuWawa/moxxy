@@ -22,6 +22,7 @@ import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/thumbnails/helpers.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:path_provider/path_provider.dart';
@@ -548,7 +549,7 @@ class HttpFileTransferService {
         if (canGenerateVideoThumbnail(mime)) {
           try {
             // Generate thumbnail
-            final thumbnailPath = await getVideoThumbnailPath(
+            final thumbnailPath = await maybeGenerateVideoThumbnail(
               downloadedPath,
             );
 
