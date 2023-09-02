@@ -1,7 +1,6 @@
-package org.moxxy.moxxyv2
+package org.moxxy.moxxyv2.notifications
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Notification
 import android.app.NotificationChannelGroup
 import android.app.NotificationManager
@@ -18,6 +17,29 @@ import androidx.core.app.RemoteInput
 import androidx.core.app.TaskStackBuilder
 import androidx.core.content.FileProvider
 import androidx.core.graphics.drawable.IconCompat
+import org.moxxy.moxxyv2.MARK_AS_READ_ACTION
+import org.moxxy.moxxyv2.MOXXY_FILEPROVIDER_ID
+import org.moxxy.moxxyv2.MainActivity
+import org.moxxy.moxxyv2.MessagingNotification
+import org.moxxy.moxxyv2.NOTIFICATION_EXTRA_ID_KEY
+import org.moxxy.moxxyv2.NOTIFICATION_EXTRA_JID_KEY
+import org.moxxy.moxxyv2.NOTIFICATION_MESSAGE_EXTRA_MIME
+import org.moxxy.moxxyv2.NOTIFICATION_MESSAGE_EXTRA_PATH
+import org.moxxy.moxxyv2.NotificationChannel
+import org.moxxy.moxxyv2.NotificationChannelImportance
+import org.moxxy.moxxyv2.NotificationGroup
+import org.moxxy.moxxyv2.NotificationIcon
+import org.moxxy.moxxyv2.R
+import org.moxxy.moxxyv2.REPLY_ACTION
+import org.moxxy.moxxyv2.REPLY_TEXT_KEY
+import org.moxxy.moxxyv2.RegularNotification
+import org.moxxy.moxxyv2.SHARED_PREFERENCES_AVATAR_KEY
+import org.moxxy.moxxyv2.SHARED_PREFERENCES_KEY
+import org.moxxy.moxxyv2.SHARED_PREFERENCES_MARK_AS_READ_KEY
+import org.moxxy.moxxyv2.SHARED_PREFERENCES_REPLY_KEY
+import org.moxxy.moxxyv2.SHARED_PREFERENCES_YOU_KEY
+import org.moxxy.moxxyv2.TAG
+import org.moxxy.moxxyv2.TAP_ACTION
 import java.io.File
 
 /*
