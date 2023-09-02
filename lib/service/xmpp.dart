@@ -23,6 +23,7 @@ import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
 import 'package:moxxyv2/service/httpfiletransfer/location.dart';
+import 'package:moxxyv2/service/lifecycle.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/notifications.dart';
@@ -81,19 +82,8 @@ class XmppService {
   /// Flag indicating whether a login was triggered from the UI or not.
   bool _loginTriggeredFromUI = false;
 
-  /// Flag indicating whether the app is currently open or not.
-  bool _appOpen = true;
-
-  /// The JID of the currently opened chat. Empty, if no chat is opened.
-  String _currentlyOpenedChatJid = '';
-
   /// Subscription to events by the XmppConnection
   StreamSubscription<dynamic>? _xmppConnectionSubscription;
-
-  /// Stores whether the app is open or not. Useful for notifications.
-  void setAppState(bool open) {
-    _appOpen = open;
-  }
 
   Future<ConnectionSettings?> getConnectionSettings() async {
     final xss = GetIt.I.get<XmppStateService>();
@@ -116,9 +106,7 @@ class XmppService {
   /// greater than 0.
   Future<void> setCurrentlyOpenedChatJid(String jid) async {
     final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
-    final cs = GetIt.I.get<ConversationService>();
-
-    _currentlyOpenedChatJid = jid;
+    final cs = GetIt.I.get<ConversationService>()..activeConversationJid = jid;
 
     final conversation = await cs.createOrUpdateConversation(
       jid,
@@ -142,9 +130,6 @@ class XmppService {
       );
     }
   }
-
-  /// Returns the JID of the chat that is currently opened. Null, if none is open.
-  String? getCurrentlyOpenedChatJid() => _currentlyOpenedChatJid;
 
   /// Sends a message correction to [recipient] regarding the message with stanza id
   /// [oldId]. The old message's body gets corrected to [newBody]. [id] is the message's
@@ -1528,7 +1513,7 @@ class XmppService {
         ? mimeTypeToEmoji(mimeGuess)
         : messageBody;
     // Specifies if we have the conversation this message goes to opened
-    final isConversationOpened = _currentlyOpenedChatJid == conversationJid;
+    final isConversationOpened = cs.activeConversationJid == conversationJid;
     // If the conversation is muted
     var isMuted = false;
     // Whether to send the notification
@@ -1592,7 +1577,8 @@ class XmppService {
         isMuted = c != null ? c.muted : prefs.defaultMuteState;
         sendNotification = !sent &&
             shouldNotify &&
-            (!isConversationOpened || !_appOpen) &&
+            (!isConversationOpened ||
+                !GetIt.I.get<LifecycleService>().isActive) &&
             !isMuted;
       },
     );

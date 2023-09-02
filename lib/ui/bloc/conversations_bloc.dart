@@ -22,6 +22,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     on<ConversationClosedEvent>(_onConversationClosed);
     on<ConversationMarkedAsReadEvent>(_onConversationMarkedAsRead);
     on<ConversationsSetEvent>(_onConversationsSet);
+    on<ConversationExitedEvent>(_onConversationExited);
   }
 
   // TODO(Unknown): This pattern is used so often that it should become its own thing in moxlib
@@ -68,6 +69,16 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
 
       _completers.clear();
     });
+  }
+
+  Future<void> _onConversationExited(
+    ConversationExitedEvent event,
+    Emitter<ConversationsState> emit,
+  ) async {
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+          ExitConversationCommand(),
+          awaitable: false,
+        );
   }
 
   Future<void> _onConversationsAdded(

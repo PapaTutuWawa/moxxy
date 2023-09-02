@@ -20,6 +20,7 @@ import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
 import 'package:moxxyv2/service/httpfiletransfer/location.dart';
 import 'package:moxxyv2/service/language.dart';
+import 'package:moxxyv2/service/lifecycle.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
@@ -117,6 +118,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<FetchRecipientInformationCommand>(
         performFetchRecipientInformation,
       ),
+      EventTypeMatcher<ExitConversationCommand>(performConversationExited),
     ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -408,11 +410,10 @@ Future<void> performSetCSIState(
   dynamic extra,
 }) async {
   // Tell the [XmppService] about the app state
-  GetIt.I.get<XmppService>().setAppState(command.active);
-
-  final conn = GetIt.I.get<XmppConnection>();
+  GetIt.I.get<LifecycleService>().isActive = command.active;
 
   // Only send the CSI nonza when we're connected
+  final conn = GetIt.I.get<XmppConnection>();
   if (await conn.getConnectionState() != XmppConnectionState.connected) return;
   final csi = conn.getManagerById<CSIManager>(csiManager)!;
   if (command.active) {
@@ -1694,4 +1695,11 @@ Future<void> performFetchRecipientInformation(
     FetchRecipientInformationResult(items: items),
     id: extra as String,
   );
+}
+
+Future<void> performConversationExited(
+  ExitConversationCommand command, {
+  dynamic extra,
+}) async {
+  GetIt.I.get<ConversationService>().activeConversationJid = null;
 }

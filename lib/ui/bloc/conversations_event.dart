@@ -16,6 +16,9 @@ class ConversationsInitEvent extends ConversationsEvent {
   final List<Conversation> conversations;
 }
 
+/// Triggered when a conversation has been exited
+class ConversationExitedEvent extends ConversationsEvent {}
+
 /// Triggered when a conversation has been added.
 class ConversationsAddedEvent extends ConversationsEvent {
   ConversationsAddedEvent(this.conversation);

@@ -481,6 +481,10 @@ files:
           - JsonImplementation
         attributes:
           jid: String
+      - name: ExitConversationCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
       - name: SendChatStateCommand
         extends: BackgroundCommand
         implements:

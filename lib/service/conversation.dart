@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
@@ -27,6 +28,17 @@ class ConversationService {
 
   /// The lock for accessing _conversationCache
   final Lock _lock = Lock();
+
+  final Logger _log = Logger('ConversationService');
+
+  String? _activeConversationJid;
+
+  String? get activeConversationJid => _activeConversationJid;
+
+  set activeConversationJid(String? jid) {
+    _log.finest('Setting activeConversationJid to $jid');
+    _activeConversationJid = jid;
+  }
 
   /// When called with a JID [jid], then first, if non-null, [preRun] is
   /// executed.

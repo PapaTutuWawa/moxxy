@@ -23,6 +23,7 @@ import 'package:moxxyv2/service/files.dart';
 import 'package:moxxyv2/service/groupchat.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/language.dart';
+import 'package:moxxyv2/service/lifecycle.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/moxxmpp/connectivity.dart';
 import 'package:moxxyv2/service/moxxmpp/roster.dart';
@@ -207,6 +208,7 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<StorageService>(StorageService());
   GetIt.I.registerSingleton<ShareService>(ShareService());
   GetIt.I.registerSingleton<PermissionsService>(PermissionsService());
+  GetIt.I.registerSingleton<LifecycleService>(LifecycleService());
   final xmpp = XmppService();
   GetIt.I.registerSingleton<XmppService>(xmpp);
 

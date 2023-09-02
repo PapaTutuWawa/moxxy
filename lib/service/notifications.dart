@@ -8,6 +8,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/lifecycle.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/pigeon/api.g.dart' as api;
 import 'package:moxxyv2/service/service.dart';
@@ -203,9 +204,8 @@ class NotificationsService {
 
   /// Returns true if a notification should be shown. false otherwise.
   bool shouldShowNotification(String jid) {
-    _log.finest(
-        'Currently active chat: ${GetIt.I.get<XmppService>().getCurrentlyOpenedChatJid()}');
-    return GetIt.I.get<XmppService>().getCurrentlyOpenedChatJid() != jid;
+    return GetIt.I.get<ConversationService>().activeConversationJid != jid ||
+        !GetIt.I.get<LifecycleService>().isActive;
   }
 
   /// Queries the notifications for the conversation [jid] from the database.
