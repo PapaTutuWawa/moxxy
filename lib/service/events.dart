@@ -8,7 +8,6 @@ import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
-import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/constants.dart';
@@ -814,25 +813,11 @@ Future<void> performSendChatState(
   SendChatStateCommand command, {
   dynamic extra,
 }) async {
-  final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
-
-  // Only send chat states if the users wants to send them
-  if (!prefs.sendChatMarkers) return;
-
-  // Only send chat states when we're connected
-  if (!(await GetIt.I.get<ConnectivityService>().hasConnection())) return;
-
-  final conn = GetIt.I.get<XmppConnection>();
-
-  if (command.jid != '') {
-    await conn
-        .getManagerById<ChatStateManager>(chatStateManager)!
-        .sendChatState(
-          ChatState.fromName(command.state),
-          command.jid,
-          messageType: command.conversationType,
-        );
-  }
+  await GetIt.I.get<ConversationService>().sendChatState(
+        ConversationType.fromString(command.conversationType),
+        command.jid,
+        ChatState.fromName(command.state),
+      );
 }
 
 Future<void> performGetFeatures(
@@ -1701,5 +1686,14 @@ Future<void> performConversationExited(
   ExitConversationCommand command, {
   dynamic extra,
 }) async {
-  GetIt.I.get<ConversationService>().activeConversationJid = null;
+  // Send a gone marker according to the specified rules
+  final cs = GetIt.I.get<ConversationService>();
+  await cs.sendChatState(
+    ConversationType.fromString(command.conversationType),
+    cs.activeConversationJid!,
+    ChatState.gone,
+  );
+
+  // Reset the active conversation
+  cs.activeConversationJid = null;
 }

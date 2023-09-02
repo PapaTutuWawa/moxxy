@@ -485,6 +485,8 @@ files:
         extends: BackgroundCommand
         implements:
           - JsonImplementation
+        attributes:
+          conversationType: String
       - name: SendChatStateCommand
         extends: BackgroundCommand
         implements:

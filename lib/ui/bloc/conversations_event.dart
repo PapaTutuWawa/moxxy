@@ -17,7 +17,12 @@ class ConversationsInitEvent extends ConversationsEvent {
 }
 
 /// Triggered when a conversation has been exited
-class ConversationExitedEvent extends ConversationsEvent {}
+class ConversationExitedEvent extends ConversationsEvent {
+  ConversationExitedEvent(this.type);
+
+  /// The type of the conversation that we just exited.
+  final ConversationType type;
+}
 
 /// Triggered when a conversation has been added.
 class ConversationsAddedEvent extends ConversationsEvent {

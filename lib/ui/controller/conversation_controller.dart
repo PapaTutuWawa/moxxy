@@ -568,9 +568,6 @@ class BidirectionalConversationController
     _textController.dispose();
     _audioRecorder.dispose();
 
-    // Tell the contact that we're gone
-    _updateChatState(ChatState.gone);
-
     super.dispose();
   }
 }

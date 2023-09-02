@@ -76,7 +76,9 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     Emitter<ConversationsState> emit,
   ) async {
     await MoxplatformPlugin.handler.getDataSender().sendData(
-          ExitConversationCommand(),
+          ExitConversationCommand(
+            conversationType: event.type.toString(),
+          ),
           awaitable: false,
         );
   }

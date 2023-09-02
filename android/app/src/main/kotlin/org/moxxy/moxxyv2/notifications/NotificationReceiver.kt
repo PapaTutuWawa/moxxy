@@ -75,9 +75,7 @@ class NotificationReceiver : BroadcastReceiver() {
                 extractPayloadMapFromIntent(intent),
             ).toList()
         )
-
-        NotificationManagerCompat.from(context).cancel(intent.getLongExtra(MARK_AS_READ_ID_KEY, -1).toInt())
-        dismissNotification(context, intent);
+        dismissNotification(context, intent)
     }
 
     private fun handleReply(context: Context, intent: Intent) {
