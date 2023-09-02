@@ -21,6 +21,7 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart' as modelc;
 import 'package:moxxyv2/shared/models/message.dart' as modelm;
 import 'package:moxxyv2/shared/models/notification.dart' as modeln;
+import 'package:moxxyv2/shared/thumbnails/helpers.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
@@ -266,11 +267,27 @@ class NotificationsService {
       'File metadata has path but no mime type',
     );
 
-    /// Use the resource (nick) when the chat is a groupchat
+    // Use the resource (nick) when the chat is a groupchat
     final senderJid = m.senderJid;
     final senderTitle = c.isGroupchat
         ? senderJid.resource
         : await c.titleWithOptionalContactService;
+
+    // If the file is a video, use its thumbnail, if available
+    var filePath = m.fileMetadata?.path;
+    var fileMime = m.fileMetadata?.mimeType;
+
+    // Thumbnail workaround for Android
+    if (Platform.isAndroid &&
+        (m.fileMetadata?.mimeType?.startsWith('video/') ?? false) &&
+        m.fileMetadata?.path != null) {
+      final thumbnailPath = await getVideoThumbnailPath(m.fileMetadata!.path!);
+      if (File(thumbnailPath).existsSync()) {
+        // Workaround for Android to show the thumbnail in the notification
+        filePath = thumbnailPath;
+        fileMime = 'image/jpeg';
+      }
+    }
 
     // Add to the database
     final newNotification = modeln.Notification(
@@ -281,8 +298,8 @@ class NotificationsService {
       senderJid.toString(),
       (avatarPath?.isEmpty ?? false) ? null : avatarPath,
       body,
-      m.fileMetadata?.mimeType,
-      m.fileMetadata?.path,
+      fileMime,
+      filePath,
       m.timestamp,
     );
     await GetIt.I.get<DatabaseService>().database.insert(
