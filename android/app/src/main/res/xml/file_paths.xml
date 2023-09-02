@@ -1,0 +1,7 @@
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- For testing -->
+    <cache-path name="file_picker" path="file_picker/"/>
+
+    <!-- Moxxy -->
+    <files-path name="media" path="media/" />
+</paths>

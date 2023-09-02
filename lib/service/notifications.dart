@@ -1,14 +1,15 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
-import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/message.dart';
+import 'package:moxxyv2/service/pigeon/api.g.dart' as api;
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
@@ -31,14 +32,27 @@ const _conversationTitleKey = 'title';
 const _conversationAvatarKey = 'avatarPath';
 
 class NotificationsService {
+  NotificationsService() {
+    _eventStream = _channel
+        .receiveBroadcastStream()
+        .cast<Object>()
+        .map(api.NotificationEvent.decode);
+  }
+
   /// Logging.
   final Logger _log = Logger('NotificationsService');
 
+  /// The Pigeon channel to the native side
+  final api.MoxxyApi _api = api.MoxxyApi();
+  final EventChannel _channel =
+      const EventChannel('org.moxxy.moxxyv2/notification_stream');
+  late final Stream<api.NotificationEvent> _eventStream;
+
   /// Called when something happens to the notification, i.e. the actions are triggered or
   /// the notification has been tapped.
-  Future<void> onNotificationEvent(NotificationEvent event) async {
+  Future<void> onNotificationEvent(api.NotificationEvent event) async {
     final conversationJid = event.extra![_conversationJidKey]!;
-    if (event.type == NotificationEventType.open) {
+    if (event.type == api.NotificationEventType.open) {
       // The notification has been tapped
       sendEvent(
         MessageNotificationTappedEvent(
@@ -47,7 +61,7 @@ class NotificationsService {
           avatarPath: event.extra![_conversationAvatarKey]!,
         ),
       );
-    } else if (event.type == NotificationEventType.markAsRead) {
+    } else if (event.type == api.NotificationEventType.markAsRead) {
       final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
       // Mark the message as read
       await GetIt.I.get<MessageService>().markMessageAsRead(
@@ -83,7 +97,7 @@ class NotificationsService {
 
       // Clear notifications
       await dismissNotificationsByJid(conversationJid, accountJid);
-    } else if (event.type == NotificationEventType.reply) {
+    } else if (event.type == api.NotificationEventType.reply) {
       // Save this as a notification so that we can display it later
       assert(
         event.payload != null,
@@ -119,8 +133,8 @@ class NotificationsService {
   /// Configures the translatable strings on the native side
   /// using locale is currently configured.
   Future<void> configureNotificationI18n() async {
-    await MoxplatformPlugin.notifications.setI18n(
-      NotificationI18nData(
+    await _api.setNotificationI18n(
+      api.NotificationI18nData(
         reply: t.notifications.message.reply,
         markAsRead: t.notifications.message.markAsRead,
         you: t.messages.you,
@@ -130,17 +144,17 @@ class NotificationsService {
 
   Future<void> initialize() async {
     // Set up notification groups
-    await MoxplatformPlugin.notifications.createNotificationGroups(
+    await _api.createNotificationGroups(
       [
-        NotificationGroup(
+        api.NotificationGroup(
           id: messageNotificationGroupId,
           description: 'Chat messages',
         ),
-        NotificationGroup(
+        api.NotificationGroup(
           id: warningNotificationChannelId,
           description: 'Warnings',
         ),
-        NotificationGroup(
+        api.NotificationGroup(
           id: foregroundServiceNotificationGroupId,
           description: 'Foreground service',
         ),
@@ -148,32 +162,32 @@ class NotificationsService {
     );
 
     // Set up the notitifcation channels.
-    await MoxplatformPlugin.notifications.createNotificationChannels([
-      NotificationChannel(
+    await _api.createNotificationChannels([
+      api.NotificationChannel(
         title: t.notifications.channels.messagesChannelName,
         description: t.notifications.channels.messagesChannelDescription,
         id: messageNotificationChannelId,
-        importance: NotificationChannelImportance.HIGH,
+        importance: api.NotificationChannelImportance.HIGH,
         showBadge: true,
         vibration: true,
         enableLights: true,
       ),
-      NotificationChannel(
+      api.NotificationChannel(
         title: t.notifications.channels.warningChannelName,
         description: t.notifications.channels.warningChannelDescription,
         id: warningNotificationChannelId,
-        importance: NotificationChannelImportance.DEFAULT,
+        importance: api.NotificationChannelImportance.DEFAULT,
         showBadge: false,
         vibration: true,
         enableLights: false,
       ),
       // The foreground notification channel is only required on Android
       if (Platform.isAndroid)
-        NotificationChannel(
+        api.NotificationChannel(
           title: t.notifications.channels.serviceChannelName,
           description: t.notifications.channels.serviceChannelDescription,
           id: foregroundServiceNotificationChannelId,
-          importance: NotificationChannelImportance.MIN,
+          importance: api.NotificationChannelImportance.MIN,
           showBadge: false,
           vibration: false,
           enableLights: false,
@@ -184,13 +198,13 @@ class NotificationsService {
     await configureNotificationI18n();
 
     // Listen to notification events
-    MoxplatformPlugin.notifications
-        .getEventStream()
-        .listen(onNotificationEvent);
+    _eventStream.listen(onNotificationEvent);
   }
 
   /// Returns true if a notification should be shown. false otherwise.
   bool shouldShowNotification(String jid) {
+    _log.finest(
+        'Currently active chat: ${GetIt.I.get<XmppService>().getCurrentlyOpenedChatJid()}');
     return GetIt.I.get<XmppService>().getCurrentlyOpenedChatJid() != jid;
   }
 
@@ -313,25 +327,23 @@ class NotificationsService {
       shouldOverride: true,
     );
 
-    await MoxplatformPlugin.notifications.showMessagingNotification(
-      MessagingNotification(
+    await _api.showMessagingNotification(
+      api.MessagingNotification(
         title: await c.titleWithOptionalContactService,
         id: id,
         channelId: messageNotificationChannelId,
         jid: c.jid,
-        messages: [
-          ...notifications.map((n) {
-            // Based on the table's composite primary key
-            if (n.id == notification.id &&
-                n.conversationJid == notification.conversationJid &&
-                n.senderJid == notification.senderJid &&
-                n.timestamp == notification.timestamp) {
-              return notification.toNotificationMessage();
-            }
+        messages: notifications.map((n) {
+          // Based on the table's composite primary key
+          if (n.id == notification.id &&
+              n.conversationJid == notification.conversationJid &&
+              n.senderJid == notification.senderJid &&
+              n.timestamp == notification.timestamp) {
+            return notification.toNotificationMessage();
+          }
 
-            return n.toNotificationMessage();
-          }),
-        ],
+          return n.toNotificationMessage();
+        }).toList(),
         isGroupchat: c.isGroupchat,
         groupId: messageNotificationGroupId,
         extra: {
@@ -365,8 +377,8 @@ class NotificationsService {
     final id = notifications.isNotEmpty
         ? notifications.first.id
         : Random().nextInt(_maxNotificationId);
-    await MoxplatformPlugin.notifications.showMessagingNotification(
-      MessagingNotification(
+    await _api.showMessagingNotification(
+      api.MessagingNotification(
         title: title,
         id: id,
         channelId: messageNotificationChannelId,
@@ -405,13 +417,13 @@ class NotificationsService {
       return;
     }
 
-    await MoxplatformPlugin.notifications.showNotification(
-      RegularNotification(
+    await _api.showNotification(
+      api.RegularNotification(
         title: title,
         body: body,
         channelId: warningNotificationChannelId,
         id: Random().nextInt(_maxNotificationId),
-        icon: NotificationIcon.warning,
+        icon: api.NotificationIcon.warning,
         groupId: warningNotificationGroupId,
       ),
     );
@@ -443,14 +455,14 @@ class NotificationsService {
     final conversation = await GetIt.I
         .get<ConversationService>()
         .getConversationByJid(jid, accountJid);
-    await MoxplatformPlugin.notifications.showNotification(
-      RegularNotification(
+    await _api.showNotification(
+      api.RegularNotification(
         title: t.notifications.errors.messageError.title,
         body: t.notifications.errors.messageError
             .body(conversationTitle: conversation!.title),
         channelId: warningNotificationChannelId,
         id: Random().nextInt(_maxNotificationId),
-        icon: NotificationIcon.error,
+        icon: api.NotificationIcon.error,
         groupId: warningNotificationGroupId,
       ),
     );
@@ -461,7 +473,7 @@ class NotificationsService {
   Future<void> dismissNotificationsByJid(String jid, String accountJid) async {
     final id = await _clearNotificationsForJid(jid, accountJid);
     if (id != null) {
-      await MoxplatformPlugin.notifications.dismissNotification(id);
+      await _api.dismissNotification(id);
     }
   }
 
@@ -478,8 +490,7 @@ class NotificationsService {
 
     // Dismiss the notification
     for (final idRaw in ids) {
-      await MoxplatformPlugin.notifications
-          .dismissNotification(idRaw['id']! as int);
+      await _api.dismissNotification(idRaw['id']! as int);
     }
 
     // Remove database entries
@@ -496,8 +507,7 @@ class NotificationsService {
     final xss = GetIt.I.get<XmppStateService>();
     final avatarPath = (await xss.state).avatarUrl;
     if (avatarPath.isNotEmpty) {
-      await MoxplatformPlugin.notifications
-          .setNotificationSelfAvatar(avatarPath);
+      await _api.setNotificationSelfAvatar(avatarPath);
     }
   }
 }

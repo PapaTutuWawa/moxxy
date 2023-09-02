@@ -629,13 +629,18 @@ class HttpFileTransferService {
     cs.setConversation(updatedConversation);
 
     // Show a notification
-    if (notification.shouldShowNotification(msg.conversationJid) &&
-        job.shouldShowNotification) {
+    final shouldShowNotification =
+        notification.shouldShowNotification(msg.conversationJid);
+    if (shouldShowNotification && job.shouldShowNotification) {
       _log.finest('Creating notification with bigPicture $downloadedPath');
       await notification.updateOrShowNotification(
         updatedConversation,
         msg,
         job.accountJid,
+      );
+    } else {
+      _log.finest(
+        'Not creating or updating notification for $downloadedPath: notification.shouldShowNotification=$shouldShowNotification, job.shouldShowNotification=${job.shouldShowNotification}',
       );
     }
 

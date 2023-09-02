@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/widgets.dart';
-import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/service/pigeon/api.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
 
 /// Recreate all notification channels to apply settings that cannot be applied after the notification
@@ -11,15 +11,17 @@ Future<void> upgradeV1ToV2NonDb(int _) async {
   WidgetsFlutterBinding.ensureInitialized();
   LocaleSettings.useDeviceLocale();
 
+  final api = MoxxyApi();
+
   // Remove all notification channels, so that we can recreate them
-  await MoxplatformPlugin.notifications.deleteNotificationChannels([
+  await api.deleteNotificationChannels([
     foregroundServiceNotificationChannelId,
     messageNotificationChannelId,
     warningNotificationChannelId,
   ]);
 
   // Set up notification groups
-  await MoxplatformPlugin.notifications.createNotificationGroups(
+  await api.createNotificationGroups(
     [
       NotificationGroup(
         id: messageNotificationGroupId,
@@ -37,7 +39,7 @@ Future<void> upgradeV1ToV2NonDb(int _) async {
   );
 
   // Set up the notitifcation channels.
-  await MoxplatformPlugin.notifications.createNotificationChannels([
+  await api.createNotificationChannels([
     NotificationChannel(
       title: t.notifications.channels.messagesChannelName,
       description: t.notifications.channels.messagesChannelDescription,
