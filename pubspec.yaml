@@ -64,7 +64,7 @@ dependencies:
     version: ^0.2.0
   moxplatform:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.1.17+4
+    version: 0.1.17+5
   moxxmpp:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.4.0
@@ -132,12 +132,12 @@ dependency_overrides:
   #   path: ../moxxmpp/packages/moxxmpp_socket_tcp
   # omemo_dart:
   #   path: ../../Personal/omemo_dart
-  moxplatform:
-    path: ../moxplatform/packages/moxplatform
-  moxplatform_android:
-    path: ../moxplatform/packages/moxplatform_android
-  moxplatform_platform_interface:
-    path: ../moxplatform/packages/moxplatform_platform_interface
+  # moxplatform:
+  #   path: ../moxplatform/packages/moxplatform
+  # moxplatform_android:
+  #   path: ../moxplatform/packages/moxplatform_android
+  # moxplatform_platform_interface:
+  #  path: ../moxplatform/packages/moxplatform_platform_interface
 
   moxxmpp:
     git:
