@@ -55,7 +55,7 @@
     devShell = pkgs.mkShell {
       buildInputs = with pkgs; [
         # Android
-        pinnedJDK sdk
+        pinnedJDK sdk ktlint
         scrcpy
 
         # Flutter

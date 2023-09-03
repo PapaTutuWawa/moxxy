@@ -56,6 +56,12 @@ Before creating a pull request, please make sure you checked every item on the f
 If you think that your code is ready for a pull request, but you are not sure if it is ready, prefix the PR's title with "WIP: ", so that discussion
 can happen there. If you think your PR is ready for review, remove the "WIP: " prefix.
 
+### Android
+
+In case you modified the Android-native code, please also make sure that you checked every item on the following checklist:
+
+- [ ] I checked that [ktlint](https://github.com/pinterest/ktlint) is not showing any linting issues (`ktlint android/app/src/main/kotlin/org/moxxy/moxxyv2/`)
+
 ### Tips
 #### `data_classes.yaml`
 
