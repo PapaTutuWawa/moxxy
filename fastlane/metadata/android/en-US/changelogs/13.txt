@@ -1,6 +1,10 @@
 - (Hopefully) fix OMEMO between two Moxxy clients.
 - Allow correcting messages older than the last one. Whether all clients will accept such a correction is unclear.
-- Add (incomplete) translations for Dutch, Japanese, and Russian.
+- Add (incomplete) translations for Dutch, French, Galician, Japanese, Polish, and Russian.
 - Fix having to long-press a message bubble on its corner to active the selection menu.
 - If enabled, read markers are automatically sent.
 - Highlight legacy quotes in text messages.
+- Fix Moxxy's app icon having a badge because of the foreground service.
+- Make the notifications much prettier and compliant with Android 13.
+- Prevent Moxxy from crashing on startup on a fresh device.
+- Video thumbnails are now generated, if possible, after a video has been downloaded.
