@@ -377,7 +377,7 @@ Future<void> upgradeFromV45ToV46(Database db) async {
         '${omemoTrustTable}_new',
         {
           ...trustItem,
-          'accoutJid': accountJid,
+          'accountJid': accountJid,
         },
       );
     }
