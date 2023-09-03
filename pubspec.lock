@@ -885,26 +885,26 @@ packages:
     dependency: "direct main"
     description:
       name: moxplatform
-      sha256: "3db4fd0f40295b665b3c43435253f79900a29b77beb8409b83ed485d53380e35"
+      sha256: "02ac0ee17f30e2bc3914a3f177d97f02d9fd062bc69ad4d5dd17404d2829f2c7"
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.17+5"
+    version: "0.1.17+6"
   moxplatform_android:
     dependency: transitive
     description:
       name: moxplatform_android
-      sha256: cc05601fb02de83a5420b11144551f2d507254259f5d91f54fe0455be7eb1751
+      sha256: "6b46109ec5d2c4a43cc68ac3dcf0396e5237c5800671a7e2dbcd22f468a13e28"
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.21"
+    version: "0.1.22"
   moxplatform_platform_interface:
     dependency: transitive
     description:
       name: moxplatform_platform_interface
-      sha256: a0dd9d28bd171fa25e20b794feb8dfbf26705adfeb49b03ea8779e39feafbdc7
+      sha256: "27a6691d6913a291f7bc93d98c87eef491a4e47a76d3d804d1e0a2de7a5875f0"
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.21"
+    version: "0.1.22"
   moxxmpp:
     dependency: "direct main"
     description:

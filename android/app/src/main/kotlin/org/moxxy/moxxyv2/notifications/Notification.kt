@@ -136,6 +136,7 @@ fun createNotificationChannelsImpl(context: Context, channels: List<Notification
             enableVibration(channel.vibration)
             enableLights(channel.enableLights)
             setShowBadge(channel.showBadge)
+
             if (channel.groupId != null) {
                 group = channel.groupId
             }

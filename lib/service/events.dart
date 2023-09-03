@@ -224,11 +224,16 @@ Future<void> performPreStart(
   final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
 
   // Set the locale very early
+  final logger = GetIt.I.get<Logger>();
   GetIt.I.get<LanguageService>().defaultLocale = command.systemLocaleCode;
   if (preferences.languageLocaleCode == 'default') {
     LocaleSettings.setLocaleRaw(command.systemLocaleCode);
+    logger.finest('Setting locale to default (${command.systemLocaleCode})');
   } else {
     LocaleSettings.setLocaleRaw(preferences.languageLocaleCode);
+    logger.finest(
+      'Setting locale to configured language (${preferences.languageLocaleCode})',
+    );
   }
   await GetIt.I.get<NotificationsService>().configureNotificationI18n();
   GetIt.I.get<XmppService>().setNotificationText(

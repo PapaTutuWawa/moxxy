@@ -377,10 +377,10 @@ class ConversationPageState extends State<ConversationPage>
 
         // Tell the backend that the chat is no longer open
         GetIt.I.get<ConversationsBloc>().add(
-          ConversationExitedEvent(
-            ConversationType.fromString(widget.conversationType),
-          ),
-        );
+              ConversationExitedEvent(
+                ConversationType.fromString(widget.conversationType),
+              ),
+            );
         return true;
       },
       child: KeyboardReplacerScaffold(

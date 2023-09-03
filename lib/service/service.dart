@@ -97,6 +97,7 @@ Future<void> initializeServiceIfNeeded() async {
       entrypoint,
       receiveUIEvent,
       ui_events.handleIsolateEvent,
+      WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
     );
   }
 }
@@ -168,7 +169,7 @@ Future<void> initUDPLogger() async {
 
 /// The entrypoint for all platforms after the platform specific initilization is done.
 @pragma('vm:entry-point')
-Future<void> entrypoint() async {
+Future<void> entrypoint(String initialLocale) async {
   setupLogging();
   setupBackgroundEventHandler();
 
@@ -211,6 +212,23 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<LifecycleService>(LifecycleService());
   final xmpp = XmppService();
   GetIt.I.registerSingleton<XmppService>(xmpp);
+
+  // Set the locale before we initialize the notigications service to ensure
+  // the correct locale is used for the notification channels.
+  final preferredLocale =
+      (await GetIt.I.get<PreferencesService>().getPreferences())
+          .languageLocaleCode;
+  if (preferredLocale == 'default') {
+    LocaleSettings.setLocaleRaw(initialLocale);
+    GetIt.I.get<Logger>().finest(
+          'Setting locale to system locale ($initialLocale) per preferences',
+        );
+  } else {
+    LocaleSettings.setLocaleRaw(preferredLocale);
+    GetIt.I.get<Logger>().finest(
+          'Setting locale to configured locale ($preferredLocale) per preferences',
+        );
+  }
 
   await GetIt.I.get<NotificationsService>().initialize();
   await GetIt.I.get<ContactsService>().initialize();

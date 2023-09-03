@@ -31,6 +31,6 @@ const warningNotificationGroupId = 'warning';
 const foregroundServiceNotificationGroupId = 'service';
 
 /// Notification channel ids
-const foregroundServiceNotificationChannelId = 'FOREGROUND_DEFAULT';
-const messageNotificationChannelId = 'message_channel';
-const warningNotificationChannelId = 'warning_channel';
+const foregroundServiceNotificationChannelId = 'foreground_service';
+const messageNotificationChannelId = 'messages';
+const warningNotificationChannelId = 'warnings';

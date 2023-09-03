@@ -15,9 +15,11 @@ Future<void> upgradeV1ToV2NonDb(int _) async {
 
   // Remove all notification channels, so that we can recreate them
   await api.deleteNotificationChannels([
-    foregroundServiceNotificationChannelId,
-    messageNotificationChannelId,
-    warningNotificationChannelId,
+    'FOREGROUND_DEFAULT',
+    'message_channel',
+    'warning_channel',
+    // Not sure where this one comes from
+    'warning',
   ]);
 
   // Set up notification groups
@@ -52,7 +54,7 @@ Future<void> upgradeV1ToV2NonDb(int _) async {
     NotificationChannel(
       title: t.notifications.channels.warningChannelName,
       description: t.notifications.channels.warningChannelDescription,
-      id: warningNotificationGroupId,
+      id: warningNotificationChannelId,
       importance: NotificationChannelImportance.DEFAULT,
       showBadge: false,
       vibration: true,

@@ -12,23 +12,23 @@ import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 
 private fun wrapResult(result: Any?): List<Any?> {
-    return listOf(result)
+  return listOf(result)
 }
 
 private fun wrapError(exception: Throwable): List<Any?> {
-    if (exception is FlutterError) {
-        return listOf(
-            exception.code,
-            exception.message,
-            exception.details,
-        )
-    } else {
-        return listOf(
-            exception.javaClass.simpleName,
-            exception.toString(),
-            "Cause: " + exception.cause + ", Stacktrace: " + Log.getStackTraceString(exception),
-        )
-    }
+  if (exception is FlutterError) {
+    return listOf(
+      exception.code,
+      exception.message,
+      exception.details
+    )
+  } else {
+    return listOf(
+      exception.javaClass.simpleName,
+      exception.toString(),
+      "Cause: " + exception.cause + ", Stacktrace: " + Log.getStackTraceString(exception)
+    )
+  }
 }
 
 /**
@@ -37,635 +37,630 @@ private fun wrapError(exception: Throwable): List<Any?> {
  * @property message The error message.
  * @property details The error details. Must be a datatype supported by the api codec.
  */
-class FlutterError(
-    val code: String,
-    override val message: String? = null,
-    val details: Any? = null,
+class FlutterError (
+  val code: String,
+  override val message: String? = null,
+  val details: Any? = null
 ) : Throwable()
 
 enum class NotificationIcon(val raw: Int) {
-    WARNING(0),
-    ERROR(1),
-    NONE(2),
-    ;
+  WARNING(0),
+  ERROR(1),
+  NONE(2);
 
-    companion object {
-        fun ofRaw(raw: Int): NotificationIcon? {
-            return values().firstOrNull { it.raw == raw }
-        }
+  companion object {
+    fun ofRaw(raw: Int): NotificationIcon? {
+      return values().firstOrNull { it.raw == raw }
     }
+  }
 }
 
 enum class NotificationEventType(val raw: Int) {
-    MARKASREAD(0),
-    REPLY(1),
-    OPEN(2),
-    ;
+  MARKASREAD(0),
+  REPLY(1),
+  OPEN(2);
 
-    companion object {
-        fun ofRaw(raw: Int): NotificationEventType? {
-            return values().firstOrNull { it.raw == raw }
-        }
+  companion object {
+    fun ofRaw(raw: Int): NotificationEventType? {
+      return values().firstOrNull { it.raw == raw }
     }
+  }
 }
 
 enum class NotificationChannelImportance(val raw: Int) {
-    MIN(0),
-    HIGH(1),
-    DEFAULT(2),
-    ;
+  MIN(0),
+  HIGH(1),
+  DEFAULT(2);
 
-    companion object {
-        fun ofRaw(raw: Int): NotificationChannelImportance? {
-            return values().firstOrNull { it.raw == raw }
-        }
+  companion object {
+    fun ofRaw(raw: Int): NotificationChannelImportance? {
+      return values().firstOrNull { it.raw == raw }
     }
+  }
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class NotificationMessageContent(
-    /** The textual body of the message. */
-    val body: String? = null,
-    /** The path and mime type of the media to show. */
-    val mime: String? = null,
-    val path: String? = null,
+data class NotificationMessageContent (
+  /** The textual body of the message. */
+  val body: String? = null,
+  /** The path and mime type of the media to show. */
+  val mime: String? = null,
+  val path: String? = null
 
 ) {
-    companion object {
-        @Suppress("UNCHECKED_CAST")
-        fun fromList(list: List<Any?>): NotificationMessageContent {
-            val body = list[0] as String?
-            val mime = list[1] as String?
-            val path = list[2] as String?
-            return NotificationMessageContent(body, mime, path)
-        }
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): NotificationMessageContent {
+      val body = list[0] as String?
+      val mime = list[1] as String?
+      val path = list[2] as String?
+      return NotificationMessageContent(body, mime, path)
     }
-    fun toList(): List<Any?> {
-        return listOf<Any?>(
-            body,
-            mime,
-            path,
-        )
-    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      body,
+      mime,
+      path,
+    )
+  }
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class NotificationMessage(
-    /** The grouping key for the notification. */
-    val groupId: String? = null,
-    /** The sender of the message. */
-    val sender: String? = null,
-    /** The jid of the sender. */
-    val jid: String? = null,
-    /** The body of the message. */
-    val content: NotificationMessageContent,
-    /** Milliseconds since epoch. */
-    val timestamp: Long,
-    /** The path to the avatar to use */
-    val avatarPath: String? = null,
+data class NotificationMessage (
+  /** The grouping key for the notification. */
+  val groupId: String? = null,
+  /** The sender of the message. */
+  val sender: String? = null,
+  /** The jid of the sender. */
+  val jid: String? = null,
+  /** The body of the message. */
+  val content: NotificationMessageContent,
+  /** Milliseconds since epoch. */
+  val timestamp: Long,
+  /** The path to the avatar to use */
+  val avatarPath: String? = null
 
 ) {
-    companion object {
-        @Suppress("UNCHECKED_CAST")
-        fun fromList(list: List<Any?>): NotificationMessage {
-            val groupId = list[0] as String?
-            val sender = list[1] as String?
-            val jid = list[2] as String?
-            val content = NotificationMessageContent.fromList(list[3] as List<Any?>)
-            val timestamp = list[4].let { if (it is Int) it.toLong() else it as Long }
-            val avatarPath = list[5] as String?
-            return NotificationMessage(groupId, sender, jid, content, timestamp, avatarPath)
-        }
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): NotificationMessage {
+      val groupId = list[0] as String?
+      val sender = list[1] as String?
+      val jid = list[2] as String?
+      val content = NotificationMessageContent.fromList(list[3] as List<Any?>)
+      val timestamp = list[4].let { if (it is Int) it.toLong() else it as Long }
+      val avatarPath = list[5] as String?
+      return NotificationMessage(groupId, sender, jid, content, timestamp, avatarPath)
     }
-    fun toList(): List<Any?> {
-        return listOf<Any?>(
-            groupId,
-            sender,
-            jid,
-            content.toList(),
-            timestamp,
-            avatarPath,
-        )
-    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      groupId,
+      sender,
+      jid,
+      content.toList(),
+      timestamp,
+      avatarPath,
+    )
+  }
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class MessagingNotification(
-    /** The title of the conversation. */
-    val title: String,
-    /** The id of the notification. */
-    val id: Long,
-    /** The id of the notification channel the notification should appear on. */
-    val channelId: String,
-    /** The JID of the chat in which the notifications happen. */
-    val jid: String,
-    /** Messages to show. */
-    val messages: List<NotificationMessage?>,
-    /** Flag indicating whether this notification is from a groupchat or not. */
-    val isGroupchat: Boolean,
-    /** The id for notification grouping. */
-    val groupId: String? = null,
-    /** Additional data to include. */
-    val extra: Map<String?, String?>? = null,
+data class MessagingNotification (
+  /** The title of the conversation. */
+  val title: String,
+  /** The id of the notification. */
+  val id: Long,
+  /** The id of the notification channel the notification should appear on. */
+  val channelId: String,
+  /** The JID of the chat in which the notifications happen. */
+  val jid: String,
+  /** Messages to show. */
+  val messages: List<NotificationMessage?>,
+  /** Flag indicating whether this notification is from a groupchat or not. */
+  val isGroupchat: Boolean,
+  /** The id for notification grouping. */
+  val groupId: String? = null,
+  /** Additional data to include. */
+  val extra: Map<String?, String?>? = null
 
 ) {
-    companion object {
-        @Suppress("UNCHECKED_CAST")
-        fun fromList(list: List<Any?>): MessagingNotification {
-            val title = list[0] as String
-            val id = list[1].let { if (it is Int) it.toLong() else it as Long }
-            val channelId = list[2] as String
-            val jid = list[3] as String
-            val messages = list[4] as List<NotificationMessage?>
-            val isGroupchat = list[5] as Boolean
-            val groupId = list[6] as String?
-            val extra = list[7] as Map<String?, String?>?
-            return MessagingNotification(title, id, channelId, jid, messages, isGroupchat, groupId, extra)
-        }
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): MessagingNotification {
+      val title = list[0] as String
+      val id = list[1].let { if (it is Int) it.toLong() else it as Long }
+      val channelId = list[2] as String
+      val jid = list[3] as String
+      val messages = list[4] as List<NotificationMessage?>
+      val isGroupchat = list[5] as Boolean
+      val groupId = list[6] as String?
+      val extra = list[7] as Map<String?, String?>?
+      return MessagingNotification(title, id, channelId, jid, messages, isGroupchat, groupId, extra)
     }
-    fun toList(): List<Any?> {
-        return listOf<Any?>(
-            title,
-            id,
-            channelId,
-            jid,
-            messages,
-            isGroupchat,
-            groupId,
-            extra,
-        )
-    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      title,
+      id,
+      channelId,
+      jid,
+      messages,
+      isGroupchat,
+      groupId,
+      extra,
+    )
+  }
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class RegularNotification(
-    /** The title of the notification. */
-    val title: String,
-    /** The body of the notification. */
-    val body: String,
-    /** The id of the channel to show the notification on. */
-    val channelId: String,
-    /** The id for notification grouping. */
-    val groupId: String? = null,
-    /** The id of the notification. */
-    val id: Long,
-    /** The icon to use. */
-    val icon: NotificationIcon,
+data class RegularNotification (
+  /** The title of the notification. */
+  val title: String,
+  /** The body of the notification. */
+  val body: String,
+  /** The id of the channel to show the notification on. */
+  val channelId: String,
+  /** The id for notification grouping. */
+  val groupId: String? = null,
+  /** The id of the notification. */
+  val id: Long,
+  /** The icon to use. */
+  val icon: NotificationIcon
 
 ) {
-    companion object {
-        @Suppress("UNCHECKED_CAST")
-        fun fromList(list: List<Any?>): RegularNotification {
-            val title = list[0] as String
-            val body = list[1] as String
-            val channelId = list[2] as String
-            val groupId = list[3] as String?
-            val id = list[4].let { if (it is Int) it.toLong() else it as Long }
-            val icon = NotificationIcon.ofRaw(list[5] as Int)!!
-            return RegularNotification(title, body, channelId, groupId, id, icon)
-        }
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): RegularNotification {
+      val title = list[0] as String
+      val body = list[1] as String
+      val channelId = list[2] as String
+      val groupId = list[3] as String?
+      val id = list[4].let { if (it is Int) it.toLong() else it as Long }
+      val icon = NotificationIcon.ofRaw(list[5] as Int)!!
+      return RegularNotification(title, body, channelId, groupId, id, icon)
     }
-    fun toList(): List<Any?> {
-        return listOf<Any?>(
-            title,
-            body,
-            channelId,
-            groupId,
-            id,
-            icon.raw,
-        )
-    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      title,
+      body,
+      channelId,
+      groupId,
+      id,
+      icon.raw,
+    )
+  }
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class NotificationEvent(
-    /** The notification id. */
-    val id: Long,
-    /** The JID the notification was for. */
-    val jid: String,
-    /** The type of event. */
-    val type: NotificationEventType,
-    /**
-     * An optional payload.
-     * - type == NotificationType.reply: The reply message text.
-     * Otherwise: undefined.
-     */
-    val payload: String? = null,
-    /** Extra data. Only set when type == NotificationType.reply. */
-    val extra: Map<String?, String?>? = null,
+data class NotificationEvent (
+  /** The notification id. */
+  val id: Long,
+  /** The JID the notification was for. */
+  val jid: String,
+  /** The type of event. */
+  val type: NotificationEventType,
+  /**
+   * An optional payload.
+   * - type == NotificationType.reply: The reply message text.
+   * Otherwise: undefined.
+   */
+  val payload: String? = null,
+  /** Extra data. Only set when type == NotificationType.reply. */
+  val extra: Map<String?, String?>? = null
 
 ) {
-    companion object {
-        @Suppress("UNCHECKED_CAST")
-        fun fromList(list: List<Any?>): NotificationEvent {
-            val id = list[0].let { if (it is Int) it.toLong() else it as Long }
-            val jid = list[1] as String
-            val type = NotificationEventType.ofRaw(list[2] as Int)!!
-            val payload = list[3] as String?
-            val extra = list[4] as Map<String?, String?>?
-            return NotificationEvent(id, jid, type, payload, extra)
-        }
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): NotificationEvent {
+      val id = list[0].let { if (it is Int) it.toLong() else it as Long }
+      val jid = list[1] as String
+      val type = NotificationEventType.ofRaw(list[2] as Int)!!
+      val payload = list[3] as String?
+      val extra = list[4] as Map<String?, String?>?
+      return NotificationEvent(id, jid, type, payload, extra)
     }
-    fun toList(): List<Any?> {
-        return listOf<Any?>(
-            id,
-            jid,
-            type.raw,
-            payload,
-            extra,
-        )
-    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      id,
+      jid,
+      type.raw,
+      payload,
+      extra,
+    )
+  }
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class NotificationI18nData(
-    /** The content of the reply button. */
-    val reply: String,
-    /** The content of the "mark as read" button. */
-    val markAsRead: String,
-    /** The text to show when *you* reply. */
-    val you: String,
+data class NotificationI18nData (
+  /** The content of the reply button. */
+  val reply: String,
+  /** The content of the "mark as read" button. */
+  val markAsRead: String,
+  /** The text to show when *you* reply. */
+  val you: String
 
 ) {
-    companion object {
-        @Suppress("UNCHECKED_CAST")
-        fun fromList(list: List<Any?>): NotificationI18nData {
-            val reply = list[0] as String
-            val markAsRead = list[1] as String
-            val you = list[2] as String
-            return NotificationI18nData(reply, markAsRead, you)
-        }
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): NotificationI18nData {
+      val reply = list[0] as String
+      val markAsRead = list[1] as String
+      val you = list[2] as String
+      return NotificationI18nData(reply, markAsRead, you)
     }
-    fun toList(): List<Any?> {
-        return listOf<Any?>(
-            reply,
-            markAsRead,
-            you,
-        )
-    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      reply,
+      markAsRead,
+      you,
+    )
+  }
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class NotificationGroup(
-    val id: String,
-    val description: String,
+data class NotificationGroup (
+  val id: String,
+  val description: String
 
 ) {
-    companion object {
-        @Suppress("UNCHECKED_CAST")
-        fun fromList(list: List<Any?>): NotificationGroup {
-            val id = list[0] as String
-            val description = list[1] as String
-            return NotificationGroup(id, description)
-        }
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): NotificationGroup {
+      val id = list[0] as String
+      val description = list[1] as String
+      return NotificationGroup(id, description)
     }
-    fun toList(): List<Any?> {
-        return listOf<Any?>(
-            id,
-            description,
-        )
-    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      id,
+      description,
+    )
+  }
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class NotificationChannel(
-    val title: String,
-    val description: String,
-    val id: String,
-    val importance: NotificationChannelImportance,
-    val showBadge: Boolean,
-    val groupId: String? = null,
-    val vibration: Boolean,
-    val enableLights: Boolean,
+data class NotificationChannel (
+  val title: String,
+  val description: String,
+  val id: String,
+  val importance: NotificationChannelImportance,
+  val showBadge: Boolean,
+  val groupId: String? = null,
+  val vibration: Boolean,
+  val enableLights: Boolean
 
 ) {
-    companion object {
-        @Suppress("UNCHECKED_CAST")
-        fun fromList(list: List<Any?>): NotificationChannel {
-            val title = list[0] as String
-            val description = list[1] as String
-            val id = list[2] as String
-            val importance = NotificationChannelImportance.ofRaw(list[3] as Int)!!
-            val showBadge = list[4] as Boolean
-            val groupId = list[5] as String?
-            val vibration = list[6] as Boolean
-            val enableLights = list[7] as Boolean
-            return NotificationChannel(title, description, id, importance, showBadge, groupId, vibration, enableLights)
-        }
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): NotificationChannel {
+      val title = list[0] as String
+      val description = list[1] as String
+      val id = list[2] as String
+      val importance = NotificationChannelImportance.ofRaw(list[3] as Int)!!
+      val showBadge = list[4] as Boolean
+      val groupId = list[5] as String?
+      val vibration = list[6] as Boolean
+      val enableLights = list[7] as Boolean
+      return NotificationChannel(title, description, id, importance, showBadge, groupId, vibration, enableLights)
     }
-    fun toList(): List<Any?> {
-        return listOf<Any?>(
-            title,
-            description,
-            id,
-            importance.raw,
-            showBadge,
-            groupId,
-            vibration,
-            enableLights,
-        )
-    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      title,
+      description,
+      id,
+      importance.raw,
+      showBadge,
+      groupId,
+      vibration,
+      enableLights,
+    )
+  }
 }
-
 @Suppress("UNCHECKED_CAST")
 private object MoxxyApiCodec : StandardMessageCodec() {
-    override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
-        return when (type) {
-            128.toByte() -> {
-                return (readValue(buffer) as? List<Any?>)?.let {
-                    MessagingNotification.fromList(it)
-                }
-            }
-            129.toByte() -> {
-                return (readValue(buffer) as? List<Any?>)?.let {
-                    NotificationChannel.fromList(it)
-                }
-            }
-            130.toByte() -> {
-                return (readValue(buffer) as? List<Any?>)?.let {
-                    NotificationEvent.fromList(it)
-                }
-            }
-            131.toByte() -> {
-                return (readValue(buffer) as? List<Any?>)?.let {
-                    NotificationGroup.fromList(it)
-                }
-            }
-            132.toByte() -> {
-                return (readValue(buffer) as? List<Any?>)?.let {
-                    NotificationI18nData.fromList(it)
-                }
-            }
-            133.toByte() -> {
-                return (readValue(buffer) as? List<Any?>)?.let {
-                    NotificationMessage.fromList(it)
-                }
-            }
-            134.toByte() -> {
-                return (readValue(buffer) as? List<Any?>)?.let {
-                    NotificationMessageContent.fromList(it)
-                }
-            }
-            135.toByte() -> {
-                return (readValue(buffer) as? List<Any?>)?.let {
-                    RegularNotification.fromList(it)
-                }
-            }
-            else -> super.readValueOfType(type, buffer)
+  override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
+    return when (type) {
+      128.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          MessagingNotification.fromList(it)
         }
-    }
-    override fun writeValue(stream: ByteArrayOutputStream, value: Any?) {
-        when (value) {
-            is MessagingNotification -> {
-                stream.write(128)
-                writeValue(stream, value.toList())
-            }
-            is NotificationChannel -> {
-                stream.write(129)
-                writeValue(stream, value.toList())
-            }
-            is NotificationEvent -> {
-                stream.write(130)
-                writeValue(stream, value.toList())
-            }
-            is NotificationGroup -> {
-                stream.write(131)
-                writeValue(stream, value.toList())
-            }
-            is NotificationI18nData -> {
-                stream.write(132)
-                writeValue(stream, value.toList())
-            }
-            is NotificationMessage -> {
-                stream.write(133)
-                writeValue(stream, value.toList())
-            }
-            is NotificationMessageContent -> {
-                stream.write(134)
-                writeValue(stream, value.toList())
-            }
-            is RegularNotification -> {
-                stream.write(135)
-                writeValue(stream, value.toList())
-            }
-            else -> super.writeValue(stream, value)
+      }
+      129.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NotificationChannel.fromList(it)
         }
+      }
+      130.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NotificationEvent.fromList(it)
+        }
+      }
+      131.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NotificationGroup.fromList(it)
+        }
+      }
+      132.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NotificationI18nData.fromList(it)
+        }
+      }
+      133.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NotificationMessage.fromList(it)
+        }
+      }
+      134.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NotificationMessageContent.fromList(it)
+        }
+      }
+      135.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          RegularNotification.fromList(it)
+        }
+      }
+      else -> super.readValueOfType(type, buffer)
     }
+  }
+  override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
+    when (value) {
+      is MessagingNotification -> {
+        stream.write(128)
+        writeValue(stream, value.toList())
+      }
+      is NotificationChannel -> {
+        stream.write(129)
+        writeValue(stream, value.toList())
+      }
+      is NotificationEvent -> {
+        stream.write(130)
+        writeValue(stream, value.toList())
+      }
+      is NotificationGroup -> {
+        stream.write(131)
+        writeValue(stream, value.toList())
+      }
+      is NotificationI18nData -> {
+        stream.write(132)
+        writeValue(stream, value.toList())
+      }
+      is NotificationMessage -> {
+        stream.write(133)
+        writeValue(stream, value.toList())
+      }
+      is NotificationMessageContent -> {
+        stream.write(134)
+        writeValue(stream, value.toList())
+      }
+      is RegularNotification -> {
+        stream.write(135)
+        writeValue(stream, value.toList())
+      }
+      else -> super.writeValue(stream, value)
+    }
+  }
 }
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface MoxxyApi {
-    /** Notification APIs */
-    fun createNotificationGroups(groups: List<NotificationGroup>)
-    fun deleteNotificationGroups(ids: List<String>)
-    fun createNotificationChannels(channels: List<NotificationChannel>)
-    fun deleteNotificationChannels(ids: List<String>)
-    fun showMessagingNotification(notification: MessagingNotification)
-    fun showNotification(notification: RegularNotification)
-    fun dismissNotification(id: Long)
-    fun setNotificationSelfAvatar(path: String)
-    fun setNotificationI18n(data: NotificationI18nData)
-    fun notificationStub(event: NotificationEvent)
+  /** Notification APIs */
+  fun createNotificationGroups(groups: List<NotificationGroup>)
+  fun deleteNotificationGroups(ids: List<String>)
+  fun createNotificationChannels(channels: List<NotificationChannel>)
+  fun deleteNotificationChannels(ids: List<String>)
+  fun showMessagingNotification(notification: MessagingNotification)
+  fun showNotification(notification: RegularNotification)
+  fun dismissNotification(id: Long)
+  fun setNotificationSelfAvatar(path: String)
+  fun setNotificationI18n(data: NotificationI18nData)
+  fun notificationStub(event: NotificationEvent)
 
-    companion object {
-        /** The codec used by MoxxyApi. */
-        val codec: MessageCodec<Any?> by lazy {
-            MoxxyApiCodec
-        }
-
-        /** Sets up an instance of `MoxxyApi` to handle messages through the `binaryMessenger`. */
-        @Suppress("UNCHECKED_CAST")
-        fun setUp(binaryMessenger: BinaryMessenger, api: MoxxyApi?) {
-            run {
-                val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.createNotificationGroups", codec)
-                if (api != null) {
-                    channel.setMessageHandler { message, reply ->
-                        val args = message as List<Any?>
-                        val groupsArg = args[0] as List<NotificationGroup>
-                        var wrapped: List<Any?>
-                        try {
-                            api.createNotificationGroups(groupsArg)
-                            wrapped = listOf<Any?>(null)
-                        } catch (exception: Throwable) {
-                            wrapped = wrapError(exception)
-                        }
-                        reply.reply(wrapped)
-                    }
-                } else {
-                    channel.setMessageHandler(null)
-                }
-            }
-            run {
-                val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.deleteNotificationGroups", codec)
-                if (api != null) {
-                    channel.setMessageHandler { message, reply ->
-                        val args = message as List<Any?>
-                        val idsArg = args[0] as List<String>
-                        var wrapped: List<Any?>
-                        try {
-                            api.deleteNotificationGroups(idsArg)
-                            wrapped = listOf<Any?>(null)
-                        } catch (exception: Throwable) {
-                            wrapped = wrapError(exception)
-                        }
-                        reply.reply(wrapped)
-                    }
-                } else {
-                    channel.setMessageHandler(null)
-                }
-            }
-            run {
-                val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.createNotificationChannels", codec)
-                if (api != null) {
-                    channel.setMessageHandler { message, reply ->
-                        val args = message as List<Any?>
-                        val channelsArg = args[0] as List<NotificationChannel>
-                        var wrapped: List<Any?>
-                        try {
-                            api.createNotificationChannels(channelsArg)
-                            wrapped = listOf<Any?>(null)
-                        } catch (exception: Throwable) {
-                            wrapped = wrapError(exception)
-                        }
-                        reply.reply(wrapped)
-                    }
-                } else {
-                    channel.setMessageHandler(null)
-                }
-            }
-            run {
-                val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.deleteNotificationChannels", codec)
-                if (api != null) {
-                    channel.setMessageHandler { message, reply ->
-                        val args = message as List<Any?>
-                        val idsArg = args[0] as List<String>
-                        var wrapped: List<Any?>
-                        try {
-                            api.deleteNotificationChannels(idsArg)
-                            wrapped = listOf<Any?>(null)
-                        } catch (exception: Throwable) {
-                            wrapped = wrapError(exception)
-                        }
-                        reply.reply(wrapped)
-                    }
-                } else {
-                    channel.setMessageHandler(null)
-                }
-            }
-            run {
-                val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.showMessagingNotification", codec)
-                if (api != null) {
-                    channel.setMessageHandler { message, reply ->
-                        val args = message as List<Any?>
-                        val notificationArg = args[0] as MessagingNotification
-                        var wrapped: List<Any?>
-                        try {
-                            api.showMessagingNotification(notificationArg)
-                            wrapped = listOf<Any?>(null)
-                        } catch (exception: Throwable) {
-                            wrapped = wrapError(exception)
-                        }
-                        reply.reply(wrapped)
-                    }
-                } else {
-                    channel.setMessageHandler(null)
-                }
-            }
-            run {
-                val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.showNotification", codec)
-                if (api != null) {
-                    channel.setMessageHandler { message, reply ->
-                        val args = message as List<Any?>
-                        val notificationArg = args[0] as RegularNotification
-                        var wrapped: List<Any?>
-                        try {
-                            api.showNotification(notificationArg)
-                            wrapped = listOf<Any?>(null)
-                        } catch (exception: Throwable) {
-                            wrapped = wrapError(exception)
-                        }
-                        reply.reply(wrapped)
-                    }
-                } else {
-                    channel.setMessageHandler(null)
-                }
-            }
-            run {
-                val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.dismissNotification", codec)
-                if (api != null) {
-                    channel.setMessageHandler { message, reply ->
-                        val args = message as List<Any?>
-                        val idArg = args[0].let { if (it is Int) it.toLong() else it as Long }
-                        var wrapped: List<Any?>
-                        try {
-                            api.dismissNotification(idArg)
-                            wrapped = listOf<Any?>(null)
-                        } catch (exception: Throwable) {
-                            wrapped = wrapError(exception)
-                        }
-                        reply.reply(wrapped)
-                    }
-                } else {
-                    channel.setMessageHandler(null)
-                }
-            }
-            run {
-                val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.setNotificationSelfAvatar", codec)
-                if (api != null) {
-                    channel.setMessageHandler { message, reply ->
-                        val args = message as List<Any?>
-                        val pathArg = args[0] as String
-                        var wrapped: List<Any?>
-                        try {
-                            api.setNotificationSelfAvatar(pathArg)
-                            wrapped = listOf<Any?>(null)
-                        } catch (exception: Throwable) {
-                            wrapped = wrapError(exception)
-                        }
-                        reply.reply(wrapped)
-                    }
-                } else {
-                    channel.setMessageHandler(null)
-                }
-            }
-            run {
-                val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.setNotificationI18n", codec)
-                if (api != null) {
-                    channel.setMessageHandler { message, reply ->
-                        val args = message as List<Any?>
-                        val dataArg = args[0] as NotificationI18nData
-                        var wrapped: List<Any?>
-                        try {
-                            api.setNotificationI18n(dataArg)
-                            wrapped = listOf<Any?>(null)
-                        } catch (exception: Throwable) {
-                            wrapped = wrapError(exception)
-                        }
-                        reply.reply(wrapped)
-                    }
-                } else {
-                    channel.setMessageHandler(null)
-                }
-            }
-            run {
-                val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.notificationStub", codec)
-                if (api != null) {
-                    channel.setMessageHandler { message, reply ->
-                        val args = message as List<Any?>
-                        val eventArg = args[0] as NotificationEvent
-                        var wrapped: List<Any?>
-                        try {
-                            api.notificationStub(eventArg)
-                            wrapped = listOf<Any?>(null)
-                        } catch (exception: Throwable) {
-                            wrapped = wrapError(exception)
-                        }
-                        reply.reply(wrapped)
-                    }
-                } else {
-                    channel.setMessageHandler(null)
-                }
-            }
-        }
+  companion object {
+    /** The codec used by MoxxyApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      MoxxyApiCodec
     }
+    /** Sets up an instance of `MoxxyApi` to handle messages through the `binaryMessenger`. */
+    @Suppress("UNCHECKED_CAST")
+    fun setUp(binaryMessenger: BinaryMessenger, api: MoxxyApi?) {
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.createNotificationGroups", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val groupsArg = args[0] as List<NotificationGroup>
+            var wrapped: List<Any?>
+            try {
+              api.createNotificationGroups(groupsArg)
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.deleteNotificationGroups", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val idsArg = args[0] as List<String>
+            var wrapped: List<Any?>
+            try {
+              api.deleteNotificationGroups(idsArg)
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.createNotificationChannels", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val channelsArg = args[0] as List<NotificationChannel>
+            var wrapped: List<Any?>
+            try {
+              api.createNotificationChannels(channelsArg)
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.deleteNotificationChannels", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val idsArg = args[0] as List<String>
+            var wrapped: List<Any?>
+            try {
+              api.deleteNotificationChannels(idsArg)
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.showMessagingNotification", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val notificationArg = args[0] as MessagingNotification
+            var wrapped: List<Any?>
+            try {
+              api.showMessagingNotification(notificationArg)
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.showNotification", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val notificationArg = args[0] as RegularNotification
+            var wrapped: List<Any?>
+            try {
+              api.showNotification(notificationArg)
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.dismissNotification", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val idArg = args[0].let { if (it is Int) it.toLong() else it as Long }
+            var wrapped: List<Any?>
+            try {
+              api.dismissNotification(idArg)
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.setNotificationSelfAvatar", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pathArg = args[0] as String
+            var wrapped: List<Any?>
+            try {
+              api.setNotificationSelfAvatar(pathArg)
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.setNotificationI18n", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val dataArg = args[0] as NotificationI18nData
+            var wrapped: List<Any?>
+            try {
+              api.setNotificationI18n(dataArg)
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.notificationStub", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val eventArg = args[0] as NotificationEvent
+            var wrapped: List<Any?>
+            try {
+              api.notificationStub(eventArg)
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
 }
