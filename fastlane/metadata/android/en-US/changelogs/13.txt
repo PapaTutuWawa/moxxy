@@ -8,3 +8,5 @@
 - Make the notifications much prettier and compliant with Android 13.
 - Prevent Moxxy from crashing on startup on a fresh device.
 - Video thumbnails are now generated, if possible, after a video has been downloaded.
+- The Moxxy APKs will now be signed by a different key stored on my YubiKey. You will have to uninstall and reinstall Moxxy. This will remove all your data.
+- Moxxy now uses Android's direct share shortcuts.
