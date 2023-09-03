@@ -14,7 +14,6 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
 import androidx.core.content.FileProvider
 import org.moxxy.moxxyv2.MARK_AS_READ_ACTION
-import org.moxxy.moxxyv2.MARK_AS_READ_ID_KEY
 import org.moxxy.moxxyv2.MOXXY_FILEPROVIDER_ID
 import org.moxxy.moxxyv2.MoxxyEventChannels
 import org.moxxy.moxxyv2.NOTIFICATION_EXTRA_ID_KEY
@@ -73,7 +72,7 @@ class NotificationReceiver : BroadcastReceiver() {
                 NotificationEventType.MARKASREAD,
                 null,
                 extractPayloadMapFromIntent(intent),
-            ).toList()
+            ).toList(),
         )
         dismissNotification(context, intent)
     }
@@ -88,13 +87,13 @@ class NotificationReceiver : BroadcastReceiver() {
                 NotificationEventType.REPLY,
                 replyPayload.toString(),
                 extractPayloadMapFromIntent(intent),
-            ).toList()
+            ).toList(),
         )
 
         val id = intent.getLongExtra(NOTIFICATION_EXTRA_ID_KEY, -1).toInt()
         if (id == -1) {
             Log.e(TAG, "Failed to find notification id for reply")
-            return;
+            return
         }
 
         val notification = findActiveNotification(context, id)
@@ -105,7 +104,7 @@ class NotificationReceiver : BroadcastReceiver() {
 
         // Thanks https://medium.com/@sidorovroman3/android-how-to-use-messagingstyle-for-notifications-without-caching-messages-c414ef2b816c
         val recoveredStyle = NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(notification)!!
-        val newStyle = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+        val newStyle = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             Notification.MessagingStyle(
                 android.app.Person.Builder().apply {
                     setName(NotificationDataManager.getYou(context))
@@ -115,13 +114,15 @@ class NotificationReceiver : BroadcastReceiver() {
                     if (avatarPath != null) {
                         setIcon(
                             Icon.createWithAdaptiveBitmap(
-                                BitmapFactory.decodeFile(avatarPath)
-                            )
+                                BitmapFactory.decodeFile(avatarPath),
+                            ),
                         )
                     }
-                }.build()
+                }.build(),
             )
-        else Notification.MessagingStyle(NotificationDataManager.getYou(context))
+        } else {
+            Notification.MessagingStyle(NotificationDataManager.getYou(context))
+        }
 
         newStyle.apply {
             conversationTitle = recoveredStyle.conversationTitle
@@ -161,8 +162,8 @@ class NotificationReceiver : BroadcastReceiver() {
             Notification.MessagingStyle.Message(
                 replyPayload!!,
                 Instant.now().toEpochMilli(),
-                null as CharSequence?
-            )
+                null as CharSequence?,
+            ),
         )
 
         // Post the new notification
@@ -186,7 +187,7 @@ class NotificationReceiver : BroadcastReceiver() {
                 NotificationEventType.OPEN,
                 null,
                 extractPayloadMapFromIntent(intent),
-            ).toList()
+            ).toList(),
         )
 
         // Bring the app into the foreground

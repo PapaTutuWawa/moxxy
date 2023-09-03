@@ -41,7 +41,7 @@ object NotificationCache {
     var lastEvent: NotificationEvent? = null
 }
 
-class MainActivity: FlutterActivity(), FlutterPlugin, MoxxyApi {
+class MainActivity : FlutterActivity(), FlutterPlugin, MoxxyApi {
     private var context: Context? = null
 
     private fun handleIntent(intent: Intent?) {
@@ -111,7 +111,7 @@ class MainActivity: FlutterActivity(), FlutterPlugin, MoxxyApi {
     }
 
     override fun setNotificationSelfAvatar(path: String) {
-        NotificationDataManager.setAvatarPath(context!!, path);
+        NotificationDataManager.setAvatarPath(context!!, path)
     }
 
     override fun setNotificationI18n(data: NotificationI18nData) {

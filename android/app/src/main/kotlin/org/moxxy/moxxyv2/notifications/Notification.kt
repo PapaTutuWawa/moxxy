@@ -125,7 +125,7 @@ fun createNotificationGroupsImpl(context: Context, groups: List<NotificationGrou
 fun createNotificationChannelsImpl(context: Context, channels: List<NotificationChannel>) {
     val notificationManager = context.getSystemService(NotificationManager::class.java)
     for (channel in channels) {
-        val importance = when(channel.importance) {
+        val importance = when (channel.importance) {
             NotificationChannelImportance.DEFAULT -> NotificationManager.IMPORTANCE_DEFAULT
             NotificationChannelImportance.MIN -> NotificationManager.IMPORTANCE_MIN
             NotificationChannelImportance.HIGH -> NotificationManager.IMPORTANCE_HIGH
@@ -144,7 +144,7 @@ fun createNotificationChannelsImpl(context: Context, channels: List<Notification
     }
 }
 
-/// Show a messaging style notification described by @notification.
+// / Show a messaging style notification described by @notification.
 @SuppressLint("WrongConstant")
 fun showMessagingNotification(context: Context, notification: MessagingNotification) {
     // Build the actions
@@ -232,7 +232,7 @@ fun showMessagingNotification(context: Context, notification: MessagingNotificat
             )
         }
     }.build()
-    val style = NotificationCompat.MessagingStyle(selfPerson);
+    val style = NotificationCompat.MessagingStyle(selfPerson)
     style.isGroupConversation = notification.isGroupchat
     if (notification.isGroupchat) {
         style.conversationTitle = notification.title
@@ -245,25 +245,27 @@ fun showMessagingNotification(context: Context, notification: MessagingNotificat
         // NOTE: Note that we set it to null if message.sender == null because otherwise this results in
         //       a bogus Person object which messes with the "self-message" display as Android expects
         //       null in that case.
-        val sender = if (message.sender == null)
+        val sender = if (message.sender == null) {
             null
-        else Person.Builder().apply {
-            setName(message.sender)
-            setKey(message.jid)
+        } else {
+            Person.Builder().apply {
+                setName(message.sender)
+                setKey(message.jid)
 
-            // Set the avatar, if available
-            if (message.avatarPath != null) {
-                try {
-                    setIcon(
-                        IconCompat.createWithAdaptiveBitmap(
-                            BitmapFactory.decodeFile(message.avatarPath),
-                        ),
-                    )
-                } catch (ex: Throwable) {
-                    Log.w(TAG, "Failed to open avatar at ${message.avatarPath}")
+                // Set the avatar, if available
+                if (message.avatarPath != null) {
+                    try {
+                        setIcon(
+                            IconCompat.createWithAdaptiveBitmap(
+                                BitmapFactory.decodeFile(message.avatarPath),
+                            ),
+                        )
+                    } catch (ex: Throwable) {
+                        Log.w(TAG, "Failed to open avatar at ${message.avatarPath}")
+                    }
                 }
-            }
-        }.build()
+            }.build()
+        }
 
         // Build the message
         val body = message.content.body ?: ""
