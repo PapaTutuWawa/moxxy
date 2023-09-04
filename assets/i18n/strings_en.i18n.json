@@ -31,6 +31,12 @@
         "titles": {
             "error": "Error"
         },
+        "warnings": {
+            "blockingError": {
+                "title": "Error while blocking user",
+                "body": "Could not block user ${jid} because your server does not support blocking."
+            }
+        },
         "errors": {
             "messageError": {
                 "title": "Message delivery failure",

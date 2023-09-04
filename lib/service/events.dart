@@ -392,7 +392,16 @@ Future<void> performSendMessage(
 }
 
 Future<void> performBlockJid(BlockJidCommand command, {dynamic extra}) async {
-  await GetIt.I.get<BlocklistService>().blockJid(command.jid);
+  final result = await GetIt.I.get<BlocklistService>().blockJid(command.jid);
+  if (result) {
+    return;
+  }
+
+  // Notify the user of the failure
+  await GetIt.I.get<NotificationsService>().showWarningNotification(
+        t.notifications.warnings.blockingError.title,
+        t.notifications.warnings.blockingError.body(jid: command.jid),
+      );
 }
 
 Future<void> performUnblockJid(
