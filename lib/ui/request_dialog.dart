@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/request_bloc.dart';
@@ -39,18 +40,18 @@ class RequestDialog extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
-                      onPressed: () {
+                      onPressed: () async {
                         switch (request) {
                           case Request.notifications:
-                            Permission.notification.request();
+                            await Permission.notification.request();
                             break;
                           case Request.batterySavingExcemption:
-                            MoxplatformPlugin.platform
+                            await MoxplatformPlugin.platform
                                 .openBatteryOptimisationSettings();
                             break;
                         }
 
-                        context.read<RequestBloc>().add(NextRequestEvent());
+                        GetIt.I.get<RequestBloc>().add(NextRequestEvent());
                       },
                       child: Text(t.permissions.allow),
                     ),

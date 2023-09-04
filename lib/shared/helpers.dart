@@ -8,7 +8,6 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:synchronized/synchronized.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
 
 /// Add a leading zero, if required, to ensure that an integer is rendered
 /// as a two "digit" string.
@@ -366,49 +365,13 @@ Future<Size?> getImageSizeFromData(Uint8List bytes) async {
   }
 }
 
-/// Generate a thumbnail file (JPEG) for the video at [path]. [conversationJid] refers
-/// to the JID of the conversation the file comes from.
-/// If the thumbnail already exists, then just its path is returned. If not, then
-/// it gets generated first.
-Future<String?> getVideoThumbnailPath(
-  String path,
-  String conversationJid,
-  String mime,
-) async {
-  //print('getVideoThumbnailPath: Mime type: $mime');
-
-  // Ignore mime types that may be wacky
-  if (mime == 'video/webm') return null;
-
-  final tempDir = await getTemporaryDirectory();
-  final thumbnailFilenameNoExtension = p.withoutExtension(
-    p.basename(path),
-  );
-  final thumbnailFilename = '$thumbnailFilenameNoExtension.jpg';
-  final thumbnailDirectory = p.join(
-    tempDir.path,
-    'thumbnails',
-    conversationJid,
-  );
-  final thumbnailPath = p.join(thumbnailDirectory, thumbnailFilename);
-
-  final dir = Directory(thumbnailDirectory);
-  if (!dir.existsSync()) await dir.create(recursive: true);
-  final file = File(thumbnailPath);
-  if (file.existsSync()) return thumbnailPath;
-
-  final r = await VideoThumbnail.thumbnailFile(
-    video: path,
-    thumbnailPath: thumbnailDirectory,
-    imageFormat: ImageFormat.JPEG,
-    quality: 75,
-  );
-  assert(
-    r == thumbnailPath,
-    'The generated video thumbnail has a different path than we expected: $r vs. $thumbnailPath',
-  );
-
-  return thumbnailPath;
+/// Returns true if we can generate a video thumbnail of mime type [mime]. If not, returns
+/// false.
+bool canGenerateVideoThumbnail(String mime) {
+  return ![
+    // Ignore mime types that may be wacky
+    'video/webm',
+  ].contains(mime);
 }
 
 Future<String> getContactProfilePicturePath(String id) async {

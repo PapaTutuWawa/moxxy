@@ -7,6 +7,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/request_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 
@@ -104,6 +105,16 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
                 conversationsRoute,
               ),
               (_) => false,
+            ),
+          );
+      GetIt.I.get<RequestBloc>().add(
+            RequestsSetEvent(
+              [
+                if (result.preStart.requestNotificationPermission)
+                  Request.notifications,
+                if (result.preStart.excludeFromBatteryOptimisation)
+                  Request.batterySavingExcemption,
+              ],
             ),
           );
     } else if (result is LoginFailureEvent) {

@@ -1,7 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/thumbnails/helpers.dart';
 import 'package:moxxyv2/ui/widgets/shimmer.dart';
+
+Future<String?> _videoThumbnailWrapper(String path, String mime) async {
+  if (!canGenerateVideoThumbnail(mime)) return null;
+
+  return maybeGenerateVideoThumbnail(path);
+}
 
 class VideoThumbnail extends StatelessWidget {
   const VideoThumbnail({
@@ -21,7 +28,7 @@ class VideoThumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<String?>(
-      future: getVideoThumbnailPath(path, conversationJid, mime),
+      future: _videoThumbnailWrapper(path, mime),
       builder: (context, snapshot) {
         Widget widget;
         if (snapshot.hasData && snapshot.data != null) {

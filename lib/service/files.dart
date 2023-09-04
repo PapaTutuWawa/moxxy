@@ -11,6 +11,7 @@ import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/httpfiletransfer/location.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
+import 'package:moxxyv2/shared/thumbnails/helpers.dart';
 import 'package:path/path.dart' as path;
 import 'package:sqflite_common/sql.dart';
 
@@ -322,6 +323,20 @@ class FilesService {
           await File(metadata.path!).delete();
         } catch (ex) {
           _log.warning('Failed to remove file ${metadata.path!}: $ex');
+        }
+
+        if (metadata.mimeType?.startsWith('video/') ?? false) {
+          final thumbnailPath = await getVideoThumbnailPath(metadata.path!);
+          final thumbnailFile = File(thumbnailPath);
+          if (thumbnailFile.existsSync()) {
+            try {
+              await thumbnailFile.delete();
+            } catch (ex) {
+              _log.warning(
+                'Failed to remove thumbnail file $thumbnailPath: $ex',
+              );
+            }
+          }
         }
       } else {
         _log.info('Not removing file as there is no path associated with it');

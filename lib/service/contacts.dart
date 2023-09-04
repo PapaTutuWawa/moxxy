@@ -61,7 +61,7 @@ class ContactsService {
     FlutterContacts.removeListener(_onContactsDatabaseUpdate);
 
     await GetIt.I.get<RosterService>().removePseudoRosterItems(
-          await GetIt.I.get<XmppStateService>().getAccountJid(),
+          (await GetIt.I.get<XmppStateService>().getAccountJid())!,
         );
   }
 
@@ -218,7 +218,7 @@ class ContactsService {
       // Remove the contact attributes from the conversation, if it existed
       final conversation = await cs.createOrUpdateConversation(
         jid,
-        accountJid,
+        accountJid!,
         update: (c) async {
           return cs.updateConversation(
             jid,
@@ -284,7 +284,7 @@ class ContactsService {
       // Update a possibly existing conversation
       final conversation = await cs.createOrUpdateConversation(
         contact.jid,
-        accountJid,
+        accountJid!,
         update: (c) async {
           return cs.updateConversation(
             contact.jid,

@@ -23,6 +23,7 @@ import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
 import 'package:moxxyv2/service/httpfiletransfer/location.dart';
+import 'package:moxxyv2/service/lifecycle.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/notifications.dart';
@@ -81,22 +82,15 @@ class XmppService {
   /// Flag indicating whether a login was triggered from the UI or not.
   bool _loginTriggeredFromUI = false;
 
-  /// Flag indicating whether the app is currently open or not.
-  bool _appOpen = true;
-
-  /// The JID of the currently opened chat. Empty, if no chat is opened.
-  String _currentlyOpenedChatJid = '';
-
   /// Subscription to events by the XmppConnection
   StreamSubscription<dynamic>? _xmppConnectionSubscription;
 
-  /// Stores whether the app is open or not. Useful for notifications.
-  void setAppState(bool open) {
-    _appOpen = open;
-  }
-
   Future<ConnectionSettings?> getConnectionSettings() async {
-    final state = await GetIt.I.get<XmppStateService>().getXmppState();
+    final xss = GetIt.I.get<XmppStateService>();
+    final accountJid = await xss.getAccountJid();
+    if (accountJid == null) return null;
+
+    final state = await GetIt.I.get<XmppStateService>().state;
 
     if (state.jid == null || state.password == null) {
       return null;
@@ -112,13 +106,11 @@ class XmppService {
   /// greater than 0.
   Future<void> setCurrentlyOpenedChatJid(String jid) async {
     final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
-    final cs = GetIt.I.get<ConversationService>();
-
-    _currentlyOpenedChatJid = jid;
+    final cs = GetIt.I.get<ConversationService>()..activeConversationJid = jid;
 
     final conversation = await cs.createOrUpdateConversation(
       jid,
-      accountJid,
+      accountJid!,
       update: (c) async {
         if (c.unreadCounter > 0) {
           return cs.updateConversation(
@@ -138,9 +130,6 @@ class XmppService {
       );
     }
   }
-
-  /// Returns the JID of the chat that is currently opened. Null, if none is open.
-  String? getCurrentlyOpenedChatJid() => _currentlyOpenedChatJid;
 
   /// Sends a message correction to [recipient] regarding the message with stanza id
   /// [oldId]. The old message's body gets corrected to [newBody]. [id] is the message's
@@ -475,7 +464,7 @@ class XmppService {
     bool triggeredFromUI,
   ) async {
     final xss = GetIt.I.get<XmppStateService>();
-    final state = await xss.getXmppState();
+    final state = await xss.state;
     final conn = GetIt.I.get<XmppConnection>();
     final lastResource = state.resource ?? '';
 
@@ -503,8 +492,8 @@ class XmppService {
     bool triggeredFromUI,
   ) async {
     final xss = GetIt.I.get<XmppStateService>();
-    final state = await xss.getXmppState();
     final conn = GetIt.I.get<XmppConnection>();
+    final state = await xss.state;
     final lastResource = state.resource ?? '';
 
     _loginTriggeredFromUI = triggeredFromUI;
@@ -859,7 +848,7 @@ class XmppService {
           .requestRoster();
 
       await GetIt.I.get<BlocklistService>().getBlocklist(
-            await GetIt.I.get<XmppStateService>().getAccountJid(),
+            (await GetIt.I.get<XmppStateService>().getAccountJid())!,
           );
     }
 
@@ -913,7 +902,7 @@ class XmppService {
     final rs = GetIt.I.get<RosterService>();
     final rosterItem = await rs.getRosterItemByJid(
       jid.toString(),
-      await GetIt.I.get<XmppStateService>().getAccountJid(),
+      (await GetIt.I.get<XmppStateService>().getAccountJid())!,
     );
     if (rosterItem != null) {
       final pm = GetIt.I
@@ -941,7 +930,7 @@ class XmppService {
     final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
     final dbMsg = await ms.getMessageByStanzaId(
       event.id,
-      accountJid,
+      accountJid!,
       queryReactionPreview: false,
     );
     if (dbMsg == null) {
@@ -976,7 +965,7 @@ class XmppService {
     final sender = event.from.toBare().toString();
     final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
     // TODO(Unknown): With groupchats, we should use the groupchat assigned stanza-id
-    final dbMsg = await ms.getMessageByStanzaId(event.id, accountJid);
+    final dbMsg = await ms.getMessageByStanzaId(event.id, accountJid!);
     if (dbMsg == null) {
       _log.warning('Did not find the message in the database!');
       return;
@@ -1009,7 +998,7 @@ class XmppService {
     final cs = GetIt.I.get<ConversationService>();
     final conversation = await cs.getConversationByJid(
       jid,
-      await GetIt.I.get<XmppStateService>().getAccountJid(),
+      (await GetIt.I.get<XmppStateService>().getAccountJid())!,
     );
     if (conversation == null) return;
 
@@ -1281,7 +1270,7 @@ class XmppService {
     final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
 
     if (event.type == 'error') {
-      await _handleErrorMessage(event, accountJid);
+      await _handleErrorMessage(event, accountJid!);
       _log.finest('Processed error message. Ending event processing here.');
       return;
     }
@@ -1294,7 +1283,7 @@ class XmppService {
 
     // Process message corrections separately
     if (event.extensions.get<LastMessageCorrectionData>() != null) {
-      await _handleMessageCorrection(event, conversationJid, accountJid);
+      await _handleMessageCorrection(event, conversationJid, accountJid!);
       return;
     }
 
@@ -1303,19 +1292,19 @@ class XmppService {
       await _handleFileUploadNotificationReplacement(
         event,
         conversationJid,
-        accountJid,
+        accountJid!,
       );
       return;
     }
 
     if (event.extensions.get<MessageRetractionData>() != null) {
-      await _handleMessageRetraction(event, conversationJid, accountJid);
+      await _handleMessageRetraction(event, conversationJid, accountJid!);
       return;
     }
 
     // Handle message reactions
     if (event.extensions.get<MessageReactionsData>() != null) {
-      await _handleMessageReactions(event, conversationJid, accountJid);
+      await _handleMessageReactions(event, conversationJid, accountJid!);
       return;
     }
 
@@ -1332,12 +1321,12 @@ class XmppService {
       return;
     }
 
-    final state = await GetIt.I.get<XmppStateService>().getXmppState();
+    final state = await GetIt.I.get<XmppStateService>().state;
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
     // The (portential) roster item of the chat partner
     final rosterItem = await GetIt.I
         .get<RosterService>()
-        .getRosterItemByJid(conversationJid, accountJid);
+        .getRosterItemByJid(conversationJid, accountJid!);
     // Is the conversation partner in our roster
     final isInRoster = rosterItem != null;
     // True if the message was sent by us (via a Carbon)
@@ -1524,7 +1513,7 @@ class XmppService {
         ? mimeTypeToEmoji(mimeGuess)
         : messageBody;
     // Specifies if we have the conversation this message goes to opened
-    final isConversationOpened = _currentlyOpenedChatJid == conversationJid;
+    final isConversationOpened = cs.activeConversationJid == conversationJid;
     // If the conversation is muted
     var isMuted = false;
     // Whether to send the notification
@@ -1588,7 +1577,8 @@ class XmppService {
         isMuted = c != null ? c.muted : prefs.defaultMuteState;
         sendNotification = !sent &&
             shouldNotify &&
-            (!isConversationOpened || !_appOpen) &&
+            (!isConversationOpened ||
+                !GetIt.I.get<LifecycleService>().isActive) &&
             !isMuted;
       },
     );
@@ -1730,7 +1720,7 @@ class XmppService {
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
     final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
-    final msg = await ms.getMessageByStanzaId(event.stanza.id!, accountJid);
+    final msg = await ms.getMessageByStanzaId(event.stanza.id!, accountJid!);
     if (msg != null) {
       // Ack the message
       final newMsg = await ms.updateMessage(
@@ -1790,7 +1780,7 @@ class XmppService {
     final ms = GetIt.I.get<MessageService>();
     final message = await ms.getMessageByStanzaId(
       event.data.stanza.id!,
-      accountJid,
+      accountJid!,
     );
 
     if (message == null) {

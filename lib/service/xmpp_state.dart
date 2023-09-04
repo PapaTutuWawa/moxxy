@@ -6,6 +6,7 @@ import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/shared/models/xmpp_state.dart';
 import 'package:random_string/random_string.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
@@ -30,7 +31,9 @@ class XmppStateService {
   final Logger _log = Logger('XmppStateService');
 
   /// Persistent state around the connection, like the SM token, etc.
-  XmppState? _state;
+  late XmppState _state;
+  final Lock _stateLock = Lock();
+  Future<XmppState> get state => _stateLock.synchronized(() => _state);
 
   /// Cached account JID.
   String? _accountJid;
@@ -88,6 +91,7 @@ class XmppStateService {
         await db.insert(
           xmppStateTable,
           {
+            'accountJid': _accountJid,
             'key': _userAgentKey,
             'value': jsonEncode(_userAgent!.toJson()),
           },
@@ -111,32 +115,48 @@ class XmppStateService {
     });
   }
 
-  Future<XmppState> getXmppState() async {
-    if (_state != null) return _state!;
+  Future<void> initializeXmppState() async {
+    // NOTE: Called only once at the start so we don't have to worry about aquiring a lock
+    await _loadAccountJid();
+    final state = await _loadXmppState(_accountJid);
+    if (_accountJid == null || state == null) {
+      _log.finest(
+        'No account JID or account state available. Creating default value',
+      );
+      _state = XmppState(jid: _accountJid);
+      return;
+    }
+
+    _state = state;
+  }
+
+  Future<XmppState?> _loadXmppState(String? accountJid) async {
+    if (accountJid == null) {
+      return null;
+    }
 
     final json = <String, String?>{};
     final rowsRaw = await GetIt.I.get<DatabaseService>().database.query(
       xmppStateTable,
       where: 'accountJid = ?',
-      whereArgs: [await getAccountJid()],
+      whereArgs: [accountJid],
       columns: ['key', 'value'],
     );
+    if (rowsRaw.isEmpty) {
+      return null;
+    }
+
     for (final row in rowsRaw) {
       json[row['key']! as String] = row['value'] as String?;
     }
 
-    _log.finest(json);
-    _state = XmppState.fromDatabaseTuples(json);
-    return _state!;
+    return XmppState.fromDatabaseTuples(json);
   }
 
-  /// A wrapper to modify the [XmppState] and commit it.
-  Future<void> modifyXmppState(XmppState Function(XmppState) func) async {
-    _state = func(_state!);
-
-    final accountJid = await getAccountJid();
+  /// The same as [commitXmppState] but without aquiring [_stateLock].
+  Future<void> _commitXmppState(String accountJid) async {
     final batch = GetIt.I.get<DatabaseService>().database.batch();
-    for (final tuple in _state!.toDatabaseTuples().entries) {
+    for (final tuple in _state.toDatabaseTuples().entries) {
       batch.insert(
         xmppStateTable,
         <String, String?>{
@@ -150,6 +170,43 @@ class XmppStateService {
     await batch.commit();
   }
 
+  Future<void> commitXmppState(String accountJid) async {
+    await _stateLock.synchronized(
+      () => _commitXmppState(accountJid),
+    );
+  }
+
+  Future<void> setXmppState(XmppState state, String accountJid) async {
+    await _stateLock.synchronized(
+      () async {
+        _state = state;
+        await _commitXmppState(accountJid);
+      },
+    );
+  }
+
+  /// A wrapper to modify the [XmppState] and commit it.
+  Future<void> modifyXmppState(
+    XmppState Function(XmppState) func, {
+    bool commit = true,
+  }) async {
+    final accountJid = await getAccountJid();
+    assert(
+      accountJid != null,
+      'The accountJid must be not empty',
+    );
+
+    await _stateLock.synchronized(
+      () async {
+        _state = func(_state);
+
+        if (commit) {
+          await _commitXmppState(accountJid!);
+        }
+      },
+    );
+  }
+
   /// Resets the current account JID to null.
   Future<void> resetAccountJid() async {
     _accountJid = null;
@@ -157,26 +214,29 @@ class XmppStateService {
   }
 
   /// Sets the current account JID to [jid] and stores it in the secure storage.
-  Future<void> setAccountJid(String jid) async {
+  Future<void> setAccountJid(String jid, {bool commit = true}) async {
     _accountJid = jid;
-    await _storage.write(key: _accountJidKey, value: jid);
+
+    if (commit) {
+      await _storage.write(key: _accountJidKey, value: jid);
+    }
   }
 
   Future<String?> _loadAccountJid() async {
     return _accountJid ??= await _storage.read(key: _accountJidKey);
   }
 
-  /// Returns a string if we have an account jid and null if we don't.
-  Future<String?> getRawAccountJid() async {
-    if (_accountJid != null) {
-      return _accountJid;
-    }
-
-    return _loadAccountJid();
+  /// Gets the current account JID from the cache or from the secure storage.
+  Future<String?> getAccountJid() async {
+    return _accountJid ?? await _loadAccountJid();
   }
 
-  /// Gets the current account JID from the cache or from the secure storage.
-  Future<String> getAccountJid() async {
-    return _accountJid ?? (await _loadAccountJid())!;
+  Future<bool> isLoggedIn(String? accountJid) async {
+    final s = await state;
+    if (accountJid == null || s.jid == null || s.password == null) {
+      return false;
+    }
+
+    return await GetIt.I.get<XmppService>().getConnectionSettings() != null;
   }
 }

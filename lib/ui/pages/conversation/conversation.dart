@@ -12,6 +12,7 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/blink.dart';
@@ -373,6 +374,13 @@ class ConversationPageState extends State<ConversationPage>
 
         // Clear the read marker cache
         GetIt.I.get<UIReadMarkerService>().clear();
+
+        // Tell the backend that the chat is no longer open
+        GetIt.I.get<ConversationsBloc>().add(
+              ConversationExitedEvent(
+                ConversationType.fromString(widget.conversationType),
+              ),
+            );
         return true;
       },
       child: KeyboardReplacerScaffold(

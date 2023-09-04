@@ -97,4 +97,6 @@ class XmppState with _$XmppState {
           askedBatteryOptimizationExcemption ? 'true' : 'false',
     };
   }
+
+  bool get canLogIn => jid != null && password != null;
 }

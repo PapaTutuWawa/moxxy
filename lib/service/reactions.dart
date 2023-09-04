@@ -135,6 +135,7 @@ class ReactionsService {
       return null;
     }
 
+    final xss = GetIt.I.get<XmppStateService>();
     await GetIt.I.get<DatabaseService>().database.delete(
       reactionsTable,
       where:
@@ -143,7 +144,7 @@ class ReactionsService {
         id,
         accountJid,
         emoji,
-        (await GetIt.I.get<XmppStateService>().getXmppState()).jid,
+        (await xss.state).jid,
       ],
     );
     final count = await _countReactions(id, accountJid, emoji);

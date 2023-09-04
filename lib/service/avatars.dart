@@ -89,7 +89,7 @@ class AvatarService {
     final rs = GetIt.I.get<RosterService>();
     final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
     final originalConversation =
-        await cs.getConversationByJid(jid.toString(), accountJid);
+        await cs.getConversationByJid(jid.toString(), accountJid!);
     final originalRoster = await rs.getRosterItemByJid(
       jid.toString(),
       accountJid,
@@ -197,8 +197,9 @@ class AvatarService {
   /// Like [requestAvatar], but fetches and processes the avatar for our own account.
   Future<void> requestOwnAvatar() async {
     final xss = GetIt.I.get<XmppStateService>();
-    final state = await xss.getXmppState();
-    final jid = JID.fromString(state.jid!);
+    final accountJid = await xss.getAccountJid();
+    final state = await xss.state;
+    final jid = JID.fromString(accountJid!);
 
     if (_requestedInStream.contains(jid)) {
       return;

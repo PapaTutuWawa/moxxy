@@ -1,5 +1,7 @@
 import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
@@ -27,6 +29,17 @@ class ConversationService {
 
   /// The lock for accessing _conversationCache
   final Lock _lock = Lock();
+
+  final Logger _log = Logger('ConversationService');
+
+  String? _activeConversationJid;
+
+  String? get activeConversationJid => _activeConversationJid;
+
+  set activeConversationJid(String? jid) {
+    _log.finest('Setting activeConversationJid to $jid');
+    _activeConversationJid = jid;
+  }
 
   /// When called with a JID [jid], then first, if non-null, [preRun] is
   /// executed.
@@ -308,5 +321,37 @@ class ConversationService {
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
     final conversation = await getConversationByJid(jid.toString(), accountJid);
     return conversation?.encrypted ?? prefs.enableOmemoByDefault;
+  }
+
+  /// Send a chat state [state] to [jid], if certain pre-conditions are met:
+  /// - We have a network connection
+  /// - Sending chat markers/states are enabled
+  /// - [jid] != '' (not the self-chat)
+  /// [type] is the type of chat the chat state should be sent within.
+  Future<void> sendChatState(
+    ConversationType type,
+    String jid,
+    ChatState state,
+  ) async {
+    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+
+    // Only send chat states if the users wants to send them
+    if (!prefs.sendChatMarkers) return;
+
+    // Only send chat states when we're connected
+    // TODO(Unknown): Maybe queue it up intelligently
+    if (!(await GetIt.I.get<ConnectivityService>().hasConnection())) return;
+
+    final conn = GetIt.I.get<XmppConnection>();
+
+    if (jid != '') {
+      await conn
+          .getManagerById<ChatStateManager>(chatStateManager)!
+          .sendChatState(
+            state,
+            jid,
+            messageType: type.toMessageType(),
+          );
+    }
   }
 }

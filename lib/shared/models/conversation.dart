@@ -62,6 +62,23 @@ enum ConversationType {
         throw Exception();
     }
   }
+
+  /// Returns the "type" attribute value for a message within the enum value's
+  /// context.
+  String toMessageType() {
+    assert(
+      this != ConversationType.note,
+      'Chat states should not be sent to the self-chat',
+    );
+
+    switch (this) {
+      case ConversationType.note:
+      case ConversationType.chat:
+        return 'chat';
+      case ConversationType.groupchat:
+        return 'groupchat';
+    }
+  }
 }
 
 class ConversationTypeConverter

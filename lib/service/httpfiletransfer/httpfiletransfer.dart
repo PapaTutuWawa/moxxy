@@ -22,6 +22,7 @@ import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/thumbnails/helpers.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:path_provider/path_provider.dart';
@@ -545,21 +546,33 @@ class HttpFileTransferService {
         mediaWidth = imageSize?.width.toInt();
         mediaHeight = imageSize?.height.toInt();
       } else if (mime.startsWith('video/')) {
-        /*
-        // Generate thumbnail
-        final thumbnailPath = await getVideoThumbnailPath(
-          downloadedPath,
-          job.conversationJid,
-        );
+        if (canGenerateVideoThumbnail(mime)) {
+          try {
+            // Generate thumbnail
+            final thumbnailPath = await maybeGenerateVideoThumbnail(
+              downloadedPath,
+            );
 
-        // Find out the dimensions
-        final imageSize = await getImageSizeFromPath(thumbnailPath);
-        if (imageSize == null) {
-          _log.warning('Failed to get image size for $downloadedPath ($thumbnailPath)');
+            if (thumbnailPath != null) {
+              // Find out the dimensions
+              final imageSize = await getImageSizeFromPath(thumbnailPath);
+              if (imageSize == null) {
+                _log.warning(
+                  'Failed to get image size for $downloadedPath ($thumbnailPath)',
+                );
+              }
+
+              mediaWidth = imageSize?.width.toInt();
+              mediaHeight = imageSize?.height.toInt();
+            }
+          } catch (ex) {
+            _log.warning('Failed to generate thumbnail for $downloadedPath');
+          }
+        } else {
+          _log.info(
+            'Not generating thumbnail for $downloadedPath because canGenerateVideoThumbnail returned false',
+          );
         }
-        
-        mediaWidth = imageSize?.width.toInt();
-        mediaHeight = imageSize?.height.toInt();*/
       }
     }
 
@@ -616,13 +629,18 @@ class HttpFileTransferService {
     cs.setConversation(updatedConversation);
 
     // Show a notification
-    if (notification.shouldShowNotification(msg.conversationJid) &&
-        job.shouldShowNotification) {
+    final shouldShowNotification =
+        notification.shouldShowNotification(msg.conversationJid);
+    if (shouldShowNotification && job.shouldShowNotification) {
       _log.finest('Creating notification with bigPicture $downloadedPath');
-      await notification.updateNotification(
+      await notification.updateOrShowNotification(
         updatedConversation,
         msg,
         job.accountJid,
+      );
+    } else {
+      _log.finest(
+        'Not creating or updating notification for $downloadedPath: notification.shouldShowNotification=$shouldShowNotification, job.shouldShowNotification=${job.shouldShowNotification}',
       );
     }
 
