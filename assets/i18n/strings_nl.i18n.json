@@ -24,7 +24,9 @@
             "messagesChannelName": "Berichten",
             "warningChannelName": "Waarschuwingen",
             "warningChannelDescription": "Aan Moxxy gerelateerde waarschuwingen",
-            "messagesChannelDescription": "Het meldingskanaal voor het ontvangen van berichten"
+            "messagesChannelDescription": "Het meldingskanaal voor het ontvangen van berichten",
+            "serviceChannelName": "Voorgronddienst",
+            "serviceChannelDescription": "Toont de vaste voorgronddienstmelding"
         },
         "titles": {
             "error": "Foutmelding"
@@ -33,6 +35,12 @@
             "messageError": {
                 "title": "Bericht afleveren mislukt",
                 "body": "Her bericht aan ‘${conversationTitle}’ kan niet worden afgeleverd"
+            }
+        },
+        "warnings": {
+            "blockingError": {
+                "title": "Blokkeren mislukt",
+                "body": "De gebruiker ‘${jid}’ kan niet worden geblokkeerd omdat je server dit niet ondersteunt."
             }
         }
     },
