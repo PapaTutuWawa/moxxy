@@ -35,7 +35,8 @@ repository, use `git clone --recursive https://codeberg.org/moxxy/moxxy.git`
 
 In order to build Moxxy, you first have to run the code generator. To do that, first install all dependencies with
 `flutter pub get`. Next, run the code generator using `flutter pub run build_runner build`. This builds required
-data classes and the i18n support.
+data classes and the i18n support. Next, run `dart run pigeon --input pigeon/api.dart` to generate the communication
+channels with the native code.
 
 Finally, you can build Moxxy using `flutter run`, if you want to test a change, or `flutter build apk --release` to build
 an optimized release build. The release builds found in the repository's releases are build using `flutter build apk --release --split-per-abi`.
