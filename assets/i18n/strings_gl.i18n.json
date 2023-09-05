@@ -407,7 +407,9 @@
             "messagesChannelName": "Mensaxes",
             "warningChannelName": "Avisos",
             "warningChannelDescription": "Avisos en relación a Moxxy",
-            "messagesChannelDescription": "A canle de notificación para as mensaxes recibidas"
+            "messagesChannelDescription": "A canle de notificación para as mensaxes recibidas",
+            "serviceChannelName": "Servizo en primeiro plano",
+            "serviceChannelDescription": "Mantén activa a notificación do servizo en primeiro plano"
         },
         "titles": {
             "error": "Erro"
@@ -416,6 +418,12 @@
             "messageError": {
                 "title": "Fallou a entrega da mensaxe",
                 "body": "Fallou a entrega da mensaxe a ${conversationTitle}"
+            }
+        },
+        "warnings": {
+            "blockingError": {
+                "title": "Erro ao bloquear a usuaria",
+                "body": "Non se puido bloquear a ${jid} porque o teu servidor non ten soporte para bloqueos."
             }
         }
     },
