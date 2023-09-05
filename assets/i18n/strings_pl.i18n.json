@@ -1,0 +1,37 @@
+{
+    "language": "Polski",
+    "global": {
+        "title": "Moxxy",
+        "dialogAccept": "OK",
+        "yes": "Tak",
+        "no": "Nie",
+        "dialogCancel": "Anuluj"
+    },
+    "notifications": {
+        "permanent": {
+            "connecting": "Łączenie…",
+            "disconnect": "Rozłączono",
+            "error": "Błąd"
+        },
+        "channels": {
+            "messagesChannelName": "Wiadomości",
+            "warningChannelName": "Ostrzeżenia"
+        },
+        "titles": {
+            "error": "Błąd"
+        }
+    },
+    "permissions": {
+        "allow": "Zezwól",
+        "skip": "Pomiń"
+    },
+    "dateTime": {
+        "mondayAbbrev": "Pon",
+        "tuesdayAbbrev": "Wt",
+        "wednessdayAbbrev": "Śr",
+        "thursdayAbbrev": "Czw",
+        "fridayAbbrev": "Pt",
+        "saturdayAbbrev": "Sob",
+        "sundayAbbrev": "Nd"
+    }
+}

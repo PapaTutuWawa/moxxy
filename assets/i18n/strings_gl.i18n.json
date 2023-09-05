@@ -152,7 +152,7 @@
                 "one": "Un dos dispositivos cambiou",
                 "other": "Engadíronse varios dispositivos"
             },
-            "messageHint": "Enviar unha mensaxe...",
+            "messageHint": "Enviar unha mensaxe…",
             "sendImages": "Enviar imaxes",
             "sendFiles": "Enviar ficheiros",
             "takePhotos": "Facer fotos",
@@ -181,7 +181,7 @@
             "setProfilePicture": "Establecer imaxe de perfil"
         },
         "shareselection": {
-            "shareWith": "Compartir con...",
+            "shareWith": "Compartir con…",
             "confirmTitle": "Enviar ficheiro",
             "confirmBody": "Unha ou varias conversas non están cifradas. Isto significa que o ficheiro podería ser visto no servidor. Desexas continuar?"
         },
@@ -231,7 +231,7 @@
                 "licensed": "Baixo licenza GPL3",
                 "version": "Versión ${version}",
                 "viewSourceCode": "Ver código fonte",
-                "nMoreToGo": "${n} máis para rematar...",
+                "nMoreToGo": "${n} máis para rematar…",
                 "debugMenuShown": "Agora xa es desenvolvedora!"
             },
             "settings": {
@@ -285,7 +285,7 @@
             "network": {
                 "title": "Rede",
                 "automaticDownloadsSection": "Descargas automáticas",
-                "automaticDownloadsText": "Moxxy descargará automáticamente os ficheiros en...",
+                "automaticDownloadsText": "Moxxy descargará automáticamente os ficheiros en…",
                 "automaticDownloadsMaximumSize": "Tamaño máximo de descarga",
                 "automaticDownloadsMaximumSizeSubtext": "O tamaño máximo dos ficheiros a descargar de xeito automático",
                 "automaticDownloadAlways": "Sempre",
@@ -334,7 +334,7 @@
             "storage": {
                 "title": "Almacenaxe",
                 "storageUsed": "Almacenaxe utilizada: ${size}",
-                "sizePlaceholder": "Calculando...",
+                "sizePlaceholder": "Calculando…",
                 "storageManagement": "Xestión da almacenaxe",
                 "removeOldMedia": {
                     "title": "Eliminar multimedia antigo",
@@ -395,7 +395,7 @@
         "permanent": {
             "idle": "Detido",
             "ready": "Preparado para recibir mensaxes",
-            "connecting": "Conectando...",
+            "connecting": "Conectando…",
             "disconnect": "Desconectado",
             "error": "Erro"
         },
@@ -419,5 +419,17 @@
             }
         }
     },
-    "language": "Galego"
+    "language": "Galego",
+    "permissions": {
+        "requests": {
+            "batterySaving": {
+                "reason": "Para poder recibir mensaxes cando está en segundo plano, Moxxy ten que evitar que Android force o aforro de batería."
+            },
+            "notification": {
+                "reason": "Para poder informar das mensaxes que chegan, Moxxy precisa permiso para mostrar notificacións."
+            }
+        },
+        "allow": "Permitir",
+        "skip": "Evitar"
+    }
 }

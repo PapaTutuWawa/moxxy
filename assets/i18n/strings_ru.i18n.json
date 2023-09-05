@@ -11,7 +11,7 @@
         "permanent": {
             "idle": "Idle",
             "ready": "Готов к приему сообщений",
-            "connecting": "Подключение...",
+            "connecting": "Подключение…",
             "disconnect": "Отключен",
             "error": "Ошибка"
         },
@@ -414,5 +414,9 @@
         "conversation": {
             "holdForLonger": "Удерживайте для записи"
         }
+    },
+    "permissions": {
+        "allow": "Разрешить",
+        "skip": "Пропустить"
     }
 }
