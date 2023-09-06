@@ -409,14 +409,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.4"
-  file_picker:
-    dependency: "direct main"
-    description:
-      name: file_picker
-      sha256: c448221d7f13d5f47dd0f45c85ccbe15b73c441b2ce3c372f2d080fc2f8f5f1d
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.0.1"
   fixnum:
     dependency: transitive
     description:
