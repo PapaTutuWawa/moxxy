@@ -12,11 +12,9 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.EventChannel
-import io.flutter.plugin.common.PluginRegistry.NewIntentListener
 import org.moxxy.moxxyv2.notifications.NotificationDataManager
 import org.moxxy.moxxyv2.notifications.createNotificationChannelsImpl
 import org.moxxy.moxxyv2.notifications.createNotificationGroupsImpl
-import org.moxxy.moxxyv2.notifications.extractPayloadMapFromIntent
 import org.moxxy.moxxyv2.notifications.showNotificationImpl
 import org.moxxy.moxxyv2.picker.PickerResultListener
 
@@ -39,13 +37,12 @@ object NotificationStreamHandler : EventChannel.StreamHandler {
 
 /*
  * Hold the last notification event in case we did a cold start.
- * TODO: Currently unused, but useful in the future.
- * */
+ */
 object NotificationCache {
     var lastEvent: NotificationEvent? = null
 }
 
-class MoxxyPlugin : FlutterPlugin, ActivityAware, NewIntentListener, MoxxyApi {
+class MoxxyPlugin : FlutterPlugin, ActivityAware, MoxxyApi {
     private var context: Context? = null
     private var activity: Activity? = null
     private lateinit var pickerListener: PickerResultListener
@@ -80,36 +77,6 @@ class MoxxyPlugin : FlutterPlugin, ActivityAware, NewIntentListener, MoxxyApi {
     override fun onDetachedFromActivity() {
         activity = null
         Log.d(TAG, "Detached from activity")
-    }
-
-    private fun handleIntent(intent: Intent?): Boolean {
-        if (intent == null) return false
-
-        when (intent.action) {
-            TAP_ACTION -> {
-                Log.d(TAG, "Handling tap data")
-                val event = NotificationEvent(
-                    intent.getLongExtra(NOTIFICATION_EXTRA_ID_KEY, -1),
-                    intent.getStringExtra(NOTIFICATION_EXTRA_JID_KEY)!!,
-                    NotificationEventType.OPEN,
-                    null,
-                    extractPayloadMapFromIntent(intent),
-                )
-                NotificationCache.lastEvent = event
-                MoxxyEventChannels.notificationEventSink?.success(
-                    event.toList(),
-                )
-                return true
-            }
-            else -> {
-                Log.d(TAG, "Unknown intent action: ${intent.action}")
-                return false
-            }
-        }
-    }
-
-    override fun onNewIntent(intent: Intent): Boolean {
-        return handleIntent(intent)
     }
 
     override fun createNotificationGroups(groups: List<NotificationGroup>) {
