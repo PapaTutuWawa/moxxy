@@ -1,4 +1,4 @@
-package org.moxxy.moxxyv2
+package org.moxxy.moxxyv2.plugin
 
 // The tag we use for logging.
 const val TAG = "Moxxy"

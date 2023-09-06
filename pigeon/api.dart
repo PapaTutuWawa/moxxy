@@ -3,7 +3,7 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/service/pigeon/api.g.dart',
-    kotlinOut: 'android/app/src/main/kotlin/org/moxxy/moxxyv2/Api.kt',
+    kotlinOut: 'android/app/src/main/kotlin/org/moxxy/moxxyv2/plugin/Api.kt',
     kotlinOptions: KotlinOptions(
       package: 'org.moxxy.moxxyv2',
     ),

@@ -1,4 +1,4 @@
-package org.moxxy.moxxyv2
+package org.moxxy.moxxyv2.plugin
 
 import android.app.Activity
 import android.app.NotificationManager
@@ -46,7 +46,7 @@ object NotificationCache {
 }
 
 
-class Plugin : FlutterPlugin, ActivityAware, NewIntentListener, MoxxyApi {
+class MoxxyPlugin : FlutterPlugin, ActivityAware, NewIntentListener, MoxxyApi {
     private var context: Context? = null
     private var activity: Activity? = null
     private lateinit var pickerListener: PickerResultListener
