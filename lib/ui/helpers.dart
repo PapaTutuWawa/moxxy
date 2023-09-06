@@ -178,13 +178,14 @@ Future<FilePickerResult?> safePickFiles(
 /// The Future either resolves to null if the user cancels the action or
 /// the actual image data.
 Future<Uint8List?> pickAndCropImage(BuildContext context) async {
-  final result =
-      await safePickFiles(FilePickerType.image, allowMultiple: false, withData: true);
+  final result = await safePickFiles(
+    FilePickerType.image,
+    allowMultiple: false,
+    withData: true,
+  );
 
   if (result != null) {
-    return GetIt.I
-        .get<CropBloc>()
-        .cropImageWithData(result.data!);
+    return GetIt.I.get<CropBloc>().cropImageWithData(result.data!);
   }
 
   return null;
