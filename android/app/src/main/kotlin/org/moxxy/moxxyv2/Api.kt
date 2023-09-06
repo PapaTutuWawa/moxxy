@@ -79,6 +79,19 @@ enum class NotificationChannelImportance(val raw: Int) {
   }
 }
 
+enum class FilePickerType(val raw: Int) {
+  IMAGE(0),
+  VIDEO(1),
+  IMAGEANDVIDEO(2),
+  GENERIC(3);
+
+  companion object {
+    fun ofRaw(raw: Int): FilePickerType? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
 /** Generated class from Pigeon that represents data sent in messages. */
 data class NotificationMessageContent (
   /** The textual body of the message. */
@@ -363,6 +376,7 @@ data class NotificationChannel (
     )
   }
 }
+
 @Suppress("UNCHECKED_CAST")
 private object MoxxyApiCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
@@ -461,6 +475,8 @@ interface MoxxyApi {
   fun dismissNotification(id: Long)
   fun setNotificationSelfAvatar(path: String)
   fun setNotificationI18n(data: NotificationI18nData)
+  fun pickFiles(type: FilePickerType, multiple: Boolean, callback: (Result<List<String>>) -> Unit)
+  fun pickFileWithData(type: FilePickerType, callback: (Result<ByteArray?>) -> Unit)
   fun notificationStub(event: NotificationEvent)
 
   companion object {
@@ -637,6 +653,47 @@ interface MoxxyApi {
               wrapped = wrapError(exception)
             }
             reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.pickFiles", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val typeArg = FilePickerType.ofRaw(args[0] as Int)!!
+            val multipleArg = args[1] as Boolean
+            api.pickFiles(typeArg, multipleArg) { result: Result<List<String>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.moxxyv2.MoxxyApi.pickFileWithData", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val typeArg = FilePickerType.ofRaw(args[0] as Int)!!
+            api.pickFileWithData(typeArg) { result: Result<ByteArray?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
           }
         } else {
           channel.setMessageHandler(null)

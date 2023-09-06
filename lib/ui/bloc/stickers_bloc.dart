@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/service/pigeon/api.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/ui/controller/sticker_pack_controller.dart';
@@ -43,7 +43,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     Emitter<StickersState> emit,
   ) async {
     final pickerResult = await safePickFiles(
-      FileType.any,
+      FilePickerType.generic,
       allowMultiple: false,
     );
     if (pickerResult == null) return;
@@ -56,7 +56,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
 
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
           ImportStickerPackCommand(
-            path: pickerResult.files.single.path!,
+            path: pickerResult.files!.first,
           ),
         );
 

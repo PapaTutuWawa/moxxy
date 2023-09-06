@@ -162,7 +162,7 @@ flutter:
     platforms:
       android:
         package: org.moxxy.moxxyv2
-        pluginClass: MainActivity
+        pluginClass: Plugin
   uses-material-design: true
   fonts:
     - family: RobotoMono

@@ -1,9 +1,9 @@
 import 'package:bloc/bloc.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:move_to_background/move_to_background.dart';
 import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/service/pigeon/api.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -27,12 +27,12 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
   /// been cancelled.
   Future<List<String>?> _pickFiles(SendFilesType type) async {
     final result = await safePickFiles(
-      type == SendFilesType.image ? FileType.image : FileType.any,
+      type == SendFilesType.image ? FilePickerType.image : FilePickerType.generic,
     );
 
     if (result == null) return null;
 
-    return result.files.map((PlatformFile file) => file.path!).toList();
+    return result.files!;
   }
 
   Future<void> _sendFilesRequested(

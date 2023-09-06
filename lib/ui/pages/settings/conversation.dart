@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/service/pigeon/api.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
@@ -29,15 +29,16 @@ class ConversationSettingsPage extends StatelessWidget {
   // TODO(Unknown): Move this somewhere else to not mix UI and application logic
   Future<String?> _pickBackgroundImage() async {
     final result = await safePickFiles(
-      FileType.image,
+      FilePickerType.image,
       allowMultiple: false,
     );
 
     if (result == null) return null;
 
     final appDir = await MoxplatformPlugin.platform.getPersistentDataPath();
-    final backgroundPath = path.join(appDir, result.files.single.name);
-    await File(result.files.single.path!).copy(backgroundPath);
+    final filename = path.basename(result.files!.first);
+    final backgroundPath = path.join(appDir, filename);
+    await File(result.files!.first).copy(backgroundPath);
 
     return backgroundPath;
   }

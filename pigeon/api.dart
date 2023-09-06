@@ -188,6 +188,13 @@ class NotificationChannel {
   final bool enableLights;
 }
 
+enum FilePickerType {
+  image,
+  video,
+  imageAndVideo,
+  generic,
+}
+
 @HostApi()
 abstract class MoxxyApi {
   /// Notification APIs
@@ -200,6 +207,12 @@ abstract class MoxxyApi {
   void dismissNotification(int id);
   void setNotificationSelfAvatar(String path);
   void setNotificationI18n(NotificationI18nData data);
+
+  @async
+  List<String> pickFiles(FilePickerType type, bool multiple);
+
+  @async
+  Uint8List? pickFileWithData(FilePickerType type);
 
   // Stubs for generating event classes
   void notificationStub(NotificationEvent event);

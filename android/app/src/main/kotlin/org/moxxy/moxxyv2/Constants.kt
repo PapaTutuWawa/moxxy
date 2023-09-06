@@ -30,3 +30,8 @@ const val SHARED_PREFERENCES_YOU_KEY = "you"
 const val SHARED_PREFERENCES_MARK_AS_READ_KEY = "mark_as_read"
 const val SHARED_PREFERENCES_REPLY_KEY = "reply"
 const val SHARED_PREFERENCES_AVATAR_KEY = "avatar_path"
+
+// Request codes
+const val PICK_FILE_REQUEST = 42
+const val PICK_FILES_REQUEST = 43
+const val PICK_FILE_WITH_DATA_REQUEST = 44
