@@ -79,10 +79,10 @@ class PickerResultListener(private val context: Context) : ActivityResultListene
             return cacheFile.path
         } catch (ex: IOException) {
             Log.d(TAG, "IO exception while resolving URI $uri: ${ex.message}")
-            return null;
+            return null
         } catch (ex: SecurityException) {
             Log.d(TAG, "Security exception while resolving URI $uri: ${ex.message}")
-            return null;
+            return null
         }
     }
 
@@ -103,7 +103,7 @@ class PickerResultListener(private val context: Context) : ActivityResultListene
             inputStream.close()
 
             result(
-                Result.success(returnBuffer.toByteArray())
+                Result.success(returnBuffer.toByteArray()),
             )
         } catch (ex: IOException) {
             Log.w(TAG, "IO exception while reading URI ${data!!.data}: ${ex.message}")
@@ -136,7 +136,7 @@ class PickerResultListener(private val context: Context) : ActivityResultListene
         if (resultCode != Activity.RESULT_OK) {
             Log.d(TAG, "resultCode $resultCode != ${Activity.RESULT_OK}")
             result!!(Result.success(listOf<String>()))
-            return true;
+            return true
         }
 
         val pickedMultiple = requestCode == PICK_FILES_REQUEST

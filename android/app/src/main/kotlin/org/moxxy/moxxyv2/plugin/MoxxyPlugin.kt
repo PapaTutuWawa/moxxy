@@ -45,7 +45,6 @@ object NotificationCache {
     var lastEvent: NotificationEvent? = null
 }
 
-
 class MoxxyPlugin : FlutterPlugin, ActivityAware, NewIntentListener, MoxxyApi {
     private var context: Context? = null
     private var activity: Activity? = null
@@ -65,7 +64,7 @@ class MoxxyPlugin : FlutterPlugin, ActivityAware, NewIntentListener, MoxxyApi {
     }
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
-        binding.addActivityResultListener(pickerListener);
+        binding.addActivityResultListener(pickerListener)
         Log.d(TAG, "Attached to activity")
     }
 
@@ -110,7 +109,7 @@ class MoxxyPlugin : FlutterPlugin, ActivityAware, NewIntentListener, MoxxyApi {
     }
 
     override fun onNewIntent(intent: Intent): Boolean {
-        return handleIntent(intent);
+        return handleIntent(intent)
     }
 
     override fun createNotificationGroups(groups: List<NotificationGroup>) {
@@ -162,7 +161,7 @@ class MoxxyPlugin : FlutterPlugin, ActivityAware, NewIntentListener, MoxxyApi {
     override fun pickFiles(
         type: FilePickerType,
         multiple: Boolean,
-        callback: (Result<List<String>>) -> Unit
+        callback: (Result<List<String>>) -> Unit,
     ) {
         val requestCode = if (multiple) PICK_FILES_REQUEST else PICK_FILE_REQUEST
         AsyncRequestTracker.requestTracker[requestCode] = callback as (Result<Any>) -> Unit
@@ -179,11 +178,11 @@ class MoxxyPlugin : FlutterPlugin, ActivityAware, NewIntentListener, MoxxyApi {
             return
         }
 
-        val contract = when(multiple) {
+        val contract = when (multiple) {
             false -> ActivityResultContracts.PickVisualMedia()
             true -> ActivityResultContracts.PickMultipleVisualMedia()
         }
-        val pickType = when(type) {
+        val pickType = when (type) {
             // We keep FilePickerType.GENERIC here, even though we know that @type will never be
             // GENERIC to make Kotlin happy.
             FilePickerType.GENERIC, FilePickerType.IMAGE -> ActivityResultContracts.PickVisualMedia.ImageOnly
@@ -205,7 +204,7 @@ class MoxxyPlugin : FlutterPlugin, ActivityAware, NewIntentListener, MoxxyApi {
             return
         }
 
-        val pickType = when(type) {
+        val pickType = when (type) {
             // We keep FilePickerType.GENERIC here, even though we know that @type will never be
             // GENERIC to make Kotlin happy.
             FilePickerType.GENERIC, FilePickerType.IMAGE -> ActivityResultContracts.PickVisualMedia.ImageOnly

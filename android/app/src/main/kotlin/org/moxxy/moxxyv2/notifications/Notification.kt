@@ -17,9 +17,10 @@ import androidx.core.app.RemoteInput
 import androidx.core.app.TaskStackBuilder
 import androidx.core.content.FileProvider
 import androidx.core.graphics.drawable.IconCompat
+import org.moxxy.moxxyv2.MainActivity
+import org.moxxy.moxxyv2.R
 import org.moxxy.moxxyv2.plugin.MARK_AS_READ_ACTION
 import org.moxxy.moxxyv2.plugin.MOXXY_FILEPROVIDER_ID
-import org.moxxy.moxxyv2.MainActivity
 import org.moxxy.moxxyv2.plugin.MessagingNotification
 import org.moxxy.moxxyv2.plugin.NOTIFICATION_EXTRA_ID_KEY
 import org.moxxy.moxxyv2.plugin.NOTIFICATION_EXTRA_JID_KEY
@@ -29,7 +30,6 @@ import org.moxxy.moxxyv2.plugin.NotificationChannel
 import org.moxxy.moxxyv2.plugin.NotificationChannelImportance
 import org.moxxy.moxxyv2.plugin.NotificationGroup
 import org.moxxy.moxxyv2.plugin.NotificationIcon
-import org.moxxy.moxxyv2.R
 import org.moxxy.moxxyv2.plugin.REPLY_ACTION
 import org.moxxy.moxxyv2.plugin.REPLY_TEXT_KEY
 import org.moxxy.moxxyv2.plugin.RegularNotification
