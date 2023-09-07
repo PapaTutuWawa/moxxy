@@ -3,9 +3,9 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/service/pigeon/api.g.dart',
-    kotlinOut: 'android/app/src/main/kotlin/org/moxxy/moxxyv2/Api.kt',
+    kotlinOut: 'android/app/src/main/kotlin/org/moxxy/moxxyv2/plugin/Api.kt',
     kotlinOptions: KotlinOptions(
-      package: 'org.moxxy.moxxyv2',
+      package: 'org.moxxy.moxxyv2.plugin',
     ),
   ),
 )
@@ -188,6 +188,13 @@ class NotificationChannel {
   final bool enableLights;
 }
 
+enum FilePickerType {
+  image,
+  video,
+  imageAndVideo,
+  generic,
+}
+
 @HostApi()
 abstract class MoxxyApi {
   /// Notification APIs
@@ -200,6 +207,12 @@ abstract class MoxxyApi {
   void dismissNotification(int id);
   void setNotificationSelfAvatar(String path);
   void setNotificationI18n(NotificationI18nData data);
+
+  @async
+  List<String> pickFiles(FilePickerType type, bool multiple);
+
+  @async
+  Uint8List? pickFileWithData(FilePickerType type);
 
   // Stubs for generating event classes
   void notificationStub(NotificationEvent event);

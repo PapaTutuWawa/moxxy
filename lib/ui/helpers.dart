@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:better_open_file/better_open_file.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -11,6 +10,7 @@ import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/service/pigeon/api.g.dart';
 import 'package:moxxyv2/shared/avatar.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
@@ -18,7 +18,6 @@ import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/util/qrcode.dart';
 import 'package:moxxyv2/ui/redirects.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -130,6 +129,12 @@ void dismissSoftKeyboard(BuildContext context) {
   }
 }
 
+class FilePickerResult {
+  const FilePickerResult(this.files, this.data);
+  final List<String>? files;
+  final Uint8List? data;
+}
+
 /// A wrapper around [FilePicker.platform.pickFiles] that first checks if we have the
 /// appropriate permission. If not, tries to request the permission. If that failed,
 /// show a toast to inform the user and return null.
@@ -141,43 +146,46 @@ void dismissSoftKeyboard(BuildContext context) {
 ///
 /// [withData] is equal to the withData parameter of [FilePicker.platform.pickFiles].
 Future<FilePickerResult?> safePickFiles(
-  FileType type, {
+  FilePickerType type, {
   bool allowMultiple = true,
   bool withData = false,
 }) async {
-  // If we have no storage permission, request it. If that also failed, show a toast
-  // telling the user that the storage permission is not available.
-  final status = await Permission.storage.status;
-  if (status.isDenied) {
-    final newStatus = await Permission.storage.request();
-    if (!newStatus.isGranted) {
-      await Fluttertoast.showToast(
-        msg: t.errors.filePicker.permissionDenied,
-        gravity: ToastGravity.SNACKBAR,
-        toastLength: Toast.LENGTH_LONG,
-      );
+  if (withData) {
+    assert(!allowMultiple, 'withData only works with allowMultiple = false');
+    final result = await MoxxyApi().pickFileWithData(type);
+    if (result == null) {
       return null;
     }
-  }
 
-  return FilePicker.platform.pickFiles(
-    type: type,
-    allowMultiple: allowMultiple,
-    withData: withData,
-  );
+    return FilePickerResult(
+      null,
+      Uint8List.fromList(result),
+    );
+  } else {
+    final result = await MoxxyApi().pickFiles(type, allowMultiple);
+    if (result.isEmpty) {
+      return null;
+    }
+
+    return FilePickerResult(
+      result.cast<String>(),
+      null,
+    );
+  }
 }
 
 /// Open the file picker to pick an image and open the cropping tool.
 /// The Future either resolves to null if the user cancels the action or
 /// the actual image data.
 Future<Uint8List?> pickAndCropImage(BuildContext context) async {
-  final result =
-      await safePickFiles(FileType.image, allowMultiple: false, withData: true);
+  final result = await safePickFiles(
+    FilePickerType.image,
+    allowMultiple: false,
+    withData: true,
+  );
 
   if (result != null) {
-    return GetIt.I
-        .get<CropBloc>()
-        .cropImageWithData(result.files.single.bytes!);
+    return GetIt.I.get<CropBloc>().cropImageWithData(result.data!);
   }
 
   return null;

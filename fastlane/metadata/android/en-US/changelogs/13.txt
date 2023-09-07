@@ -10,3 +10,4 @@
 - Video thumbnails are now generated, if possible, after a video has been downloaded.
 - The Moxxy APKs will now be signed by a different key stored on my YubiKey. You will have to uninstall and reinstall Moxxy. This will remove all your data.
 - Moxxy now uses Android's direct share shortcuts.
+- Moxxy now uses Android 13's new photo picker, whenever possible. This should allow Moxxy to require fewer permissions to work.
