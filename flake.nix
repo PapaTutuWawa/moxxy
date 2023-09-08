@@ -91,7 +91,7 @@
           --not-signed \
           --zipalign ${sdk}/share/android-sdk/build-tools/34.0.0/zipalign \
           --apksigner ${sdk}/share/android-sdk/build-tools/34.0.0/apksigner \
-          --pigeon ./pigeon/api.dart \
+          --pigeon ./pigeon/quirks.dart \
           --flutter ${flutterVersion}/bin/flutter \
           --dart ${flutterVersion}/bin/dart \
           --provider-config ${providerArg} ${lib.optionalString skipBuild "--skip-build"}

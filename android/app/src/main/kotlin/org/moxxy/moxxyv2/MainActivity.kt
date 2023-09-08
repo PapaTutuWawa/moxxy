@@ -34,9 +34,8 @@ class MainActivity : FlutterActivity(), MoxxyQuirkApi {
         }
     }
 
-
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
-        MoxxyQuirkApi.setUp(flutterEngine.dartExecutor.binaryMessenger, this);
+        MoxxyQuirkApi.setUp(flutterEngine.dartExecutor.binaryMessenger, this)
         super.configureFlutterEngine(flutterEngine)
     }
 

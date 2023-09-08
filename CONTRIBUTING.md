@@ -35,7 +35,7 @@ repository, use `git clone --recursive https://codeberg.org/moxxy/moxxy.git`
 
 In order to build Moxxy, you first have to run the code generator. To do that, first install all dependencies with
 `flutter pub get`. Next, run the code generator using `flutter pub run build_runner build`. This builds required
-data classes and the i18n support. Next, run `dart run pigeon --input pigeon/api.dart` to generate the communication
+data classes and the i18n support. Next, run `dart run pigeon --input pigeon/quirks.dart` to generate the communication
 channels with the native code.
 
 Finally, you can build Moxxy using `flutter run`, if you want to test a change, or `flutter build apk --release` to build
@@ -61,7 +61,7 @@ can happen there. If you think your PR is ready for review, remove the "WIP: " p
 
 In case you modified the Android-native code, please also make sure that you checked every item on the following checklist:
 
-- [ ] I checked that [ktlint](https://github.com/pinterest/ktlint) is not showing any linting issues (`ktlint android/app/src/main/kotlin/org/moxxy/moxxyv2/ '!android/app/src/main/kotlin/org/moxxy/moxxyv2/Api.kt'`)
+- [ ] I checked that [ktlint](https://github.com/pinterest/ktlint) is not showing any linting issues (`ktlint android/app/src/main/kotlin/org/moxxy/moxxyv2/ '!android/app/src/main/kotlin/org/moxxy/moxxyv2/quirks'`)
 
 ### Tips
 #### `data_classes.yaml`
