@@ -917,9 +917,10 @@ packages:
   moxxy_native:
     dependency: "direct main"
     description:
-      path: "../moxxy_native"
-      relative: true
-    source: path
+      name: moxxy_native
+      sha256: "5b29152909e0b15552237ffaa34fc328184a0476a7b3aa4789e850190a7df445"
+      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
+    source: hosted
     version: "0.1.0"
   moxxyv2_builders:
     dependency: "direct main"
