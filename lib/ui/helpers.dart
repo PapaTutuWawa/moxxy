@@ -9,8 +9,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/service/pigeon/api.g.dart';
 import 'package:moxxyv2/shared/avatar.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
@@ -152,7 +152,7 @@ Future<FilePickerResult?> safePickFiles(
 }) async {
   if (withData) {
     assert(!allowMultiple, 'withData only works with allowMultiple = false');
-    final result = await MoxxyApi().pickFileWithData(type);
+    final result = await MoxxyPickerApi().pickFileWithData(type);
     if (result == null) {
       return null;
     }
@@ -162,7 +162,7 @@ Future<FilePickerResult?> safePickFiles(
       Uint8List.fromList(result),
     );
   } else {
-    final result = await MoxxyApi().pickFiles(type, allowMultiple);
+    final result = await MoxxyPickerApi().pickFiles(type, allowMultiple);
     if (result.isEmpty) {
       return null;
     }

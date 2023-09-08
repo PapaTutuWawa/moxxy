@@ -14,4 +14,4 @@ analyzer:
     - "**/*.freezed.dart"
     - "**/*.moxxy.dart"
     - "lib/i18n/*.dart"
-    - "pigeon/api.dart"
+    - "pigeon/quirks.dart"

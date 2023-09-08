@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/quirks/quirks.g.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
@@ -11,6 +12,7 @@ import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/bloc/request_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/events.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/sharing.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -73,26 +75,45 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
           ),
         );
 
+    // Handle (direct) shares
     final sharing = GetIt.I.get<UISharingService>();
     if (sharing.hasEarlyMedia) {
       GetIt.I
           .get<Logger>()
           .finest('Early media available. Navigating to share selection');
       await sharing.handleEarlySharedMedia();
-    } else {
-      // TODO(Unknown): Actually handle this in the UI so that we can also display a text with the
-      //                popup.
-      if (result.requestNotificationPermission) {
-        unawaited(_requestPermissions());
-      }
+      return;
+    }
 
-      GetIt.I.get<Logger>().finest('Navigating to conversations');
-      GetIt.I.get<NavigationBloc>().add(
-            PushedNamedAndRemoveUntilEvent(
-              const NavigationDestination(conversationsRoute),
-              (_) => false,
-            ),
-          );
+    // TODO(Unknown): Actually handle this in the UI so that we can also display a text with the
+    //                popup.
+    if (result.requestNotificationPermission) {
+      unawaited(_requestPermissions());
+    }
+
+    GetIt.I.get<Logger>().finest('Navigating to conversations');
+    GetIt.I.get<NavigationBloc>().add(
+          PushedNamedAndRemoveUntilEvent(
+            const NavigationDestination(conversationsRoute),
+            (_) => false,
+          ),
+        );
+
+    // TODO(Unknown): A bit messy. It would be cool to handle this before navigating
+    //                to the conversations, i.e. have onNotificationTappend ensure that
+    //                there is the ConversationsPage below it.
+    final earlyEvent = await MoxxyQuirkApi().earlyNotificationEventQuirk();
+    if (earlyEvent != null) {
+      GetIt.I
+          .get<Logger>()
+          .finest('Early notification event available. Navigating to conversation');
+      await onNotificationTappend(
+        MessageNotificationTappedEvent(
+          conversationJid: earlyEvent.jid,
+          title: earlyEvent.extra!['title']!,
+          avatarPath: earlyEvent.extra!['avatarPath']!,
+        ),
+      );
     }
   } else if (result.state == preStartNotLoggedInState) {
     // Set UI data

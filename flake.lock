@@ -26,11 +26,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1690216663,
-        "narHash": "sha256-M02sPgYFsowi6a4sbVdDHZyaFXGMmjD/wSZ/N76OrJw=",
+        "lastModified": 1694100130,
+        "narHash": "sha256-3xQgPgFNVtuftoYsUxtUTFu/P5ZzcIaRIrLwNs4xrBg=",
         "ref": "refs/heads/master",
-        "rev": "b49dd023600bb8484d6d31239bebe6cd518ea581",
-        "revCount": 3,
+        "rev": "8e98e366f7de0d8636a387ee857ead7cc8c1b646",
+        "revCount": 6,
         "type": "git",
         "url": "https://codeberg.org/PapaTutuWawa/bits-and-bytes.git"
       },

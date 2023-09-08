@@ -914,6 +914,13 @@ packages:
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
     version: "0.3.1"
+  moxxy_native:
+    dependency: "direct main"
+    description:
+      path: "../moxxy_native"
+      relative: true
+    source: path
+    version: "0.1.0"
   moxxyv2_builders:
     dependency: "direct main"
     description:
@@ -1776,5 +1783,5 @@ packages:
     source: hosted
     version: "3.1.2"
 sdks:
-  dart: ">=2.19.0 <3.0.0"
+  dart: ">=2.19.6 <3.0.0"
   flutter: ">=3.7.3"

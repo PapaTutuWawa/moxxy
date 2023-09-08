@@ -70,6 +70,8 @@ dependencies:
   moxxmpp_socket_tcp:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.3.1
+  moxxy_native:
+    path: ../moxxy_native
   moxxyv2_builders:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.2.0
@@ -157,11 +159,6 @@ extra_licenses:
     url: "https://invent.kde.org/melvo/xmpp-providers"
  
 flutter:
-  plugin:
-    platforms:
-      android:
-        package: org.moxxy.moxxyv2.plugin
-        pluginClass: MoxxyPlugin
   uses-material-design: true
   fonts:
     - family: RobotoMono

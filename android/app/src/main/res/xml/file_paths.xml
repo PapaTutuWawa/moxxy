@@ -1,7 +1,0 @@
-<paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Media files -->
-    <files-path name="media" path="media/" />
-
-    <!-- Media thumbnails -->
-    <cache-path name="thumbnails" path="thumbnails/" />
-</paths>

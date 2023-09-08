@@ -46,6 +46,7 @@
     lib = pkgs.lib;
     babPkgs = bab.packages."${system}";
     pinnedJDK = pkgs.jdk17;
+    flutterVersion = pkgs.flutter37;
 
     pythonEnv = pkgs.python3.withPackages (ps: with ps; [
       requests pyyaml # For the build scripts
@@ -59,7 +60,7 @@
         scrcpy
 
         # Flutter
-        flutter37
+        flutterVersion
 
         # Build scripts
 	      pythonEnv gnumake
@@ -84,13 +85,16 @@
         library = ${pkgs.opensc}/lib/opensc-pkcs11.so
         slotListIndex = 0
       '';
-      mkBuildScript = skipBuild: pkgs.writeShellScript "build-anitrack.sh" ''
+      mkBuildScript = skipBuild: pkgs.writeShellScript "build-moxxy.sh" ''
         ${babPkgs.flutter-build}/bin/flutter-build \
           --name Moxxy \
           --not-signed \
           --zipalign ${sdk}/share/android-sdk/build-tools/34.0.0/zipalign \
           --apksigner ${sdk}/share/android-sdk/build-tools/34.0.0/apksigner \
-          --provider-config ${providerArg} ${lib.optional skipBuild "--skip-build"}
+          --pigeon ./pigeon/api.dart \
+          --flutter ${flutterVersion}/bin/flutter \
+          --dart ${flutterVersion}/bin/dart \
+          --provider-config ${providerArg} ${lib.optionalString skipBuild "--skip-build"}
       '';
     in {
       # Skip the build and just sign

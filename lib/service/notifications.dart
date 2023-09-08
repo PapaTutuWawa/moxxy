@@ -4,13 +4,13 @@ import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
+import 'package:moxxy_native/moxxy_native.dart' as native;
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/lifecycle.dart';
 import 'package:moxxyv2/service/message.dart';
-import 'package:moxxyv2/service/pigeon/api.g.dart' as api;
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
@@ -38,23 +38,23 @@ class NotificationsService {
     _eventStream = _channel
         .receiveBroadcastStream()
         .cast<Object>()
-        .map(api.NotificationEvent.decode);
+        .map(native.NotificationEvent.decode);
   }
 
   /// Logging.
   final Logger _log = Logger('NotificationsService');
 
   /// The Pigeon channel to the native side
-  final api.MoxxyApi _api = api.MoxxyApi();
+  final native.MoxxyNotificationsApi _api = native.MoxxyNotificationsApi();
   final EventChannel _channel =
       const EventChannel('org.moxxy.moxxyv2/notification_stream');
-  late final Stream<api.NotificationEvent> _eventStream;
+  late final Stream<native.NotificationEvent> _eventStream;
 
   /// Called when something happens to the notification, i.e. the actions are triggered or
   /// the notification has been tapped.
-  Future<void> onNotificationEvent(api.NotificationEvent event) async {
+  Future<void> onNotificationEvent(native.NotificationEvent event) async {
     final conversationJid = event.extra![_conversationJidKey]!;
-    if (event.type == api.NotificationEventType.open) {
+    if (event.type == native.NotificationEventType.open) {
       // The notification has been tapped
       sendEvent(
         MessageNotificationTappedEvent(
@@ -63,7 +63,7 @@ class NotificationsService {
           avatarPath: event.extra![_conversationAvatarKey]!,
         ),
       );
-    } else if (event.type == api.NotificationEventType.markAsRead) {
+    } else if (event.type == native.NotificationEventType.markAsRead) {
       final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
       // Mark the message as read
       await GetIt.I.get<MessageService>().markMessageAsRead(
@@ -99,7 +99,7 @@ class NotificationsService {
 
       // Clear notifications
       await dismissNotificationsByJid(conversationJid, accountJid);
-    } else if (event.type == api.NotificationEventType.reply) {
+    } else if (event.type == native.NotificationEventType.reply) {
       // Save this as a notification so that we can display it later
       assert(
         event.payload != null,
@@ -136,7 +136,7 @@ class NotificationsService {
   /// using locale is currently configured.
   Future<void> configureNotificationI18n() async {
     await _api.setNotificationI18n(
-      api.NotificationI18nData(
+      native.NotificationI18nData(
         reply: t.notifications.message.reply,
         markAsRead: t.notifications.message.markAsRead,
         you: t.messages.you,
@@ -148,15 +148,15 @@ class NotificationsService {
     // Set up notification groups
     await _api.createNotificationGroups(
       [
-        api.NotificationGroup(
+        native.NotificationGroup(
           id: messageNotificationGroupId,
           description: 'Chat messages',
         ),
-        api.NotificationGroup(
+        native.NotificationGroup(
           id: warningNotificationChannelId,
           description: 'Warnings',
         ),
-        api.NotificationGroup(
+        native.NotificationGroup(
           id: foregroundServiceNotificationGroupId,
           description: 'Foreground service',
         ),
@@ -165,31 +165,31 @@ class NotificationsService {
 
     // Set up the notitifcation channels.
     await _api.createNotificationChannels([
-      api.NotificationChannel(
+      native.NotificationChannel(
         title: t.notifications.channels.messagesChannelName,
         description: t.notifications.channels.messagesChannelDescription,
         id: messageNotificationChannelId,
-        importance: api.NotificationChannelImportance.HIGH,
+        importance: native.NotificationChannelImportance.HIGH,
         showBadge: true,
         vibration: true,
         enableLights: true,
       ),
-      api.NotificationChannel(
+      native.NotificationChannel(
         title: t.notifications.channels.warningChannelName,
         description: t.notifications.channels.warningChannelDescription,
         id: warningNotificationChannelId,
-        importance: api.NotificationChannelImportance.DEFAULT,
+        importance: native.NotificationChannelImportance.DEFAULT,
         showBadge: false,
         vibration: true,
         enableLights: false,
       ),
       // The foreground notification channel is only required on Android
       if (Platform.isAndroid)
-        api.NotificationChannel(
+        native.NotificationChannel(
           title: t.notifications.channels.serviceChannelName,
           description: t.notifications.channels.serviceChannelDescription,
           id: foregroundServiceNotificationChannelId,
-          importance: api.NotificationChannelImportance.MIN,
+          importance: native.NotificationChannelImportance.MIN,
           showBadge: false,
           vibration: false,
           enableLights: false,
@@ -345,7 +345,7 @@ class NotificationsService {
     );
 
     await _api.showMessagingNotification(
-      api.MessagingNotification(
+      native.MessagingNotification(
         title: await c.titleWithOptionalContactService,
         id: id,
         channelId: messageNotificationChannelId,
@@ -395,7 +395,7 @@ class NotificationsService {
         ? notifications.first.id
         : Random().nextInt(_maxNotificationId);
     await _api.showMessagingNotification(
-      api.MessagingNotification(
+      native.MessagingNotification(
         title: title,
         id: id,
         channelId: messageNotificationChannelId,
@@ -435,12 +435,12 @@ class NotificationsService {
     }
 
     await _api.showNotification(
-      api.RegularNotification(
+      native.RegularNotification(
         title: title,
         body: body,
         channelId: warningNotificationChannelId,
         id: Random().nextInt(_maxNotificationId),
-        icon: api.NotificationIcon.warning,
+        icon: native.NotificationIcon.warning,
         groupId: warningNotificationGroupId,
       ),
     );
@@ -473,13 +473,13 @@ class NotificationsService {
         .get<ConversationService>()
         .getConversationByJid(jid, accountJid);
     await _api.showNotification(
-      api.RegularNotification(
+      native.RegularNotification(
         title: t.notifications.errors.messageError.title,
         body: t.notifications.errors.messageError
             .body(conversationTitle: conversation!.title),
         channelId: warningNotificationChannelId,
         id: Random().nextInt(_maxNotificationId),
-        icon: api.NotificationIcon.error,
+        icon: native.NotificationIcon.error,
         groupId: warningNotificationGroupId,
       ),
     );

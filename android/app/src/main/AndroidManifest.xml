@@ -50,18 +50,6 @@
                 android:resource="@xml/share_targets" />
         </activity>
 
-        <provider
-            android:name="org.moxxy.moxxyv2.notifications.MoxxyFileProvider"
-            android:authorities="org.moxxy.moxxyv2.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
-
-        <receiver android:name=".notifications.NotificationReceiver" />
-
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

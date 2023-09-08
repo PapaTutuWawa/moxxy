@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:moxxyv2/service/pigeon/api.g.dart' as api;
+import 'package:moxxy_native/moxxy_native.dart' as native;
 
 part 'notification.freezed.dart';
 part 'notification.g.dart';
@@ -44,12 +44,12 @@ class Notification with _$Notification {
   factory Notification.fromJson(Map<String, dynamic> json) =>
       _$NotificationFromJson(json);
 
-  api.NotificationMessage toNotificationMessage() {
-    return api.NotificationMessage(
+  native.NotificationMessage toNotificationMessage() {
+    return native.NotificationMessage(
       sender: sender,
       jid: senderJid,
       avatarPath: avatarPath,
-      content: api.NotificationMessageContent(
+      content: native.NotificationMessageContent(
         body: body,
         mime: mime,
         path: path,

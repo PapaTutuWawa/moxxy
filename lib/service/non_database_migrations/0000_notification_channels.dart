@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/widgets.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/service/pigeon/api.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
 
 /// Recreate all notification channels to apply settings that cannot be applied after the notification
@@ -11,7 +11,7 @@ Future<void> upgradeV1ToV2NonDb(int _) async {
   WidgetsFlutterBinding.ensureInitialized();
   LocaleSettings.useDeviceLocale();
 
-  final api = MoxxyApi();
+  final api = MoxxyNotificationsApi();
 
   // Remove all notification channels, so that we can recreate them
   await api.deleteNotificationChannels([
