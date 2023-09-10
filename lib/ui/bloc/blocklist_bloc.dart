@@ -42,8 +42,8 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
     if (state.blocklist.isEmpty) {
       // ignore: cast_nullable_to_non_nullable
       final result = await getForegroundService().send(
-            GetBlocklistCommand(),
-          ) as GetBlocklistResultEvent;
+        GetBlocklistCommand(),
+      ) as GetBlocklistResultEvent;
 
       emit(
         state.copyWith(
@@ -59,10 +59,10 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
     Emitter<BlocklistState> emit,
   ) async {
     await getForegroundService().send(
-          UnblockJidCommand(
-            jid: event.jid,
-          ),
-        );
+      UnblockJidCommand(
+        jid: event.jid,
+      ),
+    );
 
     final blocklist =
         state.blocklist.where((String i) => i != event.jid).toList();
@@ -74,8 +74,8 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
     Emitter<BlocklistState> emit,
   ) async {
     await getForegroundService().send(
-          UnblockAllCommand(),
-        );
+      UnblockAllCommand(),
+    );
 
     emit(
       state.copyWith(blocklist: <String>[]),

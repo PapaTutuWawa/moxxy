@@ -59,14 +59,14 @@ class NewConversationBloc
     }
 
     final result = await getForegroundService().send(
-          AddConversationCommand(
-            title: event.title,
-            jid: event.jid,
-            avatarUrl: event.avatarUrl,
-            lastMessageBody: '',
-            conversationType: event.type.value,
-          ),
-        );
+      AddConversationCommand(
+        title: event.title,
+        jid: event.jid,
+        avatarUrl: event.avatarUrl,
+        lastMessageBody: '',
+        conversationType: event.type.value,
+      ),
+    );
 
     if (result is NoConversationModifiedEvent) {
       // Fall through
@@ -102,11 +102,11 @@ class NewConversationBloc
     );
 
     await getForegroundService().send(
-          RemoveContactCommand(
-            jid: event.jid,
-          ),
-          awaitable: false,
-        );
+      RemoveContactCommand(
+        jid: event.jid,
+      ),
+      awaitable: false,
+    );
   }
 
   Future<void> _onRosterPushed(

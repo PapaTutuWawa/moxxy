@@ -31,12 +31,12 @@ class UIReadMarkerService {
 
     _log.finest('Sending chat marker for ${message.id}');
     getForegroundService().send(
-          MarkMessageAsReadCommand(
-            id: message.id,
-            sendMarker: true,
-          ),
-          awaitable: false,
-        );
+      MarkMessageAsReadCommand(
+        id: message.id,
+        sendMarker: true,
+      ),
+      awaitable: false,
+    );
   }
 
   /// Empties the internal cache.

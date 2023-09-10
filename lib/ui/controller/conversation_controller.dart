@@ -150,13 +150,13 @@ class BidirectionalConversationController
 
   void _updateChatState(ChatState state) {
     getForegroundService().send(
-          SendChatStateCommand(
-            state: state.toString().split('.').last,
-            jid: conversationJid,
-            conversationType: conversationType,
-          ),
-          awaitable: false,
-        );
+      SendChatStateCommand(
+        state: state.toString().split('.').last,
+        jid: conversationJid,
+        conversationType: conversationType,
+      ),
+      awaitable: false,
+    );
   }
 
   void _startComposeTimer() {
@@ -295,24 +295,24 @@ class BidirectionalConversationController
   /// Retract the message with originId [originId].
   void retractMessage(String originId) {
     getForegroundService().send(
-          RetractMessageCommentCommand(
-            originId: originId,
-            conversationJid: conversationJid,
-          ),
-          awaitable: false,
-        );
+      RetractMessageCommentCommand(
+        originId: originId,
+        conversationJid: conversationJid,
+      ),
+      awaitable: false,
+    );
   }
 
   /// Send the sticker [sticker].
   void sendSticker(sticker.Sticker sticker) {
     getForegroundService().send(
-          SendStickerCommand(
-            sticker: sticker,
-            recipient: conversationJid,
-            quotes: _quotedMessage,
-          ),
-          awaitable: false,
-        );
+      SendStickerCommand(
+        sticker: sticker,
+        recipient: conversationJid,
+        quotes: _quotedMessage,
+      ),
+      awaitable: false,
+    );
 
     // Remove a possible quote
     removeQuote();
@@ -330,16 +330,15 @@ class BidirectionalConversationController
     // Add message to the database and send it
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
-          SendMessageCommand(
-            recipients: [conversationJid],
-            body: text,
-            quotedMessage: _quotedMessage,
-            chatState: ChatState.active.toName(),
-            editSid: _messageEditingState?.sid,
-            currentConversationJid: conversationJid,
-          ),
-          awaitable: true,
-        ) as MessageAddedEvent;
+      SendMessageCommand(
+        recipients: [conversationJid],
+        body: text,
+        quotedMessage: _quotedMessage,
+        chatState: ChatState.active.toName(),
+        editSid: _messageEditingState?.sid,
+        currentConversationJid: conversationJid,
+      ),
+    ) as MessageAddedEvent;
 
     // Reset the message editing state
     final wasEditing = _messageEditingState != null;
@@ -373,12 +372,12 @@ class BidirectionalConversationController
   Future<List<Message>> fetchOlderDataImpl(Message? oldestElement) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
-          GetPagedMessagesCommand(
-            conversationJid: conversationJid,
-            timestamp: oldestElement?.timestamp,
-            olderThan: true,
-          ),
-        ) as PagedMessagesResultEvent;
+      GetPagedMessagesCommand(
+        conversationJid: conversationJid,
+        timestamp: oldestElement?.timestamp,
+        olderThan: true,
+      ),
+    ) as PagedMessagesResultEvent;
 
     return result.messages.reversed.toList();
   }
@@ -387,12 +386,12 @@ class BidirectionalConversationController
   Future<List<Message>> fetchNewerDataImpl(Message? newestElement) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
-          GetPagedMessagesCommand(
-            conversationJid: conversationJid,
-            timestamp: newestElement?.timestamp,
-            olderThan: false,
-          ),
-        ) as PagedMessagesResultEvent;
+      GetPagedMessagesCommand(
+        conversationJid: conversationJid,
+        timestamp: newestElement?.timestamp,
+        olderThan: false,
+      ),
+    ) as PagedMessagesResultEvent;
 
     return result.messages.reversed.toList();
   }
@@ -544,12 +543,12 @@ class BidirectionalConversationController
 
     // Send the file
     await getForegroundService().send(
-          SendFilesCommand(
-            paths: [file],
-            recipients: [conversationJid],
-          ),
-          awaitable: false,
-        );
+      SendFilesCommand(
+        paths: [file],
+        recipients: [conversationJid],
+      ),
+      awaitable: false,
+    );
   }
 
   /// React to app livecycle changes

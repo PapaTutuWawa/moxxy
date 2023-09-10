@@ -155,34 +155,33 @@ class DebuggingPage extends StatelessWidget {
                       title: 'Reset stream management state',
                       onTap: () {
                         getForegroundService().send(
-                              DebugCommand(
-                                id: debug.DebugCommand.clearStreamResumption.id,
-                              ),
-                              awaitable: false,
-                            );
+                          DebugCommand(
+                            id: debug.DebugCommand.clearStreamResumption.id,
+                          ),
+                          awaitable: false,
+                        );
                       },
                     ),
                     SettingsRow(
                       title: 'Request roster',
                       onTap: () {
                         getForegroundService().send(
-                              DebugCommand(
-                                id: debug.DebugCommand.requestRoster.id,
-                              ),
-                              awaitable: false,
-                            );
+                          DebugCommand(
+                            id: debug.DebugCommand.requestRoster.id,
+                          ),
+                          awaitable: false,
+                        );
                       },
                     ),
                     SettingsRow(
                       title: 'Log available media files',
                       onTap: () {
                         getForegroundService().send(
-                              DebugCommand(
-                                id: debug
-                                    .DebugCommand.logAvailableMediaFiles.id,
-                              ),
-                              awaitable: false,
-                            );
+                          DebugCommand(
+                            id: debug.DebugCommand.logAvailableMediaFiles.id,
+                          ),
+                          awaitable: false,
+                        );
                       },
                     ),
                     SettingsRow(

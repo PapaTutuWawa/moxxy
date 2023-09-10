@@ -160,12 +160,12 @@ Future<void> onSelfAvatarChanged(
 
 Future<void> onServiceReady(ServiceReadyEvent event, {dynamic extra}) async {
   await getForegroundService().send(
-        PerformPreStartCommand(
-          systemLocaleCode:
-              WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
-        ),
-        awaitable: false,
-      );
+    PerformPreStartCommand(
+      systemLocaleCode:
+          WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
+    ),
+    awaitable: false,
+  );
 }
 
 Future<void> onNotificationTappend(

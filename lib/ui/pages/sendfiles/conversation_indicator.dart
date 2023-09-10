@@ -64,9 +64,8 @@ class FetchingConversationIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     return FutureBuilder<dynamic>(
       future: getForegroundService().send(
-            FetchRecipientInformationCommand(jids: conversationJids),
-            awaitable: true,
-          ),
+        FetchRecipientInformationCommand(jids: conversationJids),
+      ),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const SizedBox();

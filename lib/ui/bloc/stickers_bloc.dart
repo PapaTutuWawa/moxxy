@@ -30,11 +30,11 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
 
     // Notify the backend
     await getForegroundService().send(
-          RemoveStickerPackCommand(
-            stickerPackId: event.stickerPackId,
-          ),
-          awaitable: false,
-        );
+      RemoveStickerPackCommand(
+        stickerPackId: event.stickerPackId,
+      ),
+      awaitable: false,
+    );
   }
 
   Future<void> _onStickerPackImported(
@@ -54,10 +54,10 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     );
 
     final result = await getForegroundService().send(
-          ImportStickerPackCommand(
-            path: pickerResult.files!.first,
-          ),
-        );
+      ImportStickerPackCommand(
+        path: pickerResult.files!.first,
+      ),
+    );
 
     emit(
       state.copyWith(

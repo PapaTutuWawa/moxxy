@@ -64,11 +64,11 @@ class JoinGroupchatBloc extends Bloc<JoinGroupchatEvent, JoinGroupchatState> {
 
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
-          JoinGroupchatCommand(
-            jid: (event as StartGroupchatEvent).jid,
-            nick: state.nick,
-          ),
-        );
+      JoinGroupchatCommand(
+        jid: (event as StartGroupchatEvent).jid,
+        nick: state.nick,
+      ),
+    );
     if (result is ErrorEvent) {
       final error = result.errorId == ErrorType.remoteServerNotFound.value ||
               result.errorId == ErrorType.remoteServerTimeout.value

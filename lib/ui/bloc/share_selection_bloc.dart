@@ -204,12 +204,12 @@ class ShareSelectionBloc
   ) async {
     if (state.type == ShareSelectionType.text) {
       await getForegroundService().send(
-            SendMessageCommand(
-              recipients: _getRecipients(),
-              body: state.text!,
-              chatState: ChatState.gone.toName(),
-            ),
-          );
+        SendMessageCommand(
+          recipients: _getRecipients(),
+          body: state.text!,
+          chatState: ChatState.gone.toName(),
+        ),
+      );
 
       // Navigate to the conversations page...
       GetIt.I.get<NavigationBloc>().add(

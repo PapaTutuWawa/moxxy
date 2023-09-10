@@ -44,10 +44,10 @@ class StartChatBloc extends Bloc<StartChatEvent, StartChatState> {
 
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
-          AddContactCommand(
-            jid: state.jid,
-          ),
-        );
+      AddContactCommand(
+        jid: state.jid,
+      ),
+    );
 
     if (result is ErrorEvent) {
       final error = result.errorId == ErrorType.remoteServerNotFound.value ||

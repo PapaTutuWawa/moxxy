@@ -83,9 +83,9 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     GetIt.I.get<NavigationBloc>().add(navEvent);
 
     await getForegroundService().send(
-          SetOpenConversationCommand(jid: event.jid),
-          awaitable: false,
-        );
+      SetOpenConversationCommand(jid: event.jid),
+      awaitable: false,
+    );
   }
 
   Future<void> _onJidBlocked(
@@ -94,8 +94,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   ) async {
     // TODO(Unknown): Maybe have some state here
     await getForegroundService().send(
-          BlockJidCommand(jid: state.conversation!.jid),
-        );
+      BlockJidCommand(jid: state.conversation!.jid),
+    );
   }
 
   Future<void> _onJidAdded(
@@ -113,8 +113,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     );
 
     await getForegroundService().send(
-          AddContactCommand(jid: state.conversation!.jid),
-        );
+      AddContactCommand(jid: state.conversation!.jid),
+    );
   }
 
   Future<void> _onCurrentConversationReset(
@@ -122,9 +122,9 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     Emitter<ConversationState> emit,
   ) async {
     await getForegroundService().send(
-          SetOpenConversationCommand(),
-          awaitable: false,
-        );
+      SetOpenConversationCommand(),
+      awaitable: false,
+    );
   }
 
   Future<void> _onConversationUpdated(
@@ -202,11 +202,11 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     );
 
     await getForegroundService().send(
-          SetOmemoEnabledCommand(
-            enabled: event.enabled,
-            jid: state.conversation!.jid,
-          ),
-          awaitable: false,
-        );
+      SetOmemoEnabledCommand(
+        enabled: event.enabled,
+        jid: state.conversation!.jid,
+      ),
+      awaitable: false,
+    );
   }
 }

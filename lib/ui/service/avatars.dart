@@ -22,12 +22,12 @@ class UIAvatarsService {
     _log.finest('Requesting avatar for $jid');
     _avatarRequested[jid] = true;
     getForegroundService().send(
-          RequestAvatarForJidCommand(
-            jid: jid,
-            hash: hash,
-            ownAvatar: ownAvatar,
-          ),
-        );
+      RequestAvatarForJidCommand(
+        jid: jid,
+        hash: hash,
+        ownAvatar: ownAvatar,
+      ),
+    );
   }
 
   void resetCache() {

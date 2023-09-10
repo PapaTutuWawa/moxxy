@@ -49,8 +49,8 @@ class StorageController {
   Future<void> fetchStorageUsage() async {
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
-          GetStorageUsageCommand(),
-        ) as GetStorageUsageEvent;
+      GetStorageUsageCommand(),
+    ) as GetStorageUsageEvent;
 
     _state = StorageState(
       result.mediaUsage,

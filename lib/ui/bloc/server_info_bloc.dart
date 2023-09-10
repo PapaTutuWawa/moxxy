@@ -28,8 +28,8 @@ class ServerInfoBloc extends Bloc<ServerInfoEvent, ServerInfoState> {
 
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
-          GetFeaturesCommand(),
-        ) as GetFeaturesEvent;
+      GetFeaturesCommand(),
+    ) as GetFeaturesEvent;
 
     emit(
       state.copyWith(

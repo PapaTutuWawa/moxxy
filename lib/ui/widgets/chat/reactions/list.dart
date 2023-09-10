@@ -47,10 +47,10 @@ class ReactionList extends StatelessWidget {
   Widget build(BuildContext context) {
     return FutureBuilder<BackgroundEvent?>(
       future: getForegroundService().send(
-            GetReactionsForMessageCommand(
-              id: messageId,
-            ),
-          ) as Future<BackgroundEvent?>,
+        GetReactionsForMessageCommand(
+          id: messageId,
+        ),
+      ),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(
@@ -97,24 +97,24 @@ class ReactionList extends StatelessWidget {
                       final emoji = await pickEmoji(context);
                       if (emoji != null) {
                         await getForegroundService().send(
-                              AddReactionToMessageCommand(
-                                id: messageId,
-                                emoji: emoji,
-                              ),
-                              awaitable: false,
-                            );
+                          AddReactionToMessageCommand(
+                            id: messageId,
+                            emoji: emoji,
+                          ),
+                          awaitable: false,
+                        );
                       }
                     }
                   : null,
               onReactionPressed: reaction.jid == ownJid
                   ? (emoji) async {
                       await getForegroundService().send(
-                            RemoveReactionFromMessageCommand(
-                              id: messageId,
-                              emoji: emoji,
-                            ),
-                            awaitable: false,
-                          );
+                        RemoveReactionFromMessageCommand(
+                          id: messageId,
+                          emoji: emoji,
+                        ),
+                        awaitable: false,
+                      );
 
                       // ignore: use_build_context_synchronously
                       Navigator.of(context).pop();

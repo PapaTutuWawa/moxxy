@@ -46,10 +46,10 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     final stickerPackResult =
         // ignore: cast_nullable_to_non_nullable
         await getForegroundService().send(
-              GetStickerPackByIdCommand(
-                id: event.stickerPackId,
-              ),
-            ) as GetStickerPackByIdResult;
+      GetStickerPackByIdCommand(
+        id: event.stickerPackId,
+      ),
+    ) as GetStickerPackByIdResult;
     assert(
       stickerPackResult.stickerPack != null,
       'The sticker pack must be found',
@@ -110,11 +110,11 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
 
     if (mustDoWork) {
       final result = await getForegroundService().send(
-            FetchStickerPackCommand(
-              stickerPackId: event.stickerPackId,
-              jid: event.jid,
-            ),
-          );
+        FetchStickerPackCommand(
+          stickerPackId: event.stickerPackId,
+          jid: event.jid,
+        ),
+      );
 
       if (result is FetchStickerPackSuccessResult) {
         emit(
@@ -144,10 +144,10 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     );
 
     final result = await getForegroundService().send(
-          InstallStickerPackCommand(
-            stickerPack: state.stickerPack!,
-          ),
-        );
+      InstallStickerPackCommand(
+        stickerPack: state.stickerPack!,
+      ),
+    );
 
     emit(
       state.copyWith(
@@ -183,10 +183,10 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     final stickerPackResult =
         // ignore: cast_nullable_to_non_nullable
         await getForegroundService().send(
-              GetStickerPackByIdCommand(
-                id: event.stickerPackId,
-              ),
-            ) as GetStickerPackByIdResult;
+      GetStickerPackByIdCommand(
+        id: event.stickerPackId,
+      ),
+    ) as GetStickerPackByIdResult;
 
     // Find out if the sticker pack is locally available or not
     if (stickerPackResult.stickerPack == null) {

@@ -66,12 +66,12 @@ Future<void> initializeServiceIfNeeded() async {
     // ignore: cascade_invocations
     logger.info('Service is running. Sending pre start command');
     await srv.send(
-          PerformPreStartCommand(
-            systemLocaleCode: WidgetsBinding.instance.platformDispatcher.locale
-                .toLanguageTag(),
-          ),
-          awaitable: false,
-        );
+      PerformPreStartCommand(
+        systemLocaleCode:
+            WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
+      ),
+      awaitable: false,
+    );
   } else {
     logger.info('Service is not running. Initializing service... ');
 

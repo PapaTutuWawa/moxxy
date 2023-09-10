@@ -30,7 +30,8 @@ Future<String?> maybeGenerateVideoThumbnail(
   final file = File(thumbnailPath);
   if (file.existsSync()) return thumbnailPath;
 
-  final success = await MoxxyMediaApi().generateVideoThumbnail(path, thumbnailPath, 720);
+  final success =
+      await MoxxyMediaApi().generateVideoThumbnail(path, thumbnailPath, 720);
   if (!success) {
     GetIt.I.get<Logger>().warning('Failed to generate thumbnail for $path');
     return null;

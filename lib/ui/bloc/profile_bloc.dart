@@ -79,12 +79,12 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     GetIt.I.get<ConversationsBloc>().add(AvatarChangedEvent(event.path));
 
     await getForegroundService().send(
-          SetAvatarCommand(
-            path: event.path,
-            hash: event.hash,
-          ),
-          awaitable: false,
-        );
+      SetAvatarCommand(
+        path: event.path,
+        hash: event.hash,
+      ),
+      awaitable: false,
+    );
   }
 
   Future<void> _onSetSubscriptionState(
@@ -92,9 +92,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     Emitter<ProfileState> emit,
   ) async {
     await getForegroundService().send(
-          SetShareOnlineStatusCommand(jid: event.jid, share: event.shareStatus),
-          awaitable: false,
-        );
+      SetShareOnlineStatusCommand(jid: event.jid, share: event.shareStatus),
+      awaitable: false,
+    );
   }
 
   Future<void> _onMuteStateSet(
@@ -109,8 +109,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       ),
     );
     await getForegroundService().send(
-          SetConversationMuteStatusCommand(jid: event.jid, muted: event.muted),
-          awaitable: false,
-        );
+      SetConversationMuteStatusCommand(jid: event.jid, muted: event.muted),
+      awaitable: false,
+    );
   }
 }

@@ -102,12 +102,12 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
     Emitter<SendFilesState> emitter,
   ) async {
     await getForegroundService().send(
-          SendFilesCommand(
-            paths: state.files,
-            recipients: state.recipients.map((r) => r.jid).toList(),
-          ),
-          awaitable: false,
-        );
+      SendFilesCommand(
+        paths: state.files,
+        recipients: state.recipients.map((r) => r.jid).toList(),
+      ),
+      awaitable: false,
+    );
 
     // Return to the last page
     final bloc = GetIt.I.get<NavigationBloc>();

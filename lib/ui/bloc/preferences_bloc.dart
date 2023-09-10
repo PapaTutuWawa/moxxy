@@ -32,11 +32,11 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
   ) async {
     if (event.notify) {
       await getForegroundService().send(
-            SetPreferencesCommand(
-              preferences: event.preferences,
-            ),
-            awaitable: false,
-          );
+        SetPreferencesCommand(
+          preferences: event.preferences,
+        ),
+        awaitable: false,
+      );
     }
 
     // Notify the conversation UI if we changed the background
@@ -61,8 +61,8 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
     GetIt.I.get<UIDataService>().isLoggedIn = false;
 
     await getForegroundService().send(
-          SignOutCommand(),
-        );
+      SignOutCommand(),
+    );
 
     // Navigate to the login page but keep the intro page behind it
     GetIt.I.get<NavigationBloc>().add(

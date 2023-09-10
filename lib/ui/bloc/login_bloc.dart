@@ -78,12 +78,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     );
 
     final result = await getForegroundService().send(
-          LoginCommand(
-            jid: state.jid,
-            password: state.password,
-            useDirectTLS: true,
-          ),
-        );
+      LoginCommand(
+        jid: state.jid,
+        password: state.password,
+        useDirectTLS: true,
+      ),
+    );
 
     if (result is LoginSuccessfulEvent) {
       emit(state.copyWith(working: false));

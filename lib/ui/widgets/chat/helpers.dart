@@ -23,7 +23,7 @@ Size getMediaSize(Message message, double maxWidth) {
 /// Request the media download from a message.
 void requestMediaDownload(Message message) {
   getForegroundService().send(
-        RequestDownloadCommand(message: message),
-        awaitable: false,
-      );
+    RequestDownloadCommand(message: message),
+    awaitable: false,
+  );
 }

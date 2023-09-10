@@ -3,13 +3,13 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/quirks/quirks.g.dart',
-    kotlinOut: 'android/app/src/main/kotlin/org/moxxy/moxxyv2/quirks/NotificationsQuirks.kt',
+    kotlinOut:
+        'android/app/src/main/kotlin/org/moxxy/moxxyv2/quirks/NotificationsQuirks.kt',
     kotlinOptions: KotlinOptions(
       package: 'org.moxxy.moxxyv2.quirks',
     ),
   ),
 )
-
 enum QuirkNotificationEventType {
   markAsRead,
   reply,

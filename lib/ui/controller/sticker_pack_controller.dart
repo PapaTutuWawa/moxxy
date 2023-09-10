@@ -38,12 +38,12 @@ class BidirectionalStickerPackController
   ) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
-          GetPagedStickerPackCommand(
-            olderThan: true,
-            timestamp: oldestElement?.addedTimestamp,
-            includeStickers: includeStickers,
-          ),
-        ) as PagedStickerPackResult;
+      GetPagedStickerPackCommand(
+        olderThan: true,
+        timestamp: oldestElement?.addedTimestamp,
+        includeStickers: includeStickers,
+      ),
+    ) as PagedStickerPackResult;
 
     return result.stickerPacks;
   }
@@ -54,12 +54,12 @@ class BidirectionalStickerPackController
   ) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
-          GetPagedStickerPackCommand(
-            olderThan: false,
-            timestamp: newestElement?.addedTimestamp,
-            includeStickers: includeStickers,
-          ),
-        ) as PagedStickerPackResult;
+      GetPagedStickerPackCommand(
+        olderThan: false,
+        timestamp: newestElement?.addedTimestamp,
+        includeStickers: includeStickers,
+      ),
+    ) as PagedStickerPackResult;
 
     return result.stickerPacks;
   }

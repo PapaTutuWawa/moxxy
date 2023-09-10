@@ -46,7 +46,8 @@ class RequestDialog extends StatelessWidget {
                             await Permission.notification.request();
                             break;
                           case Request.batterySavingExcemption:
-                            await MoxxyPlatformApi().openBatteryOptimisationSettings();
+                            await MoxxyPlatformApi()
+                                .openBatteryOptimisationSettings();
                             break;
                         }
 

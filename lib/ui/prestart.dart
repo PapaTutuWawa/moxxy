@@ -104,9 +104,9 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
     //                there is the ConversationsPage below it.
     final earlyEvent = await MoxxyQuirkApi().earlyNotificationEventQuirk();
     if (earlyEvent != null) {
-      GetIt.I
-          .get<Logger>()
-          .finest('Early notification event available. Navigating to conversation');
+      GetIt.I.get<Logger>().finest(
+            'Early notification event available. Navigating to conversation',
+          );
       await onNotificationTappend(
         MessageNotificationTappedEvent(
           conversationJid: earlyEvent.jid,

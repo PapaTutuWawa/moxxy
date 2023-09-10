@@ -195,12 +195,12 @@ class SelectedMessageContextMenu extends StatelessWidget {
                         final emoji = await pickEmoji(context, pop: false);
                         if (emoji != null) {
                           await getForegroundService().send(
-                                AddReactionToMessageCommand(
-                                  id: message.id,
-                                  emoji: emoji,
-                                ),
-                                awaitable: false,
-                              );
+                            AddReactionToMessageCommand(
+                              id: message.id,
+                              emoji: emoji,
+                            ),
+                            awaitable: false,
+                          );
                         }
 
                         selectionController.dismiss();

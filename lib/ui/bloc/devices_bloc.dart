@@ -35,10 +35,10 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
 
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
-          GetConversationOmemoFingerprintsCommand(
-            jid: event.jid,
-          ),
-        ) as GetConversationOmemoFingerprintsResult;
+      GetConversationOmemoFingerprintsCommand(
+        jid: event.jid,
+      ),
+    ) as GetConversationOmemoFingerprintsResult;
 
     emit(
       state.copyWith(
@@ -54,12 +54,12 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
   ) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
-          SetOmemoDeviceEnabledCommand(
-            jid: state.jid,
-            deviceId: event.deviceId,
-            enabled: event.enabled,
-          ),
-        ) as GetConversationOmemoFingerprintsResult;
+      SetOmemoDeviceEnabledCommand(
+        jid: state.jid,
+        deviceId: event.deviceId,
+        enabled: event.enabled,
+      ),
+    ) as GetConversationOmemoFingerprintsResult;
     emit(state.copyWith(devices: result.fingerprints));
   }
 
@@ -69,9 +69,9 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
   ) async {
     // ignore: cast_nullable_to_non_nullable
     await getForegroundService().send(
-          RecreateSessionsCommand(jid: state.jid),
-          awaitable: false,
-        );
+      RecreateSessionsCommand(jid: state.jid),
+      awaitable: false,
+    );
     emit(state.copyWith(devices: <OmemoDevice>[]));
 
     GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
@@ -96,11 +96,11 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
     emit(state.copyWith(devices: devices));
 
     await getForegroundService().send(
-          MarkOmemoDeviceAsVerifiedCommand(
-            jid: state.jid,
-            deviceId: event.deviceId,
-          ),
-          awaitable: false,
-        );
+      MarkOmemoDeviceAsVerifiedCommand(
+        jid: state.jid,
+        deviceId: event.deviceId,
+      ),
+      awaitable: false,
+    );
   }
 }

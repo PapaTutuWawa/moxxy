@@ -38,8 +38,8 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
 
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
-          GetOwnOmemoFingerprintsCommand(),
-        ) as GetOwnOmemoFingerprintsResult;
+      GetOwnOmemoFingerprintsCommand(),
+    ) as GetOwnOmemoFingerprintsResult;
 
     emit(
       state.copyWith(
@@ -57,13 +57,13 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
   ) async {
     // ignore: cast_nullable_to_non_nullable
     await getForegroundService().send(
-          SetOmemoDeviceEnabledCommand(
-            jid: GetIt.I.get<UIDataService>().ownJid!,
-            deviceId: event.deviceId,
-            enabled: event.enabled,
-          ),
-          awaitable: false,
-        );
+      SetOmemoDeviceEnabledCommand(
+        jid: GetIt.I.get<UIDataService>().ownJid!,
+        deviceId: event.deviceId,
+        enabled: event.enabled,
+      ),
+      awaitable: false,
+    );
 
     emit(
       state.copyWith(
@@ -84,9 +84,9 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
   ) async {
     // ignore: cast_nullable_to_non_nullable
     await getForegroundService().send(
-          RecreateSessionsCommand(jid: GetIt.I.get<UIDataService>().ownJid!),
-          awaitable: false,
-        );
+      RecreateSessionsCommand(jid: GetIt.I.get<UIDataService>().ownJid!),
+      awaitable: false,
+    );
 
     GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
   }
@@ -97,9 +97,9 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
   ) async {
     // ignore: cast_nullable_to_non_nullable
     await getForegroundService().send(
-          RemoveOwnDeviceCommand(deviceId: event.deviceId),
-          awaitable: false,
-        );
+      RemoveOwnDeviceCommand(deviceId: event.deviceId),
+      awaitable: false,
+    );
 
     emit(
       state.copyWith(
@@ -118,8 +118,8 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
 
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
-          RegenerateOwnDeviceCommand(),
-        ) as RegenerateOwnDeviceResult;
+      RegenerateOwnDeviceCommand(),
+    ) as RegenerateOwnDeviceResult;
 
     // Update the UI state
     emit(
@@ -151,11 +151,11 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     emit(state.copyWith(keys: newDevices));
 
     await getForegroundService().send(
-          MarkOmemoDeviceAsVerifiedCommand(
-            jid: ownJid,
-            deviceId: event.deviceId,
-          ),
-          awaitable: false,
-        );
+      MarkOmemoDeviceAsVerifiedCommand(
+        jid: ownJid,
+        deviceId: event.deviceId,
+      ),
+      awaitable: false,
+    );
   }
 }

@@ -76,11 +76,11 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     Emitter<ConversationsState> emit,
   ) async {
     await getForegroundService().send(
-          ExitConversationCommand(
-            conversationType: event.type.value,
-          ),
-          awaitable: false,
-        );
+      ExitConversationCommand(
+        conversationType: event.type.value,
+      ),
+      awaitable: false,
+    );
   }
 
   Future<void> _onConversationsAdded(
@@ -142,8 +142,8 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     Emitter<ConversationsState> emit,
   ) async {
     await getForegroundService().send(
-          CloseConversationCommand(jid: event.jid),
-        );
+      CloseConversationCommand(jid: event.jid),
+    );
 
     emit(
       state.copyWith(
@@ -158,9 +158,9 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     Emitter<ConversationsState> emit,
   ) async {
     await getForegroundService().send(
-          MarkConversationAsReadCommand(conversationJid: event.jid),
-          awaitable: false,
-        );
+      MarkConversationAsReadCommand(conversationJid: event.jid),
+      awaitable: false,
+    );
   }
 
   /// Return, if existent, the conversation from the state with a JID equal to [jid].

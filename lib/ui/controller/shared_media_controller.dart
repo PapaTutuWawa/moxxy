@@ -33,12 +33,12 @@ class BidirectionalSharedMediaController
   ) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
-          GetPagedSharedMediaCommand(
-            conversationJid: conversationJid,
-            timestamp: oldestElement?.timestamp,
-            olderThan: true,
-          ),
-        ) as PagedMessagesResultEvent;
+      GetPagedSharedMediaCommand(
+        conversationJid: conversationJid,
+        timestamp: oldestElement?.timestamp,
+        olderThan: true,
+      ),
+    ) as PagedMessagesResultEvent;
 
     return result.messages;
   }
@@ -49,12 +49,12 @@ class BidirectionalSharedMediaController
   ) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
-          GetPagedSharedMediaCommand(
-            conversationJid: conversationJid,
-            timestamp: newestElement?.timestamp,
-            olderThan: false,
-          ),
-        ) as PagedMessagesResultEvent;
+      GetPagedSharedMediaCommand(
+        conversationJid: conversationJid,
+        timestamp: newestElement?.timestamp,
+        olderThan: false,
+      ),
+    ) as PagedMessagesResultEvent;
 
     return result.messages;
   }

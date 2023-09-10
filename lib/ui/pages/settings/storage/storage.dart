@@ -233,11 +233,10 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
                   final deleteResult =
                       // ignore: cast_nullable_to_non_nullable
                       await getForegroundService().send(
-                            DeleteOldMediaFilesCommand(
-                              timeOffset: result.milliseconds,
-                            ),
-                            awaitable: true,
-                          ) as DeleteOldMediaFilesDoneEvent;
+                    DeleteOldMediaFilesCommand(
+                      timeOffset: result.milliseconds,
+                    ),
+                  ) as DeleteOldMediaFilesDoneEvent;
 
                   // Update the display
                   _controller.mediaUsageUpdated(
