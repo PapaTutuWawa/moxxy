@@ -131,12 +131,6 @@ dependency_overrides:
   #   path: ../moxxmpp/packages/moxxmpp_socket_tcp
   # omemo_dart:
   #   path: ../../Personal/omemo_dart
-  # moxplatform:
-  #   path: ../moxplatform/packages/moxplatform
-  # moxplatform_android:
-  #   path: ../moxplatform/packages/moxplatform_android
-  # moxplatform_platform_interface:
-  #  path: ../moxplatform/packages/moxplatform_platform_interface
 
   moxxmpp:
     git:
@@ -144,8 +138,9 @@ dependency_overrides:
       rev: 864cc0e7474d98f691d87b7a0806f428bf98b790
       path: packages/moxxmpp
 
-  moxxy_native:
-   path: ../moxxy_native
+  # NOTE: Leave here for development purposes 
+  # moxxy_native:
+  #   path: ../moxxy_native
 
   moxxyv2_builders:
     path: ../moxxyv2_builders
