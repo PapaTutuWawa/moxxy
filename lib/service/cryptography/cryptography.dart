@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:logging/logging.dart';
-import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/service/cryptography/types.dart';
 
 List<int> _randomBuffer(int length) {
@@ -29,8 +29,11 @@ CipherAlgorithm _sfsToCipher(SFSEncryptionType type) {
 }
 
 class CryptographyService {
-  CryptographyService() : _log = Logger('CryptographyService');
-  final Logger _log;
+  /// Access to hardware-accelerated cryptography
+  final MoxxyCryptographyApi _api = MoxxyCryptographyApi();
+
+  /// A logger.
+  final Logger _log = Logger('CryptographyService');
 
   /// Encrypt the file at path [source] and write the encrypted data to [dest]. For the
   /// encryption, use the algorithm indicated by [encryption].
@@ -44,7 +47,7 @@ class CryptographyService {
         ? _randomBuffer(16)
         : _randomBuffer(32);
     final iv = _randomBuffer(12);
-    final result = (await MoxplatformPlugin.crypto.encryptFile(
+    final result = (await _api.encryptFile(
       source,
       dest,
       Uint8List.fromList(key),
@@ -79,7 +82,7 @@ class CryptographyService {
     Map<HashFunction, String> ciphertextHashes,
   ) async {
     _log.finest('Beginning decryption for $source');
-    final result = await MoxplatformPlugin.crypto.encryptFile(
+    final result = await _api.decryptFile(
       source,
       dest,
       Uint8List.fromList(key),
@@ -136,7 +139,7 @@ class CryptographyService {
     }
 
     _log.finest('Beginning hash generation of $path');
-    final data = await MoxplatformPlugin.crypto.hashFile(path, hashSpec);
+    final data = await _api.hashFile(path, hashSpec);
     _log.finest('Hash generation done for $path');
     return base64Encode(data!);
   }

@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
@@ -67,7 +67,7 @@ Future<void> handleIsolateEvent(Map<String, dynamic>? json) async {
 
   // First attempt to deal with awaitables
   var found = false;
-  found = await MoxplatformPlugin.handler.getDataSender().onData(data);
+  found = await getForegroundService().getDataSender().onData(data);
   if (found) return;
 
   // Then run the event handlers
@@ -159,7 +159,7 @@ Future<void> onSelfAvatarChanged(
 }
 
 Future<void> onServiceReady(ServiceReadyEvent event, {dynamic extra}) async {
-  await MoxplatformPlugin.handler.getDataSender().sendData(
+  await getForegroundService().send(
         PerformPreStartCommand(
           systemLocaleCode:
               WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),

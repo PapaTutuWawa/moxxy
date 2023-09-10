@@ -6,7 +6,7 @@ import 'package:flutter/painting.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
@@ -31,7 +31,7 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
     Emitter<PreferencesState> emit,
   ) async {
     if (event.notify) {
-      await MoxplatformPlugin.handler.getDataSender().sendData(
+      await getForegroundService().send(
             SetPreferencesCommand(
               preferences: event.preferences,
             ),
@@ -60,7 +60,7 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
   ) async {
     GetIt.I.get<UIDataService>().isLoggedIn = false;
 
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           SignOutCommand(),
         );
 

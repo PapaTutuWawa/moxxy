@@ -1,7 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/shared/constants.dart';
@@ -9,6 +9,9 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 
 /// The service responsible for handling the direct share feature.
 class ShareService {
+  /// Access to platform-native APIs.
+  final MoxxyContactsApi _api = MoxxyContactsApi();
+
   /// Logging.
   final Logger _log = Logger('ShareService');
 
@@ -42,12 +45,11 @@ class ShareService {
     );
 
     // Tell the system to create a direct share shortcut
-    await MoxplatformPlugin.contacts.recordSentMessage(
+    await _api.recordSentMessage(
       conversationName,
       conversationJid,
-      avatarPath:
-          conversationImageFilePath.isEmpty ? null : conversationImageFilePath,
-      fallbackIcon: conversation.isSelfChat
+      conversationImageFilePath.isEmpty ? null : conversationImageFilePath,
+      conversation.isSelfChat
           ? FallbackIconType.notes
           : FallbackIconType.person,
     );

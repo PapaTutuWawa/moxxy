@@ -4,8 +4,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:logging/logging.dart';
-import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/constants.dart';
@@ -149,7 +149,7 @@ class BidirectionalConversationController
       _recordingAudioMessageStreamController.stream;
 
   void _updateChatState(ChatState state) {
-    MoxplatformPlugin.handler.getDataSender().sendData(
+    getForegroundService().send(
           SendChatStateCommand(
             state: state.toString().split('.').last,
             jid: conversationJid,
@@ -294,7 +294,7 @@ class BidirectionalConversationController
 
   /// Retract the message with originId [originId].
   void retractMessage(String originId) {
-    MoxplatformPlugin.handler.getDataSender().sendData(
+    getForegroundService().send(
           RetractMessageCommentCommand(
             originId: originId,
             conversationJid: conversationJid,
@@ -305,7 +305,7 @@ class BidirectionalConversationController
 
   /// Send the sticker [sticker].
   void sendSticker(sticker.Sticker sticker) {
-    MoxplatformPlugin.handler.getDataSender().sendData(
+    getForegroundService().send(
           SendStickerCommand(
             sticker: sticker,
             recipient: conversationJid,
@@ -329,7 +329,7 @@ class BidirectionalConversationController
 
     // Add message to the database and send it
     // ignore: cast_nullable_to_non_nullable
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+    final result = await getForegroundService().send(
           SendMessageCommand(
             recipients: [conversationJid],
             body: text,
@@ -372,7 +372,7 @@ class BidirectionalConversationController
   @override
   Future<List<Message>> fetchOlderDataImpl(Message? oldestElement) async {
     // ignore: cast_nullable_to_non_nullable
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+    final result = await getForegroundService().send(
           GetPagedMessagesCommand(
             conversationJid: conversationJid,
             timestamp: oldestElement?.timestamp,
@@ -386,7 +386,7 @@ class BidirectionalConversationController
   @override
   Future<List<Message>> fetchNewerDataImpl(Message? newestElement) async {
     // ignore: cast_nullable_to_non_nullable
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+    final result = await getForegroundService().send(
           GetPagedMessagesCommand(
             conversationJid: conversationJid,
             timestamp: newestElement?.timestamp,
@@ -543,7 +543,7 @@ class BidirectionalConversationController
     }
 
     // Send the file
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           SendFilesCommand(
             paths: [file],
             recipients: [conversationJid],

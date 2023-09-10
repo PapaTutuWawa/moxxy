@@ -660,10 +660,10 @@ packages:
     dependency: "direct main"
     description:
       name: get_it
-      sha256: "290fde3a86072e4b37dbb03c07bec6126f0ecc28dad403c12ffe2e5a2d751ab7"
+      sha256: "529de303c739fca98cd7ece5fca500d8ff89649f1bb4b4e94fb20954abcd7468"
       url: "https://pub.dev"
     source: hosted
-    version: "7.2.0"
+    version: "7.6.0"
   glob:
     dependency: transitive
     description:
@@ -788,10 +788,10 @@ packages:
     dependency: "direct main"
     description:
       name: logging
-      sha256: "293ae2d49fd79d4c04944c3a26dfd313382d5f52e821ec57119230ae16031ad4"
+      sha256: "623a88c9594aa774443aa3eb2d41807a48486b5613e67599fb4c41c0ad47c340"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.2"
+    version: "1.2.0"
   matcher:
     dependency: transitive
     description:
@@ -873,30 +873,6 @@ packages:
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
     version: "0.2.0"
-  moxplatform:
-    dependency: "direct main"
-    description:
-      name: moxplatform
-      sha256: "02ac0ee17f30e2bc3914a3f177d97f02d9fd062bc69ad4d5dd17404d2829f2c7"
-      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
-    source: hosted
-    version: "0.1.17+6"
-  moxplatform_android:
-    dependency: transitive
-    description:
-      name: moxplatform_android
-      sha256: "6b46109ec5d2c4a43cc68ac3dcf0396e5237c5800671a7e2dbcd22f468a13e28"
-      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
-    source: hosted
-    version: "0.1.22"
-  moxplatform_platform_interface:
-    dependency: transitive
-    description:
-      name: moxplatform_platform_interface
-      sha256: "27a6691d6913a291f7bc93d98c87eef491a4e47a76d3d804d1e0a2de7a5875f0"
-      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
-    source: hosted
-    version: "0.1.22"
   moxxmpp:
     dependency: "direct main"
     description:
@@ -917,10 +893,9 @@ packages:
   moxxy_native:
     dependency: "direct main"
     description:
-      name: moxxy_native
-      sha256: "5b29152909e0b15552237ffaa34fc328184a0476a7b3aa4789e850190a7df445"
-      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
-    source: hosted
+      path: "../moxxy_native"
+      relative: true
+    source: path
     version: "0.1.0"
   moxxyv2_builders:
     dependency: "direct main"
@@ -1784,5 +1759,5 @@ packages:
     source: hosted
     version: "3.1.2"
 sdks:
-  dart: ">=2.19.6 <3.0.0"
+  dart: ">=2.19.0 <3.0.0"
   flutter: ">=3.7.3"

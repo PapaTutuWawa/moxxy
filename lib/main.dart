@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -248,17 +248,17 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
 
-    final sender = MoxplatformPlugin.handler.getDataSender();
+    final foreground = getForegroundService();
     switch (state) {
       case AppLifecycleState.paused:
-        sender.sendData(
+        foreground.send(
           SetCSIStateCommand(active: false),
         );
         BidirectionalConversationController.currentController
             ?.handleAppStateChange(false);
         break;
       case AppLifecycleState.resumed:
-        sender.sendData(
+        foreground.send(
           SetCSIStateCommand(active: true),
         );
         BidirectionalConversationController.currentController

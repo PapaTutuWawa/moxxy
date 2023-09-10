@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -30,7 +29,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     );
 
     // Notify the backend
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           RemoveStickerPackCommand(
             stickerPackId: event.stickerPackId,
           ),
@@ -54,7 +53,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
       ),
     );
 
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+    final result = await getForegroundService().send(
           ImportStickerPackCommand(
             path: pickerResult.files!.first,
           ),

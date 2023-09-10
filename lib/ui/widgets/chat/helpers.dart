@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'dart:ui';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 
@@ -22,7 +22,7 @@ Size getMediaSize(Message message, double maxWidth) {
 
 /// Request the media download from a message.
 void requestMediaDownload(Message message) {
-  MoxplatformPlugin.handler.getDataSender().sendData(
+  getForegroundService().send(
         RequestDownloadCommand(message: message),
         awaitable: false,
       );

@@ -6,8 +6,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
-import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
@@ -50,8 +50,8 @@ import 'package:moxxyv2/ui/events.dart' as ui_events;
 
 Future<void> initializeServiceIfNeeded() async {
   final logger = GetIt.I.get<Logger>();
-  final handler = MoxplatformPlugin.handler;
-  if (await handler.isRunning()) {
+  final srv = getForegroundService();
+  if (await srv.isRunning()) {
     if (kDebugMode) {
       logger.fine(
         'Since kDebugMode is true, waiting 600ms before sending PreStartCommand',
@@ -60,12 +60,12 @@ Future<void> initializeServiceIfNeeded() async {
     }
 
     logger.info('Attaching to service...');
-    await handler.attach(ui_events.receiveIsolateEvent);
+    await srv.attach(ui_events.receiveIsolateEvent);
     logger.info('Done');
 
     // ignore: cascade_invocations
     logger.info('Service is running. Sending pre start command');
-    await handler.getDataSender().sendData(
+    await srv.send(
           PerformPreStartCommand(
             systemLocaleCode: WidgetsBinding.instance.platformDispatcher.locale
                 .toLanguageTag(),
@@ -93,11 +93,13 @@ Future<void> initializeServiceIfNeeded() async {
           storage.write(key: versionKey, value: version.toString()),
     );
 
-    await handler.start(
-      entrypoint,
-      receiveUIEvent,
+    await srv.start(
+      ServiceConfig(
+        entrypoint,
+        receiveUIEvent,
+        WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
+      ),
       ui_events.handleIsolateEvent,
-      WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
     );
   }
 }
@@ -107,7 +109,7 @@ Future<void> initializeServiceIfNeeded() async {
 void sendEvent(BackgroundEvent event, {String? id}) {
   // NOTE: *S*erver to *F*oreground
   GetIt.I.get<Logger>().fine('--> ${event.toJson()["type"]}');
-  GetIt.I.get<BackgroundService>().sendEvent(event, id: id);
+  GetIt.I.get<BackgroundService>().send(event, id: id);
 }
 
 void setupLogging() {
@@ -315,7 +317,7 @@ Future<void> entrypoint(String initialLocale) async {
 
   // Ensure our data directory exists
   final dir = Directory(
-    await MoxplatformPlugin.platform.getPersistentDataPath(),
+    await MoxxyPlatformApi().getPersistentDataPath(),
   );
   if (!dir.existsSync()) {
     GetIt.I
@@ -350,8 +352,7 @@ Future<void> entrypoint(String initialLocale) async {
         .loadState();
     await xmpp.connect(settings, false);
   } else {
-    GetIt.I.get<BackgroundService>().setNotification(
-          'Moxxy',
+    GetIt.I.get<BackgroundService>().setNotificationBody(
           t.notifications.permanent.idle,
         );
   }

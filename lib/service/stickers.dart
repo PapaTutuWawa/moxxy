@@ -5,8 +5,8 @@ import 'dart:ui';
 import 'package:archive/archive.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
-import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
@@ -25,6 +25,10 @@ import 'package:moxxyv2/shared/models/sticker_pack.dart';
 import 'package:path/path.dart' as p;
 
 class StickersService {
+  /// Access to platform-native APIs.
+  final MoxxyPlatformApi _api = MoxxyPlatformApi();
+
+  /// A logger.
   final Logger _log = Logger('StickersService');
 
   /// Computes the total amount of storage occupied by the stickers in the sticker
@@ -411,7 +415,7 @@ JOIN
     }
 
     final stickerDirPath = p.join(
-      await MoxplatformPlugin.platform.getPersistentDataPath(),
+      await _api.getPersistentDataPath(),
       'stickers',
       '${pack.hashAlgorithm.toName()}_${pack.hashValue}',
     );

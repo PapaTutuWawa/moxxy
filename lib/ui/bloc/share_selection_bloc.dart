@@ -2,8 +2,8 @@ import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:move_to_background/move_to_background.dart';
-import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
@@ -203,7 +203,7 @@ class ShareSelectionBloc
     Emitter<ShareSelectionState> emit,
   ) async {
     if (state.type == ShareSelectionType.text) {
-      await MoxplatformPlugin.handler.getDataSender().sendData(
+      await getForegroundService().send(
             SendMessageCommand(
               recipients: _getRecipients(),
               body: state.text!,

@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart';
@@ -34,7 +34,7 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
         );
 
     // ignore: cast_nullable_to_non_nullable
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+    final result = await getForegroundService().send(
           GetConversationOmemoFingerprintsCommand(
             jid: event.jid,
           ),
@@ -53,7 +53,7 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
     Emitter<DevicesState> emit,
   ) async {
     // ignore: cast_nullable_to_non_nullable
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+    final result = await getForegroundService().send(
           SetOmemoDeviceEnabledCommand(
             jid: state.jid,
             deviceId: event.deviceId,
@@ -68,7 +68,7 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
     Emitter<DevicesState> emit,
   ) async {
     // ignore: cast_nullable_to_non_nullable
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           RecreateSessionsCommand(jid: state.jid),
           awaitable: false,
         );
@@ -95,7 +95,7 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
     );
     emit(state.copyWith(devices: devices));
 
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           MarkOmemoDeviceAsVerifiedCommand(
             jid: state.jid,
             deviceId: event.deviceId,

@@ -3,7 +3,7 @@ import 'package:bloc/bloc.dart';
 import 'package:collection/collection.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
@@ -75,7 +75,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     ConversationExitedEvent event,
     Emitter<ConversationsState> emit,
   ) async {
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           ExitConversationCommand(
             conversationType: event.type.value,
           ),
@@ -141,7 +141,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     ConversationClosedEvent event,
     Emitter<ConversationsState> emit,
   ) async {
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           CloseConversationCommand(jid: event.jid),
         );
 
@@ -157,7 +157,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     ConversationMarkedAsReadEvent event,
     Emitter<ConversationsState> emit,
   ) async {
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           MarkConversationAsReadCommand(conversationJid: event.jid),
           awaitable: false,
         );

@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
@@ -82,7 +82,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
     GetIt.I.get<NavigationBloc>().add(navEvent);
 
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           SetOpenConversationCommand(jid: event.jid),
           awaitable: false,
         );
@@ -93,7 +93,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     Emitter<ConversationState> emit,
   ) async {
     // TODO(Unknown): Maybe have some state here
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           BlockJidCommand(jid: state.conversation!.jid),
         );
   }
@@ -112,7 +112,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       ),
     );
 
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           AddContactCommand(jid: state.conversation!.jid),
         );
   }
@@ -121,7 +121,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     CurrentConversationResetEvent event,
     Emitter<ConversationState> emit,
   ) async {
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           SetOpenConversationCommand(),
           awaitable: false,
         );
@@ -201,7 +201,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       ),
     );
 
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           SetOmemoEnabledCommand(
             enabled: event.enabled,
             jid: state.conversation!.jid,

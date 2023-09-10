@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
@@ -45,7 +45,7 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     // Apply
     final stickerPackResult =
         // ignore: cast_nullable_to_non_nullable
-        await MoxplatformPlugin.handler.getDataSender().sendData(
+        await getForegroundService().send(
               GetStickerPackByIdCommand(
                 id: event.stickerPackId,
               ),
@@ -109,7 +109,7 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
         );
 
     if (mustDoWork) {
-      final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+      final result = await getForegroundService().send(
             FetchStickerPackCommand(
               stickerPackId: event.stickerPackId,
               jid: event.jid,
@@ -143,7 +143,7 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
       ),
     );
 
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+    final result = await getForegroundService().send(
           InstallStickerPackCommand(
             stickerPack: state.stickerPack!,
           ),
@@ -182,7 +182,7 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
 
     final stickerPackResult =
         // ignore: cast_nullable_to_non_nullable
-        await MoxplatformPlugin.handler.getDataSender().sendData(
+        await getForegroundService().send(
               GetStickerPackByIdCommand(
                 id: event.stickerPackId,
               ),

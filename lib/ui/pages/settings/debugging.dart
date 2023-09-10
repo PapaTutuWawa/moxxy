@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/debug.dart' as debug;
@@ -154,7 +154,7 @@ class DebuggingPage extends StatelessWidget {
                     SettingsRow(
                       title: 'Reset stream management state',
                       onTap: () {
-                        MoxplatformPlugin.handler.getDataSender().sendData(
+                        getForegroundService().send(
                               DebugCommand(
                                 id: debug.DebugCommand.clearStreamResumption.id,
                               ),
@@ -165,7 +165,7 @@ class DebuggingPage extends StatelessWidget {
                     SettingsRow(
                       title: 'Request roster',
                       onTap: () {
-                        MoxplatformPlugin.handler.getDataSender().sendData(
+                        getForegroundService().send(
                               DebugCommand(
                                 id: debug.DebugCommand.requestRoster.id,
                               ),
@@ -176,7 +176,7 @@ class DebuggingPage extends StatelessWidget {
                     SettingsRow(
                       title: 'Log available media files',
                       onTap: () {
-                        MoxplatformPlugin.handler.getDataSender().sendData(
+                        getForegroundService().send(
                               DebugCommand(
                                 id: debug
                                     .DebugCommand.logAvailableMediaFiles.id,

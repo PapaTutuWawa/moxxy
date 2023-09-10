@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/events.dart';
@@ -32,7 +32,7 @@ class BidirectionalSharedMediaController
     Message? oldestElement,
   ) async {
     // ignore: cast_nullable_to_non_nullable
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+    final result = await getForegroundService().send(
           GetPagedSharedMediaCommand(
             conversationJid: conversationJid,
             timestamp: oldestElement?.timestamp,
@@ -48,7 +48,7 @@ class BidirectionalSharedMediaController
     Message? newestElement,
   ) async {
     // ignore: cast_nullable_to_non_nullable
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+    final result = await getForegroundService().send(
           GetPagedSharedMediaCommand(
             conversationJid: conversationJid,
             timestamp: newestElement?.timestamp,

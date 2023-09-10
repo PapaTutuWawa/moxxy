@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
@@ -41,7 +41,7 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
 
     if (state.blocklist.isEmpty) {
       // ignore: cast_nullable_to_non_nullable
-      final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+      final result = await getForegroundService().send(
             GetBlocklistCommand(),
           ) as GetBlocklistResultEvent;
 
@@ -58,7 +58,7 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
     UnblockedJidEvent event,
     Emitter<BlocklistState> emit,
   ) async {
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           UnblockJidCommand(
             jid: event.jid,
           ),
@@ -73,7 +73,7 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
     UnblockedAllEvent event,
     Emitter<BlocklistState> emit,
   ) async {
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           UnblockAllCommand(),
         );
 

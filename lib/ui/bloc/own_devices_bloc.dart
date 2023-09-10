@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart';
@@ -37,7 +37,7 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
         );
 
     // ignore: cast_nullable_to_non_nullable
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+    final result = await getForegroundService().send(
           GetOwnOmemoFingerprintsCommand(),
         ) as GetOwnOmemoFingerprintsResult;
 
@@ -56,7 +56,7 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     Emitter<OwnDevicesState> emit,
   ) async {
     // ignore: cast_nullable_to_non_nullable
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           SetOmemoDeviceEnabledCommand(
             jid: GetIt.I.get<UIDataService>().ownJid!,
             deviceId: event.deviceId,
@@ -83,7 +83,7 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     Emitter<OwnDevicesState> emit,
   ) async {
     // ignore: cast_nullable_to_non_nullable
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           RecreateSessionsCommand(jid: GetIt.I.get<UIDataService>().ownJid!),
           awaitable: false,
         );
@@ -96,7 +96,7 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     Emitter<OwnDevicesState> emit,
   ) async {
     // ignore: cast_nullable_to_non_nullable
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           RemoveOwnDeviceCommand(deviceId: event.deviceId),
           awaitable: false,
         );
@@ -117,7 +117,7 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     emit(state.copyWith(working: true));
 
     // ignore: cast_nullable_to_non_nullable
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+    final result = await getForegroundService().send(
           RegenerateOwnDeviceCommand(),
         ) as RegenerateOwnDeviceResult;
 
@@ -150,7 +150,7 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     );
     emit(state.copyWith(keys: newDevices));
 
-    await MoxplatformPlugin.handler.getDataSender().sendData(
+    await getForegroundService().send(
           MarkOmemoDeviceAsVerifiedCommand(
             jid: ownJid,
             deviceId: event.deviceId,
