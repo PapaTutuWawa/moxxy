@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
-import 'package:moxxyv2/ui/widgets/button.dart';
 
 class Intro extends StatelessWidget {
   const Intro({super.key});
@@ -53,9 +52,8 @@ class Intro extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: RoundedButton(
-                      cornerRadius: 32,
-                      onTap: () => Navigator.of(context).pushNamed(
+                    child: FilledButton(
+                      onPressed: () => Navigator.of(context).pushNamed(
                         loginRoute,
                       ),
                       child: Text(t.pages.intro.loginButton),

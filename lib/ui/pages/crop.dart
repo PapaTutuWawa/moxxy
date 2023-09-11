@@ -5,7 +5,6 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/backdrop_spinner.dart';
-import 'package:moxxyv2/ui/widgets/button.dart';
 import 'package:moxxyv2/ui/widgets/cancel_button.dart';
 
 class CropPage extends StatelessWidget {
@@ -50,14 +49,14 @@ class CropPage extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              RoundedButton(
-                cornerRadius: 100,
-                enabled: !state.isWorking,
-                onTap: () async {
-                  context.read<CropBloc>().add(
-                        ImageCroppedEvent(),
-                      );
-                },
+              FilledButton(
+                onPressed: state.isWorking
+                    ? null
+                    : () async {
+                        context.read<CropBloc>().add(
+                              ImageCroppedEvent(),
+                            );
+                      },
                 child: Text(t.pages.crop.setProfilePicture),
               ),
             ],

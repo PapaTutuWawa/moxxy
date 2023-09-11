@@ -6,7 +6,6 @@ import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/backdrop_spinner.dart';
-import 'package:moxxyv2/ui/widgets/button.dart';
 import 'package:moxxyv2/ui/widgets/cancel_button.dart';
 
 class CropBackgroundPage extends StatefulWidget {
@@ -159,28 +158,29 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      RoundedButton(
-                        cornerRadius: 100,
-                        onTap: () {
-                          final q = _scalingFactor(context, state);
-                          final value = _controller == null
-                              ? (Matrix4.identity()..scale(q, q, 1))
-                              : _controller!.value;
-                          final translation = value.getTranslation();
-                          final scale =
-                              _controller == null ? 1.0 : value.entry(0, 0);
+                      FilledButton(
+                        onPressed: state.isWorking
+                            ? null
+                            : () {
+                                final q = _scalingFactor(context, state);
+                                final value = _controller == null
+                                    ? (Matrix4.identity()..scale(q, q, 1))
+                                    : _controller!.value;
+                                final translation = value.getTranslation();
+                                final scale = _controller == null
+                                    ? 1.0
+                                    : value.entry(0, 0);
 
-                          context.read<CropBackgroundBloc>().add(
-                                BackgroundSetEvent(
-                                  translation.x,
-                                  translation.y,
-                                  scale,
-                                  MediaQuery.of(context).size.height,
-                                  MediaQuery.of(context).size.width,
-                                ),
-                              );
-                        },
-                        enabled: !state.isWorking,
+                                context.read<CropBackgroundBloc>().add(
+                                      BackgroundSetEvent(
+                                        translation.x,
+                                        translation.y,
+                                        scale,
+                                        MediaQuery.of(context).size.height,
+                                        MediaQuery.of(context).size.width,
+                                      ),
+                                    );
+                              },
                         child: Text(t.pages.cropbackground.setAsBackground),
                       ),
                     ],
