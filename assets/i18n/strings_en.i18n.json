@@ -274,6 +274,9 @@
                 "recreateSessionsConfirmTitle": "Rebuild sessions?",
                 "recreateSessionsConfirmBody": "This will recreate the cryptographic sessions with your own devices. Use only if your own devices throw decryption errors.",
                 "noSessions": "There are no cryptographic sessions that are used for end-to-end encryption."
+            },
+            "serverInfo": {
+                "title": "Server Information"
             }
         },
         "blocklist": {
