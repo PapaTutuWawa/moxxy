@@ -43,10 +43,10 @@ class StickerChatWidget extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
-                padding: EdgeInsets.only(right: 8),
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
                 child: Icon(
-                  PhosphorIcons.stickerBold,
+                  PhosphorIcons.thin.sticker,
                 ),
               ),
               Text(

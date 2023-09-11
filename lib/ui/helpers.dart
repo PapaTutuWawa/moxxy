@@ -309,7 +309,7 @@ void showQrCode(BuildContext context, String data, {bool embedLogo = true}) {
         child: SizedBox(
           width: 220,
           height: 220,
-          child: QrImage(
+          child: QrImageView(
             data: data,
             size: 220,
             backgroundColor: Colors.white,

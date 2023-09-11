@@ -46,7 +46,7 @@ class _TextFieldIconButton extends StatelessWidget {
                 ? Icons.keyboard
                 : (tabController.index == 0
                     ? Icons.insert_emoticon
-                    : PhosphorIcons.stickerBold),
+                    : PhosphorIcons.thin.sticker),
             size: 24,
             color: primaryColor,
           ),

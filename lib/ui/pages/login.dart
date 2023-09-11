@@ -95,9 +95,9 @@ class Login extends StatelessWidget {
                           value: false,
                           // TODO(Unknown): Implement
                           onChanged: state.working ? null : (value) {},
-                        )
+                        ),
                       ],
-                    )
+                    ),
                   ],
                 ),
               ),

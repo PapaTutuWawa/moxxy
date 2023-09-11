@@ -36,14 +36,14 @@ void _cropImage(List<dynamic> data) {
   final image = decodeImage(File(originalPath).readAsBytesSync())!;
   final cropped = copyCrop(
     image,
-    xp,
-    yp,
-    (vw * inverse).toInt(),
-    (vh * inverse).toInt(),
+    x: xp,
+    y: yp,
+    width: (vw * inverse).toInt(),
+    height: (vh * inverse).toInt(),
   );
 
   if (blur) {
-    stackBlurRgba(cropped.data, cropped.width, cropped.height, 20);
+    stackBlurRgba(Uint32List.fromList(cropped.getBytes()), cropped.width, cropped.height, 20);
   }
 
   File(destination).writeAsBytesSync(encodeJpg(cropped, quality: 85));

@@ -120,10 +120,10 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
           ),
         if (widget.message.stickerPackId != null &&
             !GetIt.I.get<PreferencesBloc>().state.enableStickers)
-          const Padding(
-            padding: EdgeInsets.only(left: 3),
+          Padding(
+            padding: const EdgeInsets.only(left: 3),
             child: Icon(
-              PhosphorIcons.stickerBold,
+              PhosphorIcons.thin.sticker,
               size: _bubbleBottomIconSize,
               color: Colors.white,
             ),
