@@ -78,7 +78,7 @@ dependencies:
     hosted: https://git.polynom.me/api/packages/PapaTutuWawa/pub
     version: 0.5.1
   page_transition: 2.0.9
-  path: 1.8.2
+  path: ^1.8.3
   path_provider: 2.0.11
   permission_handler: 10.0.0
   phosphor_flutter: 1.4.0

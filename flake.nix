@@ -46,7 +46,7 @@
     lib = pkgs.lib;
     babPkgs = bab.packages."${system}";
     pinnedJDK = pkgs.jdk17;
-    flutterVersion = pkgs.flutter37;
+    flutterVersion = pkgs.flutter;
 
     pythonEnv = pkgs.python3.withPackages (ps: with ps; [
       requests pyyaml # For the build scripts
