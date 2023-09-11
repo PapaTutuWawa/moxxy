@@ -1,8 +1,11 @@
 import 'package:get_it/get_it.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 
 class PermissionsService {
+  /// Access to the native APIs.
+  final MoxxyPlatformApi _api = MoxxyPlatformApi();
+
   /// Returns true if the UI should request the notification permission. If not,
   /// returns false.
   /// If the permission should be requested, this method also sets the `XmppState`'s
@@ -24,7 +27,7 @@ class PermissionsService {
   /// If the excemption should be requested, this method also sets the `XmppState`'s
   /// `askedBatteryOptimizationExcemption` to true.
   Future<bool> shouldRequestBatteryOptimisationExcemption() async {
-    if (await MoxplatformPlugin.platform.isIgnoringBatteryOptimizations()) {
+    if (await _api.isIgnoringBatteryOptimizations()) {
       return false;
     }
 

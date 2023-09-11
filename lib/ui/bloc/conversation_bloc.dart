@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
@@ -82,10 +82,10 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
     GetIt.I.get<NavigationBloc>().add(navEvent);
 
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-          SetOpenConversationCommand(jid: event.jid),
-          awaitable: false,
-        );
+    await getForegroundService().send(
+      SetOpenConversationCommand(jid: event.jid),
+      awaitable: false,
+    );
   }
 
   Future<void> _onJidBlocked(
@@ -93,9 +93,9 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     Emitter<ConversationState> emit,
   ) async {
     // TODO(Unknown): Maybe have some state here
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-          BlockJidCommand(jid: state.conversation!.jid),
-        );
+    await getForegroundService().send(
+      BlockJidCommand(jid: state.conversation!.jid),
+    );
   }
 
   Future<void> _onJidAdded(
@@ -112,19 +112,19 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       ),
     );
 
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-          AddContactCommand(jid: state.conversation!.jid),
-        );
+    await getForegroundService().send(
+      AddContactCommand(jid: state.conversation!.jid),
+    );
   }
 
   Future<void> _onCurrentConversationReset(
     CurrentConversationResetEvent event,
     Emitter<ConversationState> emit,
   ) async {
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-          SetOpenConversationCommand(),
-          awaitable: false,
-        );
+    await getForegroundService().send(
+      SetOpenConversationCommand(),
+      awaitable: false,
+    );
   }
 
   Future<void> _onConversationUpdated(
@@ -201,12 +201,12 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       ),
     );
 
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-          SetOmemoEnabledCommand(
-            enabled: event.enabled,
-            jid: state.conversation!.jid,
-          ),
-          awaitable: false,
-        );
+    await getForegroundService().send(
+      SetOmemoEnabledCommand(
+        enabled: event.enabled,
+        jid: state.conversation!.jid,
+      ),
+      awaitable: false,
+    );
   }
 }

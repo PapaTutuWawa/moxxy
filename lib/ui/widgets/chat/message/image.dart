@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
-import 'package:moxplatform/moxplatform.dart';
-import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
@@ -130,12 +128,7 @@ class ImageChatWidget extends StatelessWidget {
         sent,
         mimeType: message.fileMetadata!.mimeType,
         downloadButton: DownloadButton(
-          onPressed: () {
-            MoxplatformPlugin.handler.getDataSender().sendData(
-                  RequestDownloadCommand(message: message),
-                  awaitable: false,
-                );
-          },
+          onPressed: () => requestMediaDownload(message),
         ),
       );
     }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
@@ -63,10 +63,9 @@ class FetchingConversationIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<dynamic>(
-      future: MoxplatformPlugin.handler.getDataSender().sendData(
-            FetchRecipientInformationCommand(jids: conversationJids),
-            awaitable: true,
-          ),
+      future: getForegroundService().send(
+        FetchRecipientInformationCommand(jids: conversationJids),
+      ),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const SizedBox();

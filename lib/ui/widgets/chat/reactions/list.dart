@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
@@ -46,11 +46,11 @@ class ReactionList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<BackgroundEvent?>(
-      future: MoxplatformPlugin.handler.getDataSender().sendData(
-            GetReactionsForMessageCommand(
-              id: messageId,
-            ),
-          ) as Future<BackgroundEvent?>,
+      future: getForegroundService().send(
+        GetReactionsForMessageCommand(
+          id: messageId,
+        ),
+      ),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(
@@ -96,27 +96,25 @@ class ReactionList extends StatelessWidget {
                   ? () async {
                       final emoji = await pickEmoji(context);
                       if (emoji != null) {
-                        await MoxplatformPlugin.handler
-                            .getDataSender()
-                            .sendData(
-                              AddReactionToMessageCommand(
-                                id: messageId,
-                                emoji: emoji,
-                              ),
-                              awaitable: false,
-                            );
+                        await getForegroundService().send(
+                          AddReactionToMessageCommand(
+                            id: messageId,
+                            emoji: emoji,
+                          ),
+                          awaitable: false,
+                        );
                       }
                     }
                   : null,
               onReactionPressed: reaction.jid == ownJid
                   ? (emoji) async {
-                      await MoxplatformPlugin.handler.getDataSender().sendData(
-                            RemoveReactionFromMessageCommand(
-                              id: messageId,
-                              emoji: emoji,
-                            ),
-                            awaitable: false,
-                          );
+                      await getForegroundService().send(
+                        RemoveReactionFromMessageCommand(
+                          id: messageId,
+                          emoji: emoji,
+                        ),
+                        awaitable: false,
+                      );
 
                       // ignore: use_build_context_synchronously
                       Navigator.of(context).pop();

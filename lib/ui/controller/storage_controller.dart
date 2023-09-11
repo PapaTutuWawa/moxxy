@@ -1,6 +1,5 @@
 import 'dart:async';
-
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 
@@ -49,9 +48,9 @@ class StorageController {
   /// event stream.
   Future<void> fetchStorageUsage() async {
     // ignore: cast_nullable_to_non_nullable
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-          GetStorageUsageCommand(),
-        ) as GetStorageUsageEvent;
+    final result = await getForegroundService().send(
+      GetStorageUsageCommand(),
+    ) as GetStorageUsageEvent;
 
     _state = StorageState(
       result.mediaUsage,

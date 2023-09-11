@@ -3,7 +3,7 @@ import 'package:bloc/bloc.dart';
 import 'package:collection/collection.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
@@ -75,12 +75,12 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     ConversationExitedEvent event,
     Emitter<ConversationsState> emit,
   ) async {
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-          ExitConversationCommand(
-            conversationType: event.type.value,
-          ),
-          awaitable: false,
-        );
+    await getForegroundService().send(
+      ExitConversationCommand(
+        conversationType: event.type.value,
+      ),
+      awaitable: false,
+    );
   }
 
   Future<void> _onConversationsAdded(
@@ -141,9 +141,9 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     ConversationClosedEvent event,
     Emitter<ConversationsState> emit,
   ) async {
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-          CloseConversationCommand(jid: event.jid),
-        );
+    await getForegroundService().send(
+      CloseConversationCommand(jid: event.jid),
+    );
 
     emit(
       state.copyWith(
@@ -157,10 +157,10 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     ConversationMarkedAsReadEvent event,
     Emitter<ConversationsState> emit,
   ) async {
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-          MarkConversationAsReadCommand(conversationJid: event.jid),
-          awaitable: false,
-        );
+    await getForegroundService().send(
+      MarkConversationAsReadCommand(conversationJid: event.jid),
+      awaitable: false,
+    );
   }
 
   /// Return, if existent, the conversation from the state with a JID equal to [jid].

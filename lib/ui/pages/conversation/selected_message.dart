@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/message.dart';
@@ -194,15 +194,13 @@ class SelectedMessageContextMenu extends StatelessWidget {
                       onPressed: () async {
                         final emoji = await pickEmoji(context, pop: false);
                         if (emoji != null) {
-                          await MoxplatformPlugin.handler
-                              .getDataSender()
-                              .sendData(
-                                AddReactionToMessageCommand(
-                                  id: message.id,
-                                  emoji: emoji,
-                                ),
-                                awaitable: false,
-                              );
+                          await getForegroundService().send(
+                            AddReactionToMessageCommand(
+                              id: message.id,
+                              emoji: emoji,
+                            ),
+                            awaitable: false,
+                          );
                         }
 
                         selectionController.dismiss();

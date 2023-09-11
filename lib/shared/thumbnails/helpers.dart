@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:path/path.dart' as p;
 
 Future<String> getVideoThumbnailPath(String path) async {
-  final tempDir = await MoxplatformPlugin.platform.getCacheDataPath();
+  final tempDir = await MoxxyPlatformApi().getCacheDataPath();
   final thumbnailFilenameNoExtension = p.withoutExtension(
     p.basename(path),
   );
@@ -30,8 +30,8 @@ Future<String?> maybeGenerateVideoThumbnail(
   final file = File(thumbnailPath);
   if (file.existsSync()) return thumbnailPath;
 
-  final success = await MoxplatformPlugin.platform
-      .generateVideoThumbnail(path, thumbnailPath, 720);
+  final success =
+      await MoxxyMediaApi().generateVideoThumbnail(path, thumbnailPath, 720);
   if (!success) {
     GetIt.I.get<Logger>().warning('Failed to generate thumbnail for $path');
     return null;

@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
@@ -45,11 +45,11 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     // Apply
     final stickerPackResult =
         // ignore: cast_nullable_to_non_nullable
-        await MoxplatformPlugin.handler.getDataSender().sendData(
-              GetStickerPackByIdCommand(
-                id: event.stickerPackId,
-              ),
-            ) as GetStickerPackByIdResult;
+        await getForegroundService().send(
+      GetStickerPackByIdCommand(
+        id: event.stickerPackId,
+      ),
+    ) as GetStickerPackByIdResult;
     assert(
       stickerPackResult.stickerPack != null,
       'The sticker pack must be found',
@@ -109,12 +109,12 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
         );
 
     if (mustDoWork) {
-      final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-            FetchStickerPackCommand(
-              stickerPackId: event.stickerPackId,
-              jid: event.jid,
-            ),
-          );
+      final result = await getForegroundService().send(
+        FetchStickerPackCommand(
+          stickerPackId: event.stickerPackId,
+          jid: event.jid,
+        ),
+      );
 
       if (result is FetchStickerPackSuccessResult) {
         emit(
@@ -143,11 +143,11 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
       ),
     );
 
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-          InstallStickerPackCommand(
-            stickerPack: state.stickerPack!,
-          ),
-        );
+    final result = await getForegroundService().send(
+      InstallStickerPackCommand(
+        stickerPack: state.stickerPack!,
+      ),
+    );
 
     emit(
       state.copyWith(
@@ -182,11 +182,11 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
 
     final stickerPackResult =
         // ignore: cast_nullable_to_non_nullable
-        await MoxplatformPlugin.handler.getDataSender().sendData(
-              GetStickerPackByIdCommand(
-                id: event.stickerPackId,
-              ),
-            ) as GetStickerPackByIdResult;
+        await getForegroundService().send(
+      GetStickerPackByIdCommand(
+        id: event.stickerPackId,
+      ),
+    ) as GetStickerPackByIdResult;
 
     // Find out if the sticker pack is locally available or not
     if (stickerPackResult.stickerPack == null) {

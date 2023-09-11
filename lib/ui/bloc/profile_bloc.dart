@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
@@ -78,23 +78,23 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
     GetIt.I.get<ConversationsBloc>().add(AvatarChangedEvent(event.path));
 
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-          SetAvatarCommand(
-            path: event.path,
-            hash: event.hash,
-          ),
-          awaitable: false,
-        );
+    await getForegroundService().send(
+      SetAvatarCommand(
+        path: event.path,
+        hash: event.hash,
+      ),
+      awaitable: false,
+    );
   }
 
   Future<void> _onSetSubscriptionState(
     SetSubscriptionStateEvent event,
     Emitter<ProfileState> emit,
   ) async {
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-          SetShareOnlineStatusCommand(jid: event.jid, share: event.shareStatus),
-          awaitable: false,
-        );
+    await getForegroundService().send(
+      SetShareOnlineStatusCommand(jid: event.jid, share: event.shareStatus),
+      awaitable: false,
+    );
   }
 
   Future<void> _onMuteStateSet(
@@ -108,9 +108,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         ),
       ),
     );
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-          SetConversationMuteStatusCommand(jid: event.jid, muted: event.muted),
-          awaitable: false,
-        );
+    await getForegroundService().send(
+      SetConversationMuteStatusCommand(jid: event.jid, muted: event.muted),
+      awaitable: false,
+    );
   }
 }

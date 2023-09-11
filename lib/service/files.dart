@@ -3,8 +3,8 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
-import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/service/cryptography/cryptography.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
@@ -53,7 +53,7 @@ Future<String> computeCachedPathForFile(
   Map<HashFunction, String>? hashes,
 ) async {
   final basePath = path.join(
-    await MoxplatformPlugin.platform.getPersistentDataPath(),
+    await MoxxyPlatformApi().getPersistentDataPath(),
     'media',
   );
   final baseDir = Directory(basePath);

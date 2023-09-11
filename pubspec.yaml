@@ -42,13 +42,13 @@ dependencies:
   flutter_zxing: 0.8.4
   fluttertoast: 8.1.1
   freezed_annotation: 2.1.0
-  get_it: 7.2.0
+  get_it: 7.6.0
   grouped_list: 5.1.2
   hex: 0.2.0
   image: 3.2.0
   json_annotation: 4.6.0
   keyboard_height_plugin: 0.0.4
-  logging: 1.0.2
+  logging: ^1.2.0
   meta: ^1.7.0
   mime: 1.0.2
   move_to_background:
@@ -61,9 +61,6 @@ dependencies:
   moxlib:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: ^0.2.0
-  moxplatform:
-    hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.1.17+6
   moxxmpp:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.4.0
@@ -72,7 +69,7 @@ dependencies:
     version: 0.3.1
   moxxy_native:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.1.0
+    version: 0.2.0
   moxxyv2_builders:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.2.0
@@ -134,18 +131,16 @@ dependency_overrides:
   #   path: ../moxxmpp/packages/moxxmpp_socket_tcp
   # omemo_dart:
   #   path: ../../Personal/omemo_dart
-  # moxplatform:
-  #   path: ../moxplatform/packages/moxplatform
-  # moxplatform_android:
-  #   path: ../moxplatform/packages/moxplatform_android
-  # moxplatform_platform_interface:
-  #  path: ../moxplatform/packages/moxplatform_platform_interface
 
   moxxmpp:
     git:
       url: https://codeberg.org/moxxy/moxxmpp.git
       rev: 864cc0e7474d98f691d87b7a0806f428bf98b790
       path: packages/moxxmpp
+
+  # NOTE: Leave here for development purposes 
+  # moxxy_native:
+  #   path: ../moxxy_native
 
   moxxyv2_builders:
     path: ../moxxyv2_builders

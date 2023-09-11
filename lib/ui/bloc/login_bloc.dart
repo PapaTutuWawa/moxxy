@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -77,13 +77,13 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       ),
     );
 
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-          LoginCommand(
-            jid: state.jid,
-            password: state.password,
-            useDirectTLS: true,
-          ),
-        );
+    final result = await getForegroundService().send(
+      LoginCommand(
+        jid: state.jid,
+        password: state.password,
+        useDirectTLS: true,
+      ),
+    );
 
     if (result is LoginSuccessfulEvent) {
       emit(state.copyWith(working: false));

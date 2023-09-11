@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
@@ -232,12 +232,11 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
                 if (result != null) {
                   final deleteResult =
                       // ignore: cast_nullable_to_non_nullable
-                      await MoxplatformPlugin.handler.getDataSender().sendData(
-                            DeleteOldMediaFilesCommand(
-                              timeOffset: result.milliseconds,
-                            ),
-                            awaitable: true,
-                          ) as DeleteOldMediaFilesDoneEvent;
+                      await getForegroundService().send(
+                    DeleteOldMediaFilesCommand(
+                      timeOffset: result.milliseconds,
+                    ),
+                  ) as DeleteOldMediaFilesDoneEvent;
 
                   // Update the display
                   _controller.mediaUsageUpdated(

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -30,12 +29,12 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     );
 
     // Notify the backend
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-          RemoveStickerPackCommand(
-            stickerPackId: event.stickerPackId,
-          ),
-          awaitable: false,
-        );
+    await getForegroundService().send(
+      RemoveStickerPackCommand(
+        stickerPackId: event.stickerPackId,
+      ),
+      awaitable: false,
+    );
   }
 
   Future<void> _onStickerPackImported(
@@ -54,11 +53,11 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
       ),
     );
 
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-          ImportStickerPackCommand(
-            path: pickerResult.files!.first,
-          ),
-        );
+    final result = await getForegroundService().send(
+      ImportStickerPackCommand(
+        path: pickerResult.files!.first,
+      ),
+    );
 
     emit(
       state.copyWith(

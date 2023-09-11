@@ -1,5 +1,5 @@
 import 'package:moxlib/moxlib.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart';

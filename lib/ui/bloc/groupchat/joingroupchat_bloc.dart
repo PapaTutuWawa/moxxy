@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/error_types.dart';
@@ -63,12 +63,12 @@ class JoinGroupchatBloc extends Bloc<JoinGroupchatEvent, JoinGroupchatState> {
     );
 
     // ignore: cast_nullable_to_non_nullable
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-          JoinGroupchatCommand(
-            jid: (event as StartGroupchatEvent).jid,
-            nick: state.nick,
-          ),
-        );
+    final result = await getForegroundService().send(
+      JoinGroupchatCommand(
+        jid: (event as StartGroupchatEvent).jid,
+        nick: state.nick,
+      ),
+    );
     if (result is ErrorEvent) {
       final error = result.errorId == ErrorType.remoteServerNotFound.value ||
               result.errorId == ErrorType.remoteServerTimeout.value

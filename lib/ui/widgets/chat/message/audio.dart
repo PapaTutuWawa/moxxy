@@ -2,12 +2,11 @@ import 'dart:async';
 import 'dart:io';
 import 'package:audiofileplayer/audiofileplayer.dart';
 import 'package:flutter/material.dart';
-import 'package:moxplatform/moxplatform.dart';
-import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:moxxyv2/ui/widgets/chat/downloadbutton.dart';
+import 'package:moxxyv2/ui/widgets/chat/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/message/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/message/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/progress.dart';
@@ -257,12 +256,7 @@ class AudioChatState extends State<AudioChatWidget> {
       widget.sent,
       mimeType: widget.message.fileMetadata!.mimeType,
       downloadButton: DownloadButton(
-        onPressed: () {
-          MoxplatformPlugin.handler.getDataSender().sendData(
-                RequestDownloadCommand(message: widget.message),
-                awaitable: false,
-              );
-        },
+        onPressed: () => requestMediaDownload(widget.message),
       ),
     );
   }

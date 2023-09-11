@@ -1,4 +1,4 @@
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/events.dart';
@@ -37,13 +37,13 @@ class BidirectionalStickerPackController
     StickerPack? oldestElement,
   ) async {
     // ignore: cast_nullable_to_non_nullable
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-          GetPagedStickerPackCommand(
-            olderThan: true,
-            timestamp: oldestElement?.addedTimestamp,
-            includeStickers: includeStickers,
-          ),
-        ) as PagedStickerPackResult;
+    final result = await getForegroundService().send(
+      GetPagedStickerPackCommand(
+        olderThan: true,
+        timestamp: oldestElement?.addedTimestamp,
+        includeStickers: includeStickers,
+      ),
+    ) as PagedStickerPackResult;
 
     return result.stickerPacks;
   }
@@ -53,13 +53,13 @@ class BidirectionalStickerPackController
     StickerPack? newestElement,
   ) async {
     // ignore: cast_nullable_to_non_nullable
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-          GetPagedStickerPackCommand(
-            olderThan: false,
-            timestamp: newestElement?.addedTimestamp,
-            includeStickers: includeStickers,
-          ),
-        ) as PagedStickerPackResult;
+    final result = await getForegroundService().send(
+      GetPagedStickerPackCommand(
+        olderThan: false,
+        timestamp: newestElement?.addedTimestamp,
+        includeStickers: includeStickers,
+      ),
+    ) as PagedStickerPackResult;
 
     return result.stickerPacks;
   }

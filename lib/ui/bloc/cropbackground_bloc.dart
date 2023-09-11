@@ -5,7 +5,7 @@ import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image/image.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
@@ -117,7 +117,7 @@ class CropBackgroundBloc
   ) async {
     emit(state.copyWith(isWorking: true));
 
-    final appDir = await MoxplatformPlugin.platform.getPersistentDataPath();
+    final appDir = await MoxxyPlatformApi().getPersistentDataPath();
     final backgroundPath = path.join(appDir, 'background_image.png');
 
     final port = ReceivePort();

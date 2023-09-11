@@ -1,6 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
@@ -30,13 +30,13 @@ class UIReadMarkerService {
     if (!GetIt.I.get<PreferencesBloc>().state.sendChatMarkers) return;
 
     _log.finest('Sending chat marker for ${message.id}');
-    MoxplatformPlugin.handler.getDataSender().sendData(
-          MarkMessageAsReadCommand(
-            id: message.id,
-            sendMarker: true,
-          ),
-          awaitable: false,
-        );
+    getForegroundService().send(
+      MarkMessageAsReadCommand(
+        id: message.id,
+        sendMarker: true,
+      ),
+      awaitable: false,
+    );
   }
 
   /// Empties the internal cache.

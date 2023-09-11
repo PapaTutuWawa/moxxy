@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:collection/collection.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
@@ -58,15 +58,15 @@ class NewConversationBloc
       return;
     }
 
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-          AddConversationCommand(
-            title: event.title,
-            jid: event.jid,
-            avatarUrl: event.avatarUrl,
-            lastMessageBody: '',
-            conversationType: event.type.value,
-          ),
-        );
+    final result = await getForegroundService().send(
+      AddConversationCommand(
+        title: event.title,
+        jid: event.jid,
+        avatarUrl: event.avatarUrl,
+        lastMessageBody: '',
+        conversationType: event.type.value,
+      ),
+    );
 
     if (result is NoConversationModifiedEvent) {
       // Fall through
@@ -101,12 +101,12 @@ class NewConversationBloc
       ),
     );
 
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-          RemoveContactCommand(
-            jid: event.jid,
-          ),
-          awaitable: false,
-        );
+    await getForegroundService().send(
+      RemoveContactCommand(
+        jid: event.jid,
+      ),
+      awaitable: false,
+    );
   }
 
   Future<void> _onRosterPushed(

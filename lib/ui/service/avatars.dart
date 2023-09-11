@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:logging/logging.dart';
-import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 
@@ -21,13 +21,13 @@ class UIAvatarsService {
 
     _log.finest('Requesting avatar for $jid');
     _avatarRequested[jid] = true;
-    MoxplatformPlugin.handler.getDataSender().sendData(
-          RequestAvatarForJidCommand(
-            jid: jid,
-            hash: hash,
-            ownAvatar: ownAvatar,
-          ),
-        );
+    getForegroundService().send(
+      RequestAvatarForJidCommand(
+        jid: jid,
+        hash: hash,
+        ownAvatar: ownAvatar,
+      ),
+    );
   }
 
   void resetCache() {

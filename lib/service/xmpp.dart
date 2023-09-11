@@ -7,8 +7,8 @@ import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:mime/mime.dart';
 import 'package:moxlib/moxlib.dart';
-import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
@@ -774,26 +774,22 @@ class XmppService {
   void setNotificationText(XmppConnectionState state) {
     switch (state) {
       case XmppConnectionState.connected:
-        GetIt.I.get<BackgroundService>().setNotification(
-              'Moxxy',
+        GetIt.I.get<BackgroundService>().setNotificationBody(
               t.notifications.permanent.ready,
             );
         break;
       case XmppConnectionState.connecting:
-        GetIt.I.get<BackgroundService>().setNotification(
-              'Moxxy',
+        GetIt.I.get<BackgroundService>().setNotificationBody(
               t.notifications.permanent.connecting,
             );
         break;
       case XmppConnectionState.notConnected:
-        GetIt.I.get<BackgroundService>().setNotification(
-              'Moxxy',
+        GetIt.I.get<BackgroundService>().setNotificationBody(
               t.notifications.permanent.disconnect,
             );
         break;
       case XmppConnectionState.error:
-        GetIt.I.get<BackgroundService>().setNotification(
-              'Moxxy',
+        GetIt.I.get<BackgroundService>().setNotificationBody(
               t.notifications.permanent.error,
             );
         break;

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
@@ -35,7 +34,7 @@ class ConversationSettingsPage extends StatelessWidget {
 
     if (result == null) return null;
 
-    final appDir = await MoxplatformPlugin.platform.getPersistentDataPath();
+    final appDir = await MoxxyPlatformApi().getPersistentDataPath();
     final filename = path.basename(result.files!.first);
     final backgroundPath = path.join(appDir, filename);
     await File(result.files!.first).copy(backgroundPath);
