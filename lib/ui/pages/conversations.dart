@@ -394,8 +394,18 @@ class ConversationsPageState extends State<ConversationsPage>
           floatingActionButton: SpeedDial(
             icon: Icons.chat,
             curve: Curves.bounceInOut,
-            backgroundColor: primaryColor,
-            foregroundColor: Colors.white,
+            backgroundColor: Theme.of(context).floatingActionButtonTheme.backgroundColor,
+            foregroundColor: Theme.of(context).floatingActionButtonTheme.foregroundColor,
+
+            // Adjust to Material3's specifications
+            // (Thanks https://github.com/darioielardi/flutter_speed_dial/issues/279#issuecomment-1373002572)
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
+            spacing: 16,
+            childMargin: EdgeInsets.zero,
+            childPadding: const EdgeInsets.all(8),
+
             children: [
               SpeedDialChild(
                 child: const Icon(Icons.notes),
@@ -409,19 +419,17 @@ class ConversationsPageState extends State<ConversationsPage>
                         ),
                       );
                 },
-                backgroundColor: primaryColor,
-                // TODO(Unknown): Theme dependent?
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).floatingActionButtonTheme.backgroundColor,
+                foregroundColor: Theme.of(context).floatingActionButtonTheme.foregroundColor,
                 label: t.pages.conversations.speeddialAddNoteToSelf,
               ),
               SpeedDialChild(
                 child: const Icon(Icons.person_add),
                 onTap: () => Navigator.pushNamed(context, newConversationRoute),
-                backgroundColor: primaryColor,
-                // TODO(Unknown): Theme dependent?
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).floatingActionButtonTheme.backgroundColor,
+                foregroundColor: Theme.of(context).floatingActionButtonTheme.foregroundColor,
                 label: t.pages.conversations.speeddialNewChat,
-              )
+              ),
             ],
           ),
         ),
