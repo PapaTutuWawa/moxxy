@@ -79,7 +79,7 @@ class DebuggingPage extends StatelessWidget {
                               );
                           Navigator.of(context).pop();
                         },
-                      )
+                      ),
                     ],
                   ),
                 );
@@ -109,7 +109,7 @@ class DebuggingPage extends StatelessWidget {
                               );
                           Navigator.of(context).pop();
                         },
-                      )
+                      ),
                     ],
                   ),
                 );
@@ -141,7 +141,7 @@ class DebuggingPage extends StatelessWidget {
                               );
                           Navigator.of(context).pop();
                         },
-                      )
+                      ),
                     ],
                   ),
                 );

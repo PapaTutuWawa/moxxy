@@ -36,8 +36,13 @@ Future<void> _cropImage(List<dynamic> data) async {
   final yp = (y.abs() * inverse).toInt();
 
   final cmd = Command()
-      ..decodeImageFile(originalPath)
-      ..copyCrop(x: xp, y: yp, width: (vw * inverse).toInt(), height: (vh * inverse).toInt());
+    ..decodeImageFile(originalPath)
+    ..copyCrop(
+      x: xp,
+      y: yp,
+      width: (vw * inverse).toInt(),
+      height: (vh * inverse).toInt(),
+    );
 
   if (blur) {
     cmd.gaussianBlur(radius: 10);

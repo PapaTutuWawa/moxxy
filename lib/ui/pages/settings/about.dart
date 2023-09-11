@@ -127,7 +127,7 @@ class SettingsAboutPageState extends State<SettingsAboutPage> {
                 onPressed: () =>
                     _openUrl('https://github.com/PapaTutuWawa/moxxyv2'),
               ),
-            )
+            ),
           ],
         ),
       ),

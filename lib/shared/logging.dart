@@ -52,7 +52,7 @@ List<int> logToPayload(
         '_counter': counter,
         ...filename != null
             ? <String, String>{'filename': filename}
-            : <String, String>{}
+            : <String, String>{},
       },
     ),
   );

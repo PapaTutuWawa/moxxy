@@ -49,7 +49,7 @@ class SelfProfileHeader extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 20,
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -71,7 +71,7 @@ class SelfProfileHeader extends StatelessWidget {
                       onPressed: () =>
                           showQrCode(context, 'xmpp:${arguments.jid}'),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),

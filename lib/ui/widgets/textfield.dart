@@ -122,7 +122,7 @@ class CustomTextField extends StatelessWidget {
                   prefixIconConstraints: prefixIconConstraints,
                   suffixIconConstraints: suffixIconConstraints,
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -140,7 +140,7 @@ class CustomTextField extends StatelessWidget {
               ),
             ),
           ),
-        )
+        ),
       ],
     );
   }

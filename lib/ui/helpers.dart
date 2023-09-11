@@ -57,7 +57,7 @@ Future<bool> showConfirmationDialog(
         TextButton(
           onPressed: Navigator.of(context).pop,
           child: Text(t.global.no),
-        )
+        ),
       ],
     ),
   );
@@ -88,7 +88,7 @@ Future<void> showNotImplementedDialog(
           TextButton(
             child: Text(t.global.dialogAccept),
             onPressed: () => Navigator.of(context).pop(),
-          )
+          ),
         ],
       );
     },
@@ -114,7 +114,7 @@ Future<void> showInfoDialog(
         TextButton(
           onPressed: Navigator.of(context).pop,
           child: Text(t.global.dialogAccept),
-        )
+        ),
       ],
     ),
   );
@@ -316,8 +316,8 @@ void showQrCode(BuildContext context, String data, {bool embedLogo = true}) {
             embeddedImage:
                 embedLogo ? const AssetImage('assets/images/logo.png') : null,
             embeddedImageStyle: embedLogo
-                ? QrEmbeddedImageStyle(
-                    size: const Size(50, 50),
+                ? const QrEmbeddedImageStyle(
+                    size: Size(50, 50),
                   )
                 : null,
           ),

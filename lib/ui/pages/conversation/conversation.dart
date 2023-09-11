@@ -235,7 +235,7 @@ class ConversationPageState extends State<ConversationPage>
                 ),
                 onPressed: () => blockJid(state.conversation!.jid, context),
               ),
-            )
+            ),
           ],
         ),
       ),

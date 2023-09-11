@@ -57,7 +57,8 @@ class StartChatPageState extends State<StartChatPage> {
                   controller: _controller,
                   enabled: !state.isWorking,
                   decoration: InputDecoration(
-                    error: state.jidError != null ? Text(state.jidError!) : null,
+                    error:
+                        state.jidError != null ? Text(state.jidError!) : null,
                     labelText: t.pages.startchat.xmppAddress,
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
@@ -90,9 +91,11 @@ class StartChatPageState extends State<StartChatPage> {
                   children: [
                     Expanded(
                       child: FilledButton(
-                        onPressed: state.isWorking ? null : () => context
-                            .read<StartChatBloc>()
-                            .add(AddedContactEvent()),
+                        onPressed: state.isWorking
+                            ? null
+                            : () => context
+                                .read<StartChatBloc>()
+                                .add(AddedContactEvent()),
                         child: Text(t.pages.startchat.buttonAddToContact),
                       ),
                     ),

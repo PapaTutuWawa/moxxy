@@ -58,7 +58,7 @@ class Intro extends StatelessWidget {
                       ),
                       child: Text(t.pages.intro.loginButton),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -87,9 +87,9 @@ class Intro extends StatelessWidget {
                       },
                     ),
                   ),
-                )
+                ),
               ],
-            )
+            ),
           ],
         ),
       ),

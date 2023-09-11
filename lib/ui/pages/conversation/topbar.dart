@@ -222,6 +222,7 @@ class ConversationTopbar extends StatelessWidget
                     break;
                   case ConversationOption.block:
                     {
+                      // ignore: use_build_context_synchronously
                       await blockJid(state.conversation!.jid, context);
                     }
                     break;

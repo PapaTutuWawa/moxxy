@@ -124,7 +124,7 @@ class TextChatWidget extends StatelessWidget {
               message,
               sent,
             ),
-          )
+          ),
         ],
       ),
     );

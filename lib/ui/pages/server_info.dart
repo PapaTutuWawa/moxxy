@@ -51,9 +51,9 @@ class ServerInfoPage extends StatelessWidget {
       body: BlocBuilder<ServerInfoBloc, ServerInfoState>(
         builder: (BuildContext context, ServerInfoState state) {
           if (state.working) {
-            return Column(
+            return const Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 Center(child: CircularProgressIndicator()),
               ],
             );

@@ -239,9 +239,9 @@ class StickerPackPage extends StatelessWidget {
         body: state.isWorking
             ? SizedBox(
                 width: MediaQuery.of(context).size.width,
-                child: Column(
+                child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     CircularProgressIndicator(),
                   ],
                 ),

@@ -387,7 +387,6 @@ FROM
       fileMetadata: fileMetadata,
       received: received,
       displayed: displayed,
-      acked: false,
       originId: originId,
       isUploading: isUploading,
       isDownloading: isDownloading,
