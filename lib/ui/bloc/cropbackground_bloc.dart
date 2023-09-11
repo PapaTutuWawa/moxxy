@@ -18,6 +18,8 @@ part 'cropbackground_state.dart';
 
 // This function in an isolate allows to perform the cropping without blocking the UI
 // at all. Sending the image data to the isolate would result in UI blocking.
+// TODO(Unknown): Maybe make use of image's executeThread method to replace our own
+//                isolate code.
 Future<void> _cropImage(List<dynamic> data) async {
   final port = data[0] as SendPort;
   final originalPath = data[1] as String;
