@@ -10,7 +10,6 @@ import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class ShareSelectionPage extends StatelessWidget {
   const ShareSelectionPage({super.key});
@@ -65,7 +64,9 @@ class ShareSelectionPage extends StatelessWidget {
       child: BlocBuilder<ShareSelectionBloc, ShareSelectionState>(
         buildWhen: _buildWhen,
         builder: (context, state) => Scaffold(
-          appBar: BorderlessTopbar.title(t.pages.shareselection.shareWith),
+          appBar: AppBar(
+            title: Text(t.pages.shareselection.shareWith),
+          ),
           body: ListView.builder(
             itemCount: state.items.length,
             itemBuilder: (context, index) {

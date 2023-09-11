@@ -12,7 +12,6 @@ import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/contact_helper.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 enum ConversationOption { close, block }
 
@@ -31,21 +30,20 @@ PopupMenuItem<T> popupItemWithIcon<T>(
           padding: const EdgeInsets.only(right: 8),
           child: Icon(icon),
         ),
-        Text(text)
+        Text(text),
       ],
     ),
   );
 }
 
-/// A custom version of the BorderlessTopbar to display the conversation topbar
+/// A custom version of the AppBar to display the conversation topbar
 /// as it should
 class ConversationTopbar extends StatelessWidget
     implements PreferredSizeWidget {
   const ConversationTopbar({super.key});
 
   @override
-  Size get preferredSize =>
-      const Size.fromHeight(BorderlessTopbar.topbarPreferredHeight);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   bool _shouldRebuild(ConversationState prev, ConversationState next) {
     return prev.conversation?.title != next.conversation?.title ||
@@ -93,76 +91,81 @@ class ConversationTopbar extends StatelessWidget
       buildWhen: _shouldRebuild,
       builder: (context, state) {
         final chatState = state.conversation?.chatState ?? ChatState.gone;
-        return BorderlessTopbar(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  top: 8,
-                  right: 8,
-                  bottom: 8,
-                ),
-                child: InkWell(
-                  onTap: () => _openProfile(context, state),
-                  child: Stack(
-                    children: [
-                      Hero(
-                        tag: 'conversation_profile_picture',
-                        child: Material(
-                          color: Colors.transparent,
-                          child: RebuildOnContactIntegrationChange(
-                            builder: () => CachingXMPPAvatar(
-                              jid: state.conversation?.jid ?? '',
-                              radius: 25,
-                              hasContactId:
-                                  state.conversation?.contactId != null,
-                              hash: state.conversation?.avatarHash,
-                              path: state.conversation?.avatarPath,
-                              shouldRequest: state.conversation != null,
-                              altIcon: state.conversation?.isSelfChat ?? false
-                                  ? Icons.notes
-                                  : null,
+        return AppBar(
+          title: Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    top: 8,
+                    right: 8,
+                    bottom: 8,
+                  ),
+                  child: InkWell(
+                    onTap: () => _openProfile(context, state),
+                    child: Stack(
+                      children: [
+                        Hero(
+                          tag: 'conversation_profile_picture',
+                          child: Material(
+                            color: Colors.transparent,
+                            child: RebuildOnContactIntegrationChange(
+                              builder: () => CachingXMPPAvatar(
+                                jid: state.conversation?.jid ?? '',
+                                radius: 25,
+                                hasContactId:
+                                    state.conversation?.contactId != null,
+                                hash: state.conversation?.avatarHash,
+                                path: state.conversation?.avatarPath,
+                                shouldRequest: state.conversation != null,
+                                altIcon: state.conversation?.isSelfChat ?? false
+                                    ? Icons.notes
+                                    : null,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      AnimatedPositioned(
-                        duration: const Duration(milliseconds: 200),
-                        top: _isChatStateVisible(chatState) ? 0 : 10,
-                        left: 60,
-                        right: 0,
-                        curve: Curves.easeInOutCubic,
-                        child: RebuildOnContactIntegrationChange(
-                          builder: () => Text(
-                            state.conversation?.titleWithOptionalContact ?? '',
-                            style: const TextStyle(
-                              fontSize: fontsizeAppbar,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: 25,
-                        right: 0,
-                        bottom: 0,
-                        child: AnimatedOpacity(
-                          opacity: _isChatStateVisible(chatState) ? 1.0 : 0.0,
+                        AnimatedPositioned(
+                          duration: const Duration(milliseconds: 200),
+                          top: _isChatStateVisible(chatState) ? 0 : 10,
+                          left: 60,
+                          right: 0,
                           curve: Curves.easeInOutCubic,
-                          duration: const Duration(milliseconds: 100),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _buildChatState(chatState),
-                            ],
+                          child: RebuildOnContactIntegrationChange(
+                            builder: () => Text(
+                              state.conversation?.titleWithOptionalContact ??
+                                  '',
+                              style: const TextStyle(
+                                fontSize: fontsizeAppbar,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                        Positioned(
+                          left: 25,
+                          right: 0,
+                          bottom: 0,
+                          child: AnimatedOpacity(
+                            opacity: _isChatStateVisible(chatState) ? 1.0 : 0.0,
+                            curve: Curves.easeInOutCubic,
+                            duration: const Duration(milliseconds: 100),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildChatState(chatState),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
+          ),
+          actions: [
             if (state.conversation?.type == ConversationType.chat)
               PopupMenuButton<EncryptionOption>(
                 onSelected: (result) {
@@ -236,7 +239,7 @@ class ConversationTopbar extends StatelessWidget
                     ConversationOption.block,
                     t.pages.conversation.blockUser,
                     Icons.block,
-                  )
+                  ),
               ],
             ),
           ],

@@ -7,7 +7,6 @@ import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/sticker_pack_controller.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class StickerPacksSettingsPage extends StatefulWidget {
@@ -45,7 +44,9 @@ class StickerPacksSettingsState extends State<StickerPacksSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.title(t.pages.settings.stickerPacks.title),
+      appBar: AppBar(
+        title: Text(t.pages.settings.stickerPacks.title),
+      ),
       body: StreamBuilder<List<StickerPack>>(
         stream: _controller.dataStream,
         initialData: const [],

@@ -5,7 +5,6 @@ import 'package:moxxyv2/ui/bloc/login_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/button.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class Login extends StatelessWidget {
   const Login({super.key});
@@ -23,7 +22,9 @@ class Login extends StatelessWidget {
       builder: (BuildContext context, LoginState state) => WillPopScope(
         onWillPop: () async => !state.working,
         child: Scaffold(
-          appBar: BorderlessTopbar.title(t.pages.login.title),
+          appBar: AppBar(
+            title: Text(t.pages.login.title),
+          ),
           body: Column(
             children: [
               Visibility(

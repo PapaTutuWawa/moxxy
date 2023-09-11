@@ -1,7 +1,6 @@
 /*
 import "dart:math";
 
-import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/textfield.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
@@ -91,7 +90,9 @@ class RegistrationPage extends StatelessWidget {
         return WillPopScope(
           onWillPop: () async => !viewModel.doingWork,
           child: Scaffold(
-          appBar: BorderlessTopbar.simple(title: "Register"),
+          appBar: AppBar(
+            title: Text("Register"),
+          ),
           body: Column(
             children: [
               Visibility(

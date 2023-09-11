@@ -4,9 +4,6 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/startchat_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
-import 'package:moxxyv2/ui/widgets/button.dart';
-import 'package:moxxyv2/ui/widgets/textfield.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class StartChatPage extends StatefulWidget {
   const StartChatPage({super.key});
@@ -40,7 +37,9 @@ class StartChatPageState extends State<StartChatPage> {
           return true;
         },
         child: Scaffold(
-          appBar: BorderlessTopbar.title(t.pages.startchat.title),
+          appBar: AppBar(
+            title: Text(t.pages.startchat.title),
+          ),
           body: Column(
             children: [
               Visibility(
@@ -51,29 +50,29 @@ class StartChatPageState extends State<StartChatPage> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: paddingVeryLarge)
                         .add(const EdgeInsets.only(top: 8)),
-                child: CustomTextField(
-                  labelText: t.pages.startchat.xmppAddress,
+                child: TextField(
                   onChanged: (value) => context.read<StartChatBloc>().add(
                         JidChangedEvent(value),
                       ),
                   controller: _controller,
                   enabled: !state.isWorking,
-                  cornerRadius: textfieldRadiusRegular,
-                  borderColor: primaryColor,
-                  borderWidth: 1,
-                  errorText: state.jidError,
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.qr_code),
-                    onPressed: () async {
-                      final jid = await scanXmppUriQrCode(context);
-                      if (jid == null) return;
+                  decoration: InputDecoration(
+                    error: state.jidError != null ? Text(state.jidError!) : null,
+                    labelText: t.pages.startchat.xmppAddress,
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.qr_code),
+                      onPressed: () async {
+                        final jid = await scanXmppUriQrCode(context);
+                        if (jid == null) return;
 
-                      _controller.text = jid.path;
-                      // ignore: use_build_context_synchronously
-                      context.read<StartChatBloc>().add(
-                            JidChangedEvent(jid.path),
-                          );
-                    },
+                        _controller.text = jid.path;
+                        // ignore: use_build_context_synchronously
+                        context.read<StartChatBloc>().add(
+                              JidChangedEvent(jid.path),
+                            );
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -90,18 +89,16 @@ class StartChatPageState extends State<StartChatPage> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: RoundedButton(
-                        cornerRadius: 32,
-                        onTap: () => context
+                      child: FilledButton(
+                        onPressed: state.isWorking ? null : () => context
                             .read<StartChatBloc>()
                             .add(AddedContactEvent()),
-                        enabled: !state.isWorking,
                         child: Text(t.pages.startchat.buttonAddToContact),
                       ),
-                    )
+                    ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),

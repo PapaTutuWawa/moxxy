@@ -17,7 +17,6 @@ import 'package:moxxyv2/ui/request_dialog.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/context_menu.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 enum ConversationsOptions { settings }
 
@@ -187,9 +186,7 @@ class ConversationsPageState extends State<ConversationsPage>
                     // widgetRect.bottom (Bottom y coordinate of the conversation item)
                     // minus 20 (padding so we're not directly against the conversation
                     // item) - the height of the top bar.
-                    _topStackOffset = widgetRect.bottom -
-                        20 -
-                        BorderlessTopbar.topbarPreferredHeight;
+                    _topStackOffset = widgetRect.bottom - 20 - kToolbarHeight;
                   } else {
                     // In this case we don't have sufficient space below the conversation
                     // item, so we place the context menu above it.
@@ -200,7 +197,7 @@ class ConversationsPageState extends State<ConversationsPage>
                     _topStackOffset = widgetRect.top -
                         20 -
                         numberOptions * ContextMenuItem.height -
-                        BorderlessTopbar.topbarPreferredHeight;
+                        kToolbarHeight;
                   }
                 });
 
@@ -250,75 +247,69 @@ class ConversationsPageState extends State<ConversationsPage>
       },
       child: BlocBuilder<ConversationsBloc, ConversationsState>(
         builder: (BuildContext context, ConversationsState state) => Scaffold(
-          appBar: BorderlessTopbar(
-            showBackButton: false,
-            children: [
-              Expanded(
-                child: InkWell(
-                  onTap: () {
-                    // Dismiss the selection, if we have an active one
-                    if (_selectedConversation != null) {
-                      dismissContextMenu();
-                    }
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            title: InkWell(
+              onTap: () {
+                // Dismiss the selection, if we have an active one
+                if (_selectedConversation != null) {
+                  dismissContextMenu();
+                }
 
-                    GetIt.I.get<profile.ProfileBloc>().add(
-                          profile.ProfilePageRequestedEvent(
-                            true,
-                            jid: state.jid,
-                            avatarUrl: state.avatarPath,
-                            displayName: state.displayName,
-                          ),
-                        );
-                  },
-                  child: Padding(
+                GetIt.I.get<profile.ProfileBloc>().add(
+                      profile.ProfilePageRequestedEvent(
+                        true,
+                        jid: state.jid,
+                        avatarUrl: state.avatarPath,
+                        displayName: state.displayName,
+                      ),
+                    );
+              },
+              child: Row(
+                children: [
+                  Padding(
                     padding: const EdgeInsets.all(8),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Hero(
-                          tag: 'self_profile_picture',
-                          child: Material(
-                            color: const Color.fromRGBO(0, 0, 0, 0),
-                            // NOTE: We do not care about the avatar hash because
-                            //       we just read it from the XMPP state in the
-                            //       avatar service.
-                            child: CachingXMPPAvatar.self(
-                              radius: 20,
-                            ),
-                          ),
+                    child: Hero(
+                      tag: 'self_profile_picture',
+                      child: Material(
+                        color: const Color.fromRGBO(0, 0, 0, 0),
+                        // NOTE: We do not care about the avatar hash because
+                        //       we just read it from the XMPP state in the
+                        //       avatar service.
+                        child: CachingXMPPAvatar.self(
+                          radius: 20,
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8),
-                          child: Text(
-                            state.displayName,
-                            style: const TextStyle(
-                              fontSize: fontsizeAppbar,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Text(
+                      state.displayName,
+                      style: const TextStyle(
+                        fontSize: fontsizeAppbar,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: PopupMenuButton(
-                  onSelected: (ConversationsOptions result) {
-                    switch (result) {
-                      case ConversationsOptions.settings:
-                        Navigator.pushNamed(context, settingsRoute);
-                        break;
-                    }
-                  },
-                  icon: const Icon(Icons.more_vert),
-                  itemBuilder: (BuildContext context) => [
-                    PopupMenuItem(
-                      value: ConversationsOptions.settings,
-                      child: Text(t.pages.conversations.overlaySettings),
-                    )
-                  ],
-                ),
+            ),
+            actions: [
+              PopupMenuButton(
+                onSelected: (ConversationsOptions result) {
+                  switch (result) {
+                    case ConversationsOptions.settings:
+                      Navigator.pushNamed(context, settingsRoute);
+                      break;
+                  }
+                },
+                icon: const Icon(Icons.more_vert),
+                itemBuilder: (BuildContext context) => [
+                  PopupMenuItem(
+                    value: ConversationsOptions.settings,
+                    child: Text(t.pages.conversations.overlaySettings),
+                  ),
+                ],
               ),
             ],
           ),

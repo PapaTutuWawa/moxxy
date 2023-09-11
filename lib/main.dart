@@ -250,6 +250,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
     final foreground = getForegroundService();
     switch (state) {
+      case AppLifecycleState.hidden:
       case AppLifecycleState.paused:
         foreground.send(
           SetCSIStateCommand(active: false),

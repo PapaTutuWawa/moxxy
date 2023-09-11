@@ -7,7 +7,6 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 Widget _buildLanguageOption(
   BuildContext context,
@@ -50,7 +49,9 @@ class AppearanceSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.title(t.pages.settings.appearance.title),
+      appBar: AppBar(
+        title: Text(t.pages.settings.appearance.title),
+      ),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => ListView(
           children: [

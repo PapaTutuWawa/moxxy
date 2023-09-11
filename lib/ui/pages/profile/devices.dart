@@ -5,7 +5,6 @@ import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/profile/widgets.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 enum DevicesOptions {
   recreateSessions,
@@ -100,23 +99,25 @@ class DevicesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<DevicesBloc, DevicesState>(
       builder: (context, state) => Scaffold(
-        appBar: BorderlessTopbar.title(
-          t.pages.profile.devices.title,
-          trailing: PopupMenuButton(
-            onSelected: (DevicesOptions result) {
-              if (result == DevicesOptions.recreateSessions) {
-                _recreateSessions(context);
-              }
-            },
-            icon: const Icon(Icons.more_vert),
-            itemBuilder: (BuildContext context) => [
-              PopupMenuItem(
-                value: DevicesOptions.recreateSessions,
-                enabled: state.devices.isNotEmpty,
-                child: Text(t.pages.profile.devices.recreateSessions),
-              )
-            ],
-          ),
+        appBar: AppBar(
+          title: Text(t.pages.profile.devices.title),
+          actions: [
+            PopupMenuButton(
+              onSelected: (DevicesOptions result) {
+                if (result == DevicesOptions.recreateSessions) {
+                  _recreateSessions(context);
+                }
+              },
+              icon: const Icon(Icons.more_vert),
+              itemBuilder: (BuildContext context) => [
+                PopupMenuItem(
+                  value: DevicesOptions.recreateSessions,
+                  enabled: state.devices.isNotEmpty,
+                  child: Text(t.pages.profile.devices.recreateSessions),
+                ),
+              ],
+            ),
+          ],
         ),
         body: _buildBody(context, state),
       ),

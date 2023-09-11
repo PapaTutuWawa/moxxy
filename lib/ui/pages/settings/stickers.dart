@@ -8,7 +8,6 @@ import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class StickersSettingsPage extends StatelessWidget {
   const StickersSettingsPage({super.key});
@@ -35,7 +34,9 @@ class StickersSettingsPage extends StatelessWidget {
               right: 0,
               bottom: 0,
               child: Scaffold(
-                appBar: BorderlessTopbar.title(t.pages.settings.stickers.title),
+                appBar: AppBar(
+                  title: Text(t.pages.settings.stickers.title),
+                ),
                 body: BlocBuilder<PreferencesBloc, PreferencesState>(
                   builder: (_, prefs) => Padding(
                     padding: EdgeInsets.zero,

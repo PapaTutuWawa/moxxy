@@ -16,7 +16,6 @@ import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:moxxyv2/ui/widgets/stacked_bar_chart.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 /// The various time offsets for deleting old media files.
 enum OlderThan {
@@ -163,7 +162,9 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.title(t.pages.settings.storage.title),
+      appBar: AppBar(
+        title: Text(t.pages.settings.storage.title),
+      ),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => ListView(
           children: [

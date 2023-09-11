@@ -10,7 +10,6 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -26,7 +25,9 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.title(t.pages.settings.settings.title),
+      appBar: AppBar(
+        title: Text(t.pages.settings.settings.title),
+      ),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         buildWhen: (prev, next) => prev.showDebugMenu != next.showDebugMenu,
         builder: (context, state) => ListView(

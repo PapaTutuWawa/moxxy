@@ -10,7 +10,6 @@ import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class DebuggingPage extends StatelessWidget {
   DebuggingPage({super.key})
@@ -31,7 +30,9 @@ class DebuggingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.title(t.pages.settings.debugging.title),
+      appBar: AppBar(
+        title: Text(t.pages.settings.debugging.title),
+      ),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => ListView(
           children: [

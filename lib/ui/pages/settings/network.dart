@@ -6,7 +6,6 @@ import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class _AutoDownloadSizes {
   const _AutoDownloadSizes(this.text, this.value);
@@ -106,7 +105,9 @@ class NetworkPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.title(t.pages.settings.network.title),
+      appBar: AppBar(
+        title: Text(t.pages.settings.network.title),
+      ),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => ListView(
           children: [
