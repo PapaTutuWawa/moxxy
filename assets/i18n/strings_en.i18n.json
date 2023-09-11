@@ -166,7 +166,8 @@
             "xmppAddress": "XMPP-Address",
             "password": "Password",
             "advancedOptions": "Advanced options",
-            "createAccount": "Create account on server"
+            "createAccount": "Create account on server",
+            "login": "Login"
         },
         "conversations": {
             "speeddialNewChat": "New chat",

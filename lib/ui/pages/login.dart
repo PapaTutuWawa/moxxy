@@ -114,7 +114,9 @@ class Login extends StatelessWidget {
                             : () => context
                                 .read<LoginBloc>()
                                 .add(LoginSubmittedEvent()),
-                        child: const Text('Login'),
+                        child: Text(
+                          t.pages.login.login,
+                        ),
                       ),
                     ),
                   ],
