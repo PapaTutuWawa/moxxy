@@ -91,7 +91,6 @@ dependencies:
   sqflite_common: ^2.5.0
   sqflite_sqlcipher: ^2.2.1
   #scrollable_positioned_list: 0.2.3
-  stack_blur: 0.2.2
   swipeable_tile:
     git:
       url: https://github.com/PapaTutuWawa/swipeable_tile.git
