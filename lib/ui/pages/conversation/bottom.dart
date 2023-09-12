@@ -250,6 +250,17 @@ class ConversationInputState extends State<ConversationInput> {
                             icon: _getSendButtonIcon(snapshot.data!),
                             backgroundColor: primaryColor,
                             foregroundColor: Colors.white,
+
+                            // Adjust to Material3's specifications
+                            // (Thanks https://github.com/darioielardi/flutter_speed_dial/issues/279#issuecomment-1373002572)
+                            shape: const RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(16)),
+                            ),
+                            spacing: 16,
+                            childMargin: EdgeInsets.zero,
+                            childPadding: const EdgeInsets.all(8),
+
                             children: [
                               SpeedDialChild(
                                 child: const Icon(Icons.image),
