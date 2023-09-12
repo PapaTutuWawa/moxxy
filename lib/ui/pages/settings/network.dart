@@ -45,9 +45,6 @@ class AutoDownloadSizeDialogState extends State<AutoDownloadSizeDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(textfieldRadiusRegular),
-      ),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: 32,
         vertical: 12,

@@ -70,9 +70,6 @@ class DeleteMediaDialogState extends State<DeleteMediaDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(t.pages.settings.storage.removeOldMediaDialog.title),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(textfieldRadiusRegular),
-      ),
       actions: [
         TextButton(
           onPressed: () async {

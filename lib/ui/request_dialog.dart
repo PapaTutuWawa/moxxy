@@ -4,7 +4,6 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/request_bloc.dart';
-import 'package:moxxyv2/ui/constants.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class RequestDialog extends StatelessWidget {
@@ -13,9 +12,6 @@ class RequestDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(textfieldRadiusRegular),
-      ),
       child: BlocConsumer<RequestBloc, RequestState>(
         listener: (_, state) {
           // Automatically dismiss the dialog when we're done

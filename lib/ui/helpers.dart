@@ -42,9 +42,6 @@ Future<bool> showConfirmationDialog(
     barrierDismissible: false,
     builder: (context) => AlertDialog(
       title: Text(title),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(textfieldRadiusRegular),
-      ),
       content: Text(body),
       actions: [
         TextButton(
@@ -76,9 +73,6 @@ Future<void> showNotImplementedDialog(
     builder: (BuildContext context) {
       return AlertDialog(
         title: const Text('Not Implemented'),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(textfieldRadiusRegular),
-        ),
         content: SingleChildScrollView(
           child: ListBody(
             children: [Text('The $feature feature is not yet implemented.')],
@@ -106,9 +100,6 @@ Future<void> showInfoDialog(
     barrierDismissible: false,
     builder: (context) => AlertDialog(
       title: Text(title),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(textfieldRadiusRegular),
-      ),
       content: Text(body),
       actions: [
         TextButton(
@@ -464,15 +455,9 @@ Future<void> openFile(String path) async {
 /// Opens a modal bottom sheet with an emoji picker. Resolves to the picked emoji,
 /// if one was picked. If the picker was dismissed, resolves to null.
 Future<String?> pickEmoji(BuildContext context, {bool pop = true}) async {
+  // TODO: The emoji picker overflows
   final emoji = await showModalBottomSheet<String>(
     context: context,
-    // TODO(PapaTutuWawa): Move this to the theme
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.only(
-        topLeft: radiusLarge,
-        topRight: radiusLarge,
-      ),
-    ),
     builder: (context) => Padding(
       padding: const EdgeInsets.only(top: 12),
       child: EmojiPicker(

@@ -67,10 +67,6 @@ class AppearanceSettingsPage extends StatelessWidget {
                   context: context,
                   builder: (context) {
                     return SimpleDialog(
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(textfieldRadiusRegular),
-                      ),
                       title: Text(t.pages.settings.appearance.language),
                       children: [
                         _buildLanguageOption(context, 'default', state),
