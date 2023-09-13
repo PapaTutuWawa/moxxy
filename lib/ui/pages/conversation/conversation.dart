@@ -361,14 +361,33 @@ class ConversationPageState extends State<ConversationPage>
     final maxWidth = MediaQuery.of(context).size.width * 0.6;
     return WillPopScope(
       onWillPop: () async {
-        // If the keyboard is open, dismiss it
         if (_keyboardController.currentData.visible) {
+          // If the keyboard is open, dismiss it.
           dismissSoftKeyboard(context);
           return false;
         } else if (_keyboardController.currentData.showWidget) {
+          // If the emoji/sticker picker is open, dismiss it.
           _keyboardController.hideWidget();
           _textfieldFocusNode.unfocus();
           return false;
+        } else if (_conversationController
+            .messagingController.isRecordingNotifier.value) {
+          // If we are recording a voice message, ask if we should continue or discard it.
+          final result = await showConfirmationDialog(
+            t.pages.conversation.voiceRecording.leaveConfirmation.title,
+            t.pages.conversation.voiceRecording.leaveConfirmation.body,
+            context,
+            affirmativeText: t.pages.conversation.voiceRecording
+                .leaveConfirmation.affirmative,
+            negativeText:
+                t.pages.conversation.voiceRecording.leaveConfirmation.negative,
+          );
+          if (!result) {
+            return false;
+          }
+
+          // Cancel the recording
+          _conversationController.messagingController.cancelRecording();
         }
 
         // Clear the read marker cache

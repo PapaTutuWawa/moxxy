@@ -253,7 +253,6 @@ class MobileMessagingTextFieldState extends State<MobileMessagingTextField>
                         ),
                       ),
                     ),
-
                     TextFieldSlider(
                       controller:
                           widget.conversationController.messagingController,

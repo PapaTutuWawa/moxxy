@@ -221,7 +221,13 @@
             "takePhotos": "Take photos",
             "voiceRecording": {
                 "cancel": "Cancel",
-                "dragToCancel": "Drag to cancel"
+                "dragToCancel": "Drag to cancel",
+                "leaveConfirmation": {
+                    "title": "Cancel recording",
+                    "body": "You are currently recording a voice message. Do you want to discard the recording?",
+                    "affirmative": "Discard",
+                    "negative": "Cancel"
+                }
             }
         },
         "startchat": {

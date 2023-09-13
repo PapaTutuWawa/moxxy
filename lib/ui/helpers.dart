@@ -35,6 +35,7 @@ Future<bool> showConfirmationDialog(
   String body,
   BuildContext context, {
   String? affirmativeText,
+  String? negativeText,
   bool destructive = false,
 }) async {
   final result = await showDialog<bool>(
@@ -53,7 +54,7 @@ Future<bool> showConfirmationDialog(
         ),
         TextButton(
           onPressed: Navigator.of(context).pop,
-          child: Text(t.global.no),
+          child: Text(negativeText ?? t.global.no),
         ),
       ],
     ),
