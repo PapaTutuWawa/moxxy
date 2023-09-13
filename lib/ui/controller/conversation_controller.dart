@@ -66,6 +66,8 @@ class BidirectionalConversationController
 
     _updateChatState(ChatState.active);
 
+    // Set up the controller for audio messages.
+    messagingController = MobileMessagingTextFieldController(conversationJid);
     messagingController.isRecordingNotifier.addListener(_onRecordingChanged);
   }
 
@@ -122,8 +124,7 @@ class BidirectionalConversationController
   int _lastChangeTimestamp = 0;
 
   /// The controller for audio message recording
-  final MobileMessagingTextFieldController messagingController =
-      MobileMessagingTextFieldController();
+  late final MobileMessagingTextFieldController messagingController;
 
   void _onRecordingChanged() {
     _sendButtonStreamController.add(

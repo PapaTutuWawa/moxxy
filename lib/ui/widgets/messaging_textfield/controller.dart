@@ -1,15 +1,22 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/overlay.dart';
 import 'package:moxxyv2/ui/widgets/timer/controller.dart';
+import 'package:path/path.dart' as path;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:record/record.dart';
 
 typedef PositionValueNotifier = ValueNotifier<Offset>;
 typedef BooleanValueNotifier = ValueNotifier<bool>;
 
 class MobileMessagingTextFieldController {
+  MobileMessagingTextFieldController(this.conversationJid);
+
   final PositionValueNotifier positionNotifier =
       ValueNotifier<Offset>(Offset.zero);
   final BooleanValueNotifier lockedNotifier = BooleanValueNotifier(false);
@@ -27,6 +34,12 @@ class MobileMessagingTextFieldController {
 
   bool requestingPermission = false;
 
+  /// The audio recorder.
+  final Record _recorder = Record();
+
+  /// The JID of the currently opened chat.
+  final String conversationJid;
+
   void register(AnimationController controller) {
     _animationController = controller;
     _animationController!.addStatusListener(_onAnimationStatusChanged);
@@ -37,6 +50,7 @@ class MobileMessagingTextFieldController {
     _animationController?.removeStatusListener(_onAnimationStatusChanged);
     isCancellingNotifier.removeListener(_onIsCancellingChanged);
     removeOverlay();
+    _recorder.dispose();
   }
 
   void _onIsCancellingChanged() {
@@ -51,6 +65,48 @@ class MobileMessagingTextFieldController {
       lockedNotifier.value = false;
       removeOverlay();
     }
+  }
+
+  Future<void> _startAudioRecording() async {
+    final now = DateTime.now();
+    final filename =
+        'audio_${now.year}${now.month}${now.day}${now.hour}${now.second}.aac';
+    final recordingFilePath = path.join(
+      await MoxxyPlatformApi().getCacheDataPath(),
+      filename,
+    );
+    await _recorder.start(
+      path: recordingFilePath,
+    );
+  }
+
+  Future<void> _cancelAudioRecording() async {
+    final file = await _recorder.stop();
+
+    if (file != null) {
+      unawaited(File(file).delete());
+    }
+  }
+
+  Future<void> _endAudioRecording() async {
+    final file = await _recorder.stop();
+    if (file == null) {
+      await Fluttertoast.showToast(
+        msg: t.errors.conversation.audioRecordingError,
+        gravity: ToastGravity.SNACKBAR,
+        toastLength: Toast.LENGTH_SHORT,
+      );
+      return;
+    }
+
+    // Send the file.
+    await getForegroundService().send(
+      SendFilesCommand(
+        paths: [file],
+        recipients: [conversationJid],
+      ),
+      awaitable: false,
+    );
   }
 
   Future<void> startRecording(BuildContext context) async {
@@ -79,9 +135,10 @@ class MobileMessagingTextFieldController {
       // tell the user and cancel the process.
       if (requestResult == PermissionStatus.granted) {
         timerController.runningNotifier.value = true;
+        await _startAudioRecording();
       } else {
         isCancellingNotifier.value = true;
-        endRecording();
+        await endRecording();
         await Fluttertoast.showToast(
           msg: t.warnings.conversation.microphoneDenied,
           toastLength: Toast.LENGTH_LONG,
@@ -95,30 +152,30 @@ class MobileMessagingTextFieldController {
       timerController.runningNotifier.value = true;
       // ignore: use_build_context_synchronously
       createOverlay(context);
+      await _startAudioRecording();
     }
   }
 
   void cancelRecording() {
     isCancellingNotifier.value = true;
     endRecording();
+    _cancelAudioRecording();
   }
 
-  void endRecording() {
+  Future<void> endRecording() async {
     draggingNotifier.value = false;
     isRecordingNotifier.value = false;
-    _animationController?.reverse();
+    await _animationController?.reverse();
     timerController.runningNotifier.value = false;
 
     if (!isCancellingNotifier.value) {
       if (timerController.runtime >= 1) {
-        onRecordingDone();
+        await _endAudioRecording();
       } else {
-        // TODO: Delete the recording
-        unawaited(
-          Fluttertoast.showToast(
-            msg: t.warnings.conversation.holdForLonger,
-            toastLength: Toast.LENGTH_SHORT,
-          ),
+        await _cancelAudioRecording();
+        await Fluttertoast.showToast(
+          msg: t.warnings.conversation.holdForLonger,
+          toastLength: Toast.LENGTH_SHORT,
         );
       }
     }
@@ -141,9 +198,5 @@ class MobileMessagingTextFieldController {
   void removeOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
-  }
-
-  void onRecordingDone() {
-    // TODO: Actually send the recording
   }
 }
