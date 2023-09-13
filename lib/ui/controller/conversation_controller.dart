@@ -1,12 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_vibrate/flutter_vibrate.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxy_native/moxxy_native.dart';
-import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/events.dart';
@@ -14,10 +10,7 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
 import 'package:moxxyv2/ui/controller/bidirectional_controller.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:record/record.dart';
+import 'package:moxxyv2/ui/widgets/messaging_textfield/controller.dart';
 
 class MessageEditingState {
   const MessageEditingState(
@@ -49,19 +42,6 @@ class TextFieldData {
   final Message? quotedMessage;
 }
 
-class RecordingData {
-  const RecordingData(
-    this.isRecording,
-    this.isLocked,
-  );
-
-  /// Flag indicating whether we are currently recording (true) or not (false).
-  final bool isRecording;
-
-  /// Flag indicating whether the recording draggable is locked (true) or not (false).
-  final bool isLocked;
-}
-
 class BidirectionalConversationController
     extends BidirectionalController<Message> {
   BidirectionalConversationController(
@@ -85,6 +65,8 @@ class BidirectionalConversationController
     BidirectionalConversationController.currentController = this;
 
     _updateChatState(ChatState.active);
+
+    messagingController.isRecordingNotifier.addListener(_onRecordingChanged);
   }
 
   /// Logging.
@@ -139,14 +121,17 @@ class BidirectionalConversationController
   /// The last time the TextField was modified
   int _lastChangeTimestamp = 0;
 
-  /// Flag indicating whether we are currently recording an audio message (true) or not
-  /// (false).
-  final Record _audioRecorder = Record();
-  DateTime? _recordingStart;
-  final StreamController<RecordingData> _recordingAudioMessageStreamController =
-      StreamController<RecordingData>.broadcast();
-  Stream<RecordingData> get recordingAudioMessageStream =>
-      _recordingAudioMessageStreamController.stream;
+  /// The controller for audio message recording
+  final MobileMessagingTextFieldController messagingController =
+      MobileMessagingTextFieldController();
+
+  void _onRecordingChanged() {
+    _sendButtonStreamController.add(
+      messagingController.isRecordingNotifier.value
+          ? conversation.SendButtonState.sendVoiceMessage
+          : conversation.defaultSendButtonState,
+    );
+  }
 
   void _updateChatState(ChatState state) {
     getForegroundService().send(
@@ -451,106 +436,6 @@ class BidirectionalConversationController
     _sendButtonStreamController.add(conversation.defaultSendButtonState);
   }
 
-  Future<void> startAudioMessageRecording() async {
-    final status = await Permission.speech.status;
-    if (status.isDenied) {
-      await Permission.speech.request();
-      return;
-    }
-
-    _recordingAudioMessageStreamController.add(
-      const RecordingData(
-        true,
-        false,
-      ),
-    );
-    _sendButtonStreamController.add(conversation.SendButtonState.hidden);
-
-    final now = DateTime.now();
-    _recordingStart = now;
-    final tempDir = await getTemporaryDirectory();
-    final timestamp =
-        '${now.year}${now.month}${now.day}${now.hour}${now.minute}${now.second}';
-    final tempFile = path.join(tempDir.path, 'audio_$timestamp.aac');
-    await _audioRecorder.start(
-      path: tempFile,
-    );
-  }
-
-  void lockAudioMessageRecording() {
-    _recordingAudioMessageStreamController.add(
-      const RecordingData(
-        true,
-        true,
-      ),
-    );
-  }
-
-  Future<void> cancelAudioMessageRecording() async {
-    Vibrate.feedback(FeedbackType.heavy);
-    _recordingAudioMessageStreamController.add(
-      const RecordingData(
-        false,
-        false,
-      ),
-    );
-    _sendButtonStreamController.add(conversation.defaultSendButtonState);
-
-    _recordingStart = null;
-    final file = await _audioRecorder.stop();
-    unawaited(File(file!).delete());
-  }
-
-  Future<void> endAudioMessageRecording() async {
-    _recordingAudioMessageStreamController.add(
-      const RecordingData(
-        false,
-        false,
-      ),
-    );
-    _sendButtonStreamController.add(conversation.defaultSendButtonState);
-
-    if (_recordingStart == null) {
-      return;
-    }
-
-    Vibrate.feedback(FeedbackType.heavy);
-    final file = await _audioRecorder.stop();
-    final now = DateTime.now();
-    if (now.difference(_recordingStart!).inSeconds < 1) {
-      _recordingStart = null;
-      unawaited(File(file!).delete());
-      await Fluttertoast.showToast(
-        msg: t.warnings.conversation.holdForLonger,
-        gravity: ToastGravity.SNACKBAR,
-        toastLength: Toast.LENGTH_SHORT,
-      );
-      return;
-    }
-
-    // Reset the recording timestamp
-    _recordingStart = null;
-
-    // Handle something unexpected
-    if (file == null) {
-      await Fluttertoast.showToast(
-        msg: t.errors.conversation.audioRecordingError,
-        gravity: ToastGravity.SNACKBAR,
-        toastLength: Toast.LENGTH_SHORT,
-      );
-      return;
-    }
-
-    // Send the file
-    await getForegroundService().send(
-      SendFilesCommand(
-        paths: [file],
-        recipients: [conversationJid],
-      ),
-      awaitable: false,
-    );
-  }
-
   /// React to app livecycle changes
   void handleAppStateChange(bool open) {
     _updateChatState(
@@ -563,9 +448,11 @@ class BidirectionalConversationController
     // Reset the singleton
     BidirectionalConversationController.currentController = null;
 
+    messagingController.isRecordingNotifier.removeListener(_onRecordingChanged);
+
     // Dispose of controllers
     _textController.dispose();
-    _audioRecorder.dispose();
+    messagingController.dispose();
 
     super.dispose();
   }

@@ -7,11 +7,11 @@ enum SendButtonState {
   /// Send the current message when tapped.
   send,
 
+  /// Send the currently recorded voice message,
+  sendVoiceMessage,
+
   /// Cancel the current correction when tapped.
   cancelCorrection,
-
-  /// Hide the button when we're recording an audio message.
-  hidden,
 }
 
 const defaultSendButtonState = SendButtonState.multi;

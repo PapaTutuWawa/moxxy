@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/widgets/textfield.dart';
 
 class RedirectDialog extends StatefulWidget {
   const RedirectDialog(
@@ -63,14 +61,14 @@ class RedirectDialogState extends State<RedirectDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CustomTextField(
-              cornerRadius: textfieldRadiusRegular,
-              borderColor: primaryColor,
-              borderWidth: 1,
-              enableIMEFeatures: false,
+            TextField(
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                hintText: 'URL',
+                errorText: errorText,
+              ),
+              enableSuggestions: false,
               controller: _controller,
-              errorText: errorText,
-              hintText: 'URL',
               onChanged: (value) {
                 // Reset the error message if it was set
                 if (errorText != null) {
