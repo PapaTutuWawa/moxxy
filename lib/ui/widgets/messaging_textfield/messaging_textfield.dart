@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/pages/conversation/keyboard_dodging.dart';
+import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/theme.dart';
+import 'package:moxxyv2/ui/widgets/chat/message.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/record_icon.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/send_button.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/slider.dart';
@@ -66,7 +70,6 @@ class MobileMessagingTextField extends StatefulWidget {
     super.key,
   });
 
-
   final FocusNode textFieldFocusNode;
 
   final BidirectionalConversationController conversationController;
@@ -102,14 +105,17 @@ class MobileMessagingTextFieldState extends State<MobileMessagingTextField>
         IntTween(begin: 0).animate(_backgroundSliderAnimationController);
 
     // Set up the controller.
-    widget.conversationController.messagingController.isRecordingNotifier.addListener(_handleRecordingChange);
-    widget.conversationController.messagingController.register(_backgroundSliderAnimationController);
+    widget.conversationController.messagingController.isRecordingNotifier
+        .addListener(_handleRecordingChange);
+    widget.conversationController.messagingController
+        .register(_backgroundSliderAnimationController);
   }
 
   @override
   void dispose() {
     _backgroundSliderAnimationController.dispose();
-    widget.conversationController.messagingController.isRecordingNotifier.removeListener(_handleRecordingChange);
+    widget.conversationController.messagingController.isRecordingNotifier
+        .removeListener(_handleRecordingChange);
     widget.conversationController.messagingController.dispose();
 
     super.dispose();
@@ -146,41 +152,36 @@ class MobileMessagingTextFieldState extends State<MobileMessagingTextField>
                           vertical: 4,
                           horizontal: 12,
                         ),
-                        child: Row(
+                        child: Column(
                           children: [
-                            EmojiStickerPickerIcon(
-                              keyboardController: widget.keyboardController,
-                              tabController: widget.tabController,
-                              textFieldFocusNode: widget.textFieldFocusNode,
-                            ),
-                            Expanded(
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
-                                child: TextField(
-                                  controller: widget
-                                      .conversationController.textController,
-                                  focusNode: widget.textFieldFocusNode,
-                                  style: TextStyle(
-                                    color: Theme.of(context)
-                                        .extension<MoxxyThemeData>()!
-                                        .conversationTextFieldTextColor,
-                                  ),
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.zero,
-                                    isDense: true,
-                                    hintText: t.pages.conversation.messageHint,
-                                    hintStyle: TextStyle(
-                                      color: Theme.of(context)
-                                          .extension<MoxxyThemeData>()!
-                                          .conversationTextFieldHintTextColor,
-                                    ),
-                                  ),
-                                  minLines: 1,
-                                  maxLines: 5,
-                                ),
+                            StreamBuilder<TextFieldData>(
+                              stream: widget
+                                  .conversationController.textFieldDataStream,
+                              initialData: const TextFieldData(
+                                true,
+                                null,
                               ),
+                              builder: (context, snapshot) {
+                                if (snapshot.data!.quotedMessage == null) {
+                                  return const SizedBox();
+                                }
+                                return Padding(
+                                  padding: const EdgeInsets.only(
+                                    bottom: 8,
+                                  ),
+                                  child: buildQuoteMessageWidget(
+                                    snapshot.data!.quotedMessage!,
+                                    isSent(
+                                      snapshot.data!.quotedMessage!,
+                                      GetIt.I.get<UIDataService>().ownJid!,
+                                    ),
+                                    textfieldQuotedMessageRadius,
+                                    textfieldQuotedMessageRadius,
+                                    resetQuote: widget
+                                        .conversationController.removeQuote,
+                                  ),
+                                );
+                              },
                             ),
                             StreamBuilder<TextFieldData>(
                               stream: widget
@@ -190,13 +191,61 @@ class MobileMessagingTextFieldState extends State<MobileMessagingTextField>
                                 null,
                               ),
                               builder: (context, snapshot) {
-                                return AnimatedOpacity(
-                                  opacity: snapshot.data!.isBodyEmpty &&
-                                          snapshot.data!.quotedMessage == null
-                                      ? 1
-                                      : 0,
-                                  duration: const Duration(milliseconds: 200),
-                                  child: RecordIcon(widget.conversationController.messagingController),
+                                return Row(
+                                  children: [
+                                    EmojiStickerPickerIcon(
+                                      keyboardController:
+                                          widget.keyboardController,
+                                      tabController: widget.tabController,
+                                      textFieldFocusNode:
+                                          widget.textFieldFocusNode,
+                                    ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 12,
+                                        ),
+                                        child: TextField(
+                                          controller: widget
+                                              .conversationController
+                                              .textController,
+                                          focusNode: widget.textFieldFocusNode,
+                                          style: TextStyle(
+                                            color: Theme.of(context)
+                                                .extension<MoxxyThemeData>()!
+                                                .conversationTextFieldTextColor,
+                                          ),
+                                          decoration: InputDecoration(
+                                            border: InputBorder.none,
+                                            contentPadding: EdgeInsets.zero,
+                                            isDense: true,
+                                            hintText: t
+                                                .pages.conversation.messageHint,
+                                            hintStyle: TextStyle(
+                                              color: Theme.of(context)
+                                                  .extension<MoxxyThemeData>()!
+                                                  .conversationTextFieldHintTextColor,
+                                            ),
+                                          ),
+                                          minLines: 1,
+                                          maxLines: 5,
+                                        ),
+                                      ),
+                                    ),
+                                    AnimatedOpacity(
+                                      opacity: snapshot.data!.isBodyEmpty &&
+                                              snapshot.data!.quotedMessage ==
+                                                  null
+                                          ? 1
+                                          : 0,
+                                      duration:
+                                          const Duration(milliseconds: 200),
+                                      child: RecordIcon(
+                                        widget.conversationController
+                                            .messagingController,
+                                      ),
+                                    ),
+                                  ],
                                 );
                               },
                             ),
@@ -208,7 +257,8 @@ class MobileMessagingTextFieldState extends State<MobileMessagingTextField>
                     // TODO: Maybe a controller that resets the timer is better?
                     // Ensure that the timer gets destroyed and recreated.
                     TextFieldSlider(
-                      controller: widget.conversationController.messagingController,
+                      controller:
+                          widget.conversationController.messagingController,
                       animation: _backgroundSliderAnimation,
                     ),
                   ],

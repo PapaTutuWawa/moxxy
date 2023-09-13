@@ -111,7 +111,7 @@ class BidirectionalConversationController
 
   /// Stream containing data for the TextField
   final StreamController<TextFieldData> _textFieldDataStreamController =
-      StreamController();
+      StreamController.broadcast();
   Stream<TextFieldData> get textFieldDataStream =>
       _textFieldDataStreamController.stream;
 

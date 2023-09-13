@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/controller.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/overlay.dart';
 
@@ -46,6 +47,9 @@ class RecordIconState extends State<RecordIcon> {
   Widget build(BuildContext context) {
     return Listener(
       onPointerDown: (event) {
+        // Get rid of the keyboard.
+        dismissSoftKeyboard(context);
+
         final size = MediaQuery.of(context).size;
         _initialPosition = event.position;
 
