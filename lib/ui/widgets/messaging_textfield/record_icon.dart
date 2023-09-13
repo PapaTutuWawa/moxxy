@@ -53,7 +53,7 @@ class RecordIconState extends State<RecordIcon> {
         final size = MediaQuery.of(context).size;
         _initialPosition = event.position;
 
-        final buttonX = 8 + 45 + 16 + 8 - (80 - 45) / 2;
+        const buttonX = 8 + 45 + 16 + 8 - (80 - 45) / 2;
         _buttonLockPosition = Offset(
           8 + 45 + 16 + 8 - (80 - 45) / 2,
           size.height - 250 - 80,
@@ -110,7 +110,6 @@ class RecordIconState extends State<RecordIcon> {
             hasVibrated = true;
             widget.controller.lockedNotifier.value = true;
             unawaited(HapticFeedback.heavyImpact());
-            print('[MOVE] Triggering haptic feedback');
           }
 
           widget.controller.positionNotifier.value = _buttonLockPosition;
@@ -123,11 +122,12 @@ class RecordIconState extends State<RecordIcon> {
         }
 
         // Handle cancelling the recording.
-        if (dx >= _cancellationDistance && !widget.controller.isCancellingNotifier.value) {
+        if (dx >= _cancellationDistance &&
+            !widget.controller.isCancellingNotifier.value) {
           widget.controller.isCancellingNotifier.value = true;
           unawaited(HapticFeedback.heavyImpact());
-          print('[MOVE] Triggering haptic feedback');
-        } else if (dx < _cancellationDistance && widget.controller.isCancellingNotifier.value) {
+        } else if (dx < _cancellationDistance &&
+            widget.controller.isCancellingNotifier.value) {
           widget.controller.isCancellingNotifier.value = false;
         }
 
@@ -147,8 +147,6 @@ class RecordIconState extends State<RecordIcon> {
         if (widget.controller.requestingPermission) {
           return;
         }
-
-        print('onPointerUp');
 
         // Reset the dragging value.
         widget.controller.draggingNotifier.value = false;

@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/overlay.dart';
 import 'package:moxxyv2/ui/widgets/timer/controller.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -76,13 +78,14 @@ class MobileMessagingTextFieldController {
       // If we successfully requested the permission, actually start recording. If not,
       // tell the user and cancel the process.
       if (requestResult == PermissionStatus.granted) {
-        // TODO: Start recording
         timerController.runningNotifier.value = true;
       } else {
-        // TODO: Show a toast, saying we cannot do that.
-        print('[STUB] No permission');
         isCancellingNotifier.value = true;
         endRecording();
+        await Fluttertoast.showToast(
+          msg: t.warnings.conversation.microphoneDenied,
+          toastLength: Toast.LENGTH_LONG,
+        );
         return;
       }
     } else {
@@ -90,6 +93,7 @@ class MobileMessagingTextFieldController {
       draggingNotifier.value = true;
 
       timerController.runningNotifier.value = true;
+      // ignore: use_build_context_synchronously
       createOverlay(context);
     }
   }
@@ -109,8 +113,13 @@ class MobileMessagingTextFieldController {
       if (timerController.runtime >= 1) {
         onRecordingDone();
       } else {
-        // TODO: Show a toast saying that the message was too short
-        print('[STUB] Recording too short');
+        // TODO: Delete the recording
+        unawaited(
+          Fluttertoast.showToast(
+            msg: t.warnings.conversation.holdForLonger,
+            toastLength: Toast.LENGTH_SHORT,
+          ),
+        );
       }
     }
 
@@ -135,6 +144,6 @@ class MobileMessagingTextFieldController {
   }
 
   void onRecordingDone() {
-    print('[STUB] Sending voice message');
+    // TODO: Actually send the recording
   }
 }

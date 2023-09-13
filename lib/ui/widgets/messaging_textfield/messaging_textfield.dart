@@ -254,8 +254,6 @@ class MobileMessagingTextFieldState extends State<MobileMessagingTextField>
                       ),
                     ),
 
-                    // TODO: Maybe a controller that resets the timer is better?
-                    // Ensure that the timer gets destroyed and recreated.
                     TextFieldSlider(
                       controller:
                           widget.conversationController.messagingController,

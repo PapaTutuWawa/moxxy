@@ -152,7 +152,8 @@
             "integrityCheckFailed": "Could not verify file integrity"
         },
         "conversation": {
-            "holdForLonger": "Hold button longer to record a voice message"
+            "holdForLonger": "Hold button longer to record a voice message",
+            "microphoneDenied": "Microphon access denied"
         }
     },
     "pages": {
@@ -217,7 +218,11 @@
             "messageHint": "Send a message…",
             "sendImages": "Send images",
             "sendFiles": "Send files",
-            "takePhotos": "Take photos"
+            "takePhotos": "Take photos",
+            "voiceRecording": {
+                "cancel": "Cancel",
+                "dragToCancel": "Drag to cancel"
+            }
         },
         "startchat": {
             "title": "New Chat",

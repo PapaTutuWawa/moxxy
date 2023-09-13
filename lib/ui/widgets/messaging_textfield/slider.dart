@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/controller.dart';
 import 'package:moxxyv2/ui/widgets/timer/timer.dart';
@@ -89,12 +90,11 @@ class TextFieldSliderState extends State<TextFieldSlider> {
                       ),
                     ),
                   if (widget.controller.draggingNotifier.value)
-                    const Padding(
-                      padding: EdgeInsets.only(left: 4),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
                       child: Text(
-                        // TODO: i18n
-                        'Drag to cancel',
-                        style: TextStyle(
+                        t.pages.conversation.voiceRecording.dragToCancel,
+                        style: const TextStyle(
                           color: Colors.white,
                         ),
                       ),
@@ -106,10 +106,9 @@ class TextFieldSliderState extends State<TextFieldSlider> {
                       child: Align(
                         child: TextButton(
                           onPressed: widget.controller.cancelRecording,
-                          child: const Text(
-                            // TODO: i18n
-                            'Cancel',
-                            style: TextStyle(
+                          child: Text(
+                            t.pages.conversation.voiceRecording.cancel,
+                            style: const TextStyle(
                               color: Colors.red,
                             ),
                           ),
