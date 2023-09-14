@@ -453,6 +453,21 @@ Future<void> openFile(String path) async {
   }
 }
 
+/// Computes the config to use for the [EmojiPicker] widget.
+/// [backgroundColor] is the color to use for the [EmojiPicker]'s
+/// bgColor attribute.
+Config getEmojiPickerConfig(Color backgroundColor) {
+  return Config(
+    bgColor: backgroundColor,
+    // Make the "no recents" text translatable.
+    noRecents: Text(
+      t.emojiPicker.noRecents,
+      style: const TextStyle(fontSize: 20),
+      textAlign: TextAlign.center,
+    ),
+  );
+}
+
 /// Opens a modal bottom sheet with an emoji picker. Resolves to the picked emoji,
 /// if one was picked. If the picker was dismissed, resolves to null.
 Future<String?> pickEmoji(BuildContext context, {bool pop = true}) async {
@@ -472,16 +487,11 @@ Future<String?> pickEmoji(BuildContext context, {bool pop = true}) async {
             // ignore: use_build_context_synchronously
             Navigator.of(context).pop(emoji.emoji);
           },
-          config: Config(
+          config: getEmojiPickerConfig(
             // Hack: I cannot figure out how the background color of the modal
             //       is computed (probably a mixture of the surfaceColor and surfaceTintColor),
             //       so just make the picker's background transparent to work around that.
-            bgColor: Colors.transparent,
-            noRecents: Text(
-              t.emojiPicker.noRecents,
-              style: const TextStyle(fontSize: 20),
-              textAlign: TextAlign.center,
-            ),
+            Colors.transparent,
           ),
         ),
       ),
