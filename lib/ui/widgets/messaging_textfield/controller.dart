@@ -187,10 +187,11 @@ class MobileMessagingTextFieldController {
     }
   }
 
+  /// Wrapper around [endRecording] that also sets [isCancellingNotifier]'s value
+  /// to true to discard a recording.
   void cancelRecording() {
     isCancellingNotifier.value = true;
     endRecording();
-    _cancelAudioRecording();
   }
 
   /// Ends audio recording and either discards the recording or sends the file
@@ -215,6 +216,7 @@ class MobileMessagingTextFieldController {
 
     // Mak sure that the time starts at 0 again.
     timerController.reset();
+    await _cancelAudioRecording();
   }
 
   void _createOverlay(BuildContext context) {
