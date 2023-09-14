@@ -3,7 +3,6 @@ import 'package:moxxyv2/ui/pages/conversation/blink.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/constants.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/controller.dart';
 
-
 class RecordButtonOverlay extends StatefulWidget {
   const RecordButtonOverlay(
     this.controller, {
@@ -101,7 +100,8 @@ class RecordButtonOverlayState extends State<RecordButtonOverlay> {
         Positioned(
           right: _position?.dx ?? recordButtonHorizontalCenteringOffset,
           top: _position?.dy ??
-              MediaQuery.of(context).size.height - recordButtonVerticalCenteringOffset,
+              MediaQuery.of(context).size.height -
+                  recordButtonVerticalCenteringOffset,
           child: AnimatedScale(
             scale: _showElements ? 1 : 0,
             duration: const Duration(milliseconds: 150),
