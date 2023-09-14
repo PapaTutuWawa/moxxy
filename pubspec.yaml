@@ -3,7 +3,7 @@ description: An experimental XMPP client
 
 publish_to: 'none'
 
-version: 0.5.0+13
+version: 0.5.1+14
 
 environment:
   sdk: ">=2.17.0 <3.0.0"
