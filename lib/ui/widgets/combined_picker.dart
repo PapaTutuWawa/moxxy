@@ -47,7 +47,7 @@ class CombinedPicker extends StatelessWidget {
                   indicatorColor: primaryColor,
                   tabs: [
                     const Tab(icon: Icon(Icons.insert_emoticon)),
-                    Tab(icon: Icon(PhosphorIcons.thin.sticker)),
+                    Tab(icon: Icon(PhosphorIcons.regular.sticker)),
                   ],
                 ),
                 Expanded(

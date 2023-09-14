@@ -58,7 +58,7 @@ class SettingsPage extends StatelessWidget {
               title: t.pages.settings.stickers.title,
               prefix: Padding(
                 padding: const EdgeInsets.only(right: 16),
-                child: Icon(PhosphorIcons.thin.sticker),
+                child: Icon(PhosphorIcons.fill.sticker),
               ),
               onTap: () {
                 Navigator.pushNamed(context, stickersRoute);

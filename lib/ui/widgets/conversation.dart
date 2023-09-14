@@ -224,7 +224,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
         );
       } else {
         preview = Icon(
-          PhosphorIcons.thin.sticker,
+          PhosphorIcons.regular.sticker,
           size: 30,
         );
       }

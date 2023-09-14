@@ -47,7 +47,7 @@ class QuotedStickerWidget extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: Icon(
-                PhosphorIcons.thin.sticker,
+                PhosphorIcons.regular.sticker,
               ),
             ),
             Text(

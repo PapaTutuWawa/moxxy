@@ -123,7 +123,7 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
           Padding(
             padding: const EdgeInsets.only(left: 3),
             child: Icon(
-              PhosphorIcons.thin.sticker,
+              PhosphorIcons.regular.sticker,
               size: _bubbleBottomIconSize,
               color: Colors.white,
             ),

@@ -91,7 +91,7 @@ class StickerPacksSettingsState extends State<StickerPacksSettingsPage> {
                       child: ColoredBox(
                         color: Colors.white60,
                         child: Icon(
-                          PhosphorIcons.thin.sticker,
+                          PhosphorIcons.regular.sticker,
                           size: 32,
                         ),
                       ),

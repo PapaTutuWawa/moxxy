@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:moxxyv2/ui/pages/conversation/blink.dart';
+import 'package:moxxyv2/ui/widgets/blink.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/constants.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/controller.dart';
 
