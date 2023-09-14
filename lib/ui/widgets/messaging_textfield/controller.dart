@@ -6,6 +6,7 @@ import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/overlay.dart';
+import 'package:moxxyv2/ui/widgets/messaging_textfield/slider.dart';
 import 'package:moxxyv2/ui/widgets/timer/controller.dart';
 import 'package:path/path.dart' as path;
 import 'package:permission_handler/permission_handler.dart';
@@ -17,21 +18,44 @@ typedef BooleanValueNotifier = ValueNotifier<bool>;
 class MobileMessagingTextFieldController {
   MobileMessagingTextFieldController(this.conversationJid);
 
+  /// A notifier that carries the current (right, top) coordinates of the recording
+  /// button overlay.
   final PositionValueNotifier positionNotifier =
       ValueNotifier<Offset>(Offset.zero);
+
+  /// A notifier that carries the current lock state of the recording, i.e. if the
+  /// recording should continue after the pointer up event (true) or end (false).
   final BooleanValueNotifier lockedNotifier = BooleanValueNotifier(false);
+
+  /// A notifier that carries a flag indicating whether the recording button is currently
+  /// being dragged (true) or not (false).
   final BooleanValueNotifier draggingNotifier = BooleanValueNotifier(false);
+
+  /// A notifier that carries a flag indicating whether the overlay should still be visible
+  /// (true) or not (false). This is used to allow animating the overlay "out" instead of it
+  /// just disappearing.
   final BooleanValueNotifier keepSliderNotifier = BooleanValueNotifier(false);
+
+  /// A notifier that carries a flag indicating whether we've started the process of recording
+  /// (true) or not (false).
   final BooleanValueNotifier isRecordingNotifier = BooleanValueNotifier(false);
+
+  /// A notifier that carries a flag indicating whether the recording should be cancelled (true)
+  /// or not (false).
   final BooleanValueNotifier isCancellingNotifier = BooleanValueNotifier(false);
 
+  /// The [AnimationController] that controls the animation of the [TextFieldSlider].
   AnimationController? _animationController;
-  Animation<int>? animation;
 
+  /// The controller that manages starting/stopping the recording time indicator.
   final TimerController timerController = TimerController();
 
+  /// The currently displayed overlay managed by this class.
   OverlayEntry? _overlayEntry;
 
+  /// Flag whether we're currently requesting permission to access the microphone (true)
+  /// or not (false). Useful to prevent weird things from happening if the permission popup
+  /// causes a [PointerUpEvent].
   bool requestingPermission = false;
 
   /// The audio recorder.
@@ -40,17 +64,24 @@ class MobileMessagingTextFieldController {
   /// The JID of the currently opened chat.
   final String conversationJid;
 
+  /// Prepare the controller for real usage.
   void register(AnimationController controller) {
     _animationController = controller;
     _animationController!.addStatusListener(_onAnimationStatusChanged);
     isCancellingNotifier.addListener(_onIsCancellingChanged);
   }
 
-  void dispose() {
+  /// Dispose of everything in the class.
+  Future<void> dispose() async {
     _animationController?.removeStatusListener(_onAnimationStatusChanged);
     isCancellingNotifier.removeListener(_onIsCancellingChanged);
-    removeOverlay();
-    _recorder.dispose();
+    _removeOverlay();
+
+    // Get rid of the audio recorder.
+    if (await _recorder.isRecording()) {
+      await _cancelAudioRecording();
+    }
+    await _recorder.dispose();
   }
 
   void _onIsCancellingChanged() {
@@ -63,7 +94,7 @@ class MobileMessagingTextFieldController {
     if (status == AnimationStatus.dismissed && !isRecordingNotifier.value) {
       keepSliderNotifier.value = false;
       lockedNotifier.value = false;
-      removeOverlay();
+      _removeOverlay();
     }
   }
 
@@ -151,7 +182,7 @@ class MobileMessagingTextFieldController {
 
       timerController.runningNotifier.value = true;
       // ignore: use_build_context_synchronously
-      createOverlay(context);
+      _createOverlay(context);
       await _startAudioRecording();
     }
   }
@@ -162,6 +193,8 @@ class MobileMessagingTextFieldController {
     _cancelAudioRecording();
   }
 
+  /// Ends audio recording and either discards the recording or sends the file
+  /// to the currently opened chat.
   Future<void> endRecording() async {
     draggingNotifier.value = false;
     isRecordingNotifier.value = false;
@@ -184,8 +217,8 @@ class MobileMessagingTextFieldController {
     timerController.reset();
   }
 
-  void createOverlay(BuildContext context) {
-    removeOverlay();
+  void _createOverlay(BuildContext context) {
+    _removeOverlay();
 
     _overlayEntry = OverlayEntry(
       builder: (context) {
@@ -195,7 +228,7 @@ class MobileMessagingTextFieldController {
     Overlay.of(context).insert(_overlayEntry!);
   }
 
-  void removeOverlay() {
+  void _removeOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
   }
