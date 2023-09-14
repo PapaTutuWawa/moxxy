@@ -456,19 +456,33 @@ Future<void> openFile(String path) async {
 /// Opens a modal bottom sheet with an emoji picker. Resolves to the picked emoji,
 /// if one was picked. If the picker was dismissed, resolves to null.
 Future<String?> pickEmoji(BuildContext context, {bool pop = true}) async {
-  // TODO: The emoji picker overflows
   final emoji = await showModalBottomSheet<String>(
     context: context,
-    builder: (context) => Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: EmojiPicker(
-        onEmojiSelected: (_, emoji) {
-          // ignore: use_build_context_synchronously
-          Navigator.of(context).pop(emoji.emoji);
-        },
-        //height: pickerHeight,
-        config: Config(
-          bgColor: Theme.of(context).scaffoldBackgroundColor,
+    builder: (context) => Align(
+      alignment: Alignment.bottomCenter,
+      child: Padding(
+        padding: const EdgeInsets.only(
+          // The corner radius of the modal bottom sheet, extracted from
+          // https://github.com/flutter/flutter/blob/ff10c52ad6de098b4946f9ef33fdde8ebd5bc594/packages/flutter/lib/src/material/bottom_sheet.dart#L1392
+          // as it seems that there's no other way to access this value.
+          top: 28,
+        ),
+        child: EmojiPicker(
+          onEmojiSelected: (_, emoji) {
+            // ignore: use_build_context_synchronously
+            Navigator.of(context).pop(emoji.emoji);
+          },
+          config: Config(
+            // Hack: I cannot figure out how the background color of the modal
+            //       is computed (probably a mixture of the surfaceColor and surfaceTintColor),
+            //       so just make the picker's background transparent to work around that.
+            bgColor: Colors.transparent,
+            noRecents: Text(
+              t.emojiPicker.noRecents,
+              style: const TextStyle(fontSize: 20),
+              textAlign: TextAlign.center,
+            ),
+          ),
         ),
       ),
     ),
