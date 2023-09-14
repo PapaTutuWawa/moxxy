@@ -9,7 +9,6 @@ import 'package:moxxyv2/ui/controller/storage_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:moxxyv2/ui/widgets/shimmer.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 /// Wrapper around displaying stickers that may or may not be installed on the system.
 class StickerWrapper extends StatelessWidget {
@@ -234,13 +233,15 @@ class StickerPackPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<StickerPackBloc, StickerPackState>(
       builder: (context, state) => Scaffold(
-        appBar: BorderlessTopbar.title(state.stickerPack?.name ?? '...'),
+        appBar: AppBar(
+          title: Text(state.stickerPack?.name ?? '...'),
+        ),
         body: state.isWorking
             ? SizedBox(
                 width: MediaQuery.of(context).size.width,
-                child: Column(
+                child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     CircularProgressIndicator(),
                   ],
                 ),

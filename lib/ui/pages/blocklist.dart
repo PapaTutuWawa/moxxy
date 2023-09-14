@@ -4,7 +4,6 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 enum BlocklistOptions { unblockAll }
 
@@ -35,7 +34,7 @@ class BlocklistPage extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(t.pages.blocklist.noUsersBlocked),
-                )
+                ),
               ],
             ),
           ),
@@ -94,35 +93,37 @@ class BlocklistPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<BlocklistBloc, BlocklistState>(
       builder: (context, state) => Scaffold(
-        appBar: BorderlessTopbar.title(
-          t.pages.blocklist.title,
-          trailing: PopupMenuButton(
-            onSelected: (BlocklistOptions result) async {
-              if (result == BlocklistOptions.unblockAll) {
-                final result = await showConfirmationDialog(
-                  t.pages.blocklist.unblockAllConfirmTitle,
-                  t.pages.blocklist.unblockAllConfirmBody,
-                  context,
-                );
+        appBar: AppBar(
+          title: Text(t.pages.blocklist.title),
+          actions: [
+            PopupMenuButton(
+              onSelected: (BlocklistOptions result) async {
+                if (result == BlocklistOptions.unblockAll) {
+                  final result = await showConfirmationDialog(
+                    t.pages.blocklist.unblockAllConfirmTitle,
+                    t.pages.blocklist.unblockAllConfirmBody,
+                    context,
+                  );
 
-                if (result) {
-                  // ignore: use_build_context_synchronously
-                  context.read<BlocklistBloc>().add(UnblockedAllEvent());
+                  if (result) {
+                    // ignore: use_build_context_synchronously
+                    context.read<BlocklistBloc>().add(UnblockedAllEvent());
 
-                  // ignore: use_build_context_synchronously
-                  Navigator.of(context).pop();
+                    // ignore: use_build_context_synchronously
+                    Navigator.of(context).pop();
+                  }
                 }
-              }
-            },
-            icon: const Icon(Icons.more_vert),
-            itemBuilder: (BuildContext context) => [
-              PopupMenuItem(
-                enabled: state.blocklist.isNotEmpty,
-                value: BlocklistOptions.unblockAll,
-                child: Text(t.pages.blocklist.unblockAll),
-              ),
-            ],
-          ),
+              },
+              icon: const Icon(Icons.more_vert),
+              itemBuilder: (BuildContext context) => [
+                PopupMenuItem(
+                  enabled: state.blocklist.isNotEmpty,
+                  value: BlocklistOptions.unblockAll,
+                  child: Text(t.pages.blocklist.unblockAll),
+                ),
+              ],
+            ),
+          ],
         ),
         body: _buildListView(state),
       ),

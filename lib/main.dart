@@ -250,6 +250,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
     final foreground = getForegroundService();
     switch (state) {
+      case AppLifecycleState.hidden:
       case AppLifecycleState.paused:
         foreground.send(
           SetCSIStateCommand(active: false),
@@ -274,7 +275,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return MaterialApp(
       locale: TranslationProvider.of(context).flutterLocale,
-      supportedLocales: LocaleSettings.supportedLocales,
+      supportedLocales: AppLocaleUtils.supportedLocales,
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       title: 'Moxxy',
       theme: getThemeData(context, Brightness.light),

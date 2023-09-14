@@ -35,6 +35,7 @@ Future<bool> showConfirmationDialog(
   String body,
   BuildContext context, {
   String? affirmativeText,
+  String? negativeText,
   bool destructive = false,
 }) async {
   final result = await showDialog<bool>(
@@ -42,9 +43,6 @@ Future<bool> showConfirmationDialog(
     barrierDismissible: false,
     builder: (context) => AlertDialog(
       title: Text(title),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(textfieldRadiusRegular),
-      ),
       content: Text(body),
       actions: [
         TextButton(
@@ -56,8 +54,8 @@ Future<bool> showConfirmationDialog(
         ),
         TextButton(
           onPressed: Navigator.of(context).pop,
-          child: Text(t.global.no),
-        )
+          child: Text(negativeText ?? t.global.no),
+        ),
       ],
     ),
   );
@@ -76,9 +74,6 @@ Future<void> showNotImplementedDialog(
     builder: (BuildContext context) {
       return AlertDialog(
         title: const Text('Not Implemented'),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(textfieldRadiusRegular),
-        ),
         content: SingleChildScrollView(
           child: ListBody(
             children: [Text('The $feature feature is not yet implemented.')],
@@ -88,7 +83,7 @@ Future<void> showNotImplementedDialog(
           TextButton(
             child: Text(t.global.dialogAccept),
             onPressed: () => Navigator.of(context).pop(),
-          )
+          ),
         ],
       );
     },
@@ -106,15 +101,12 @@ Future<void> showInfoDialog(
     barrierDismissible: false,
     builder: (context) => AlertDialog(
       title: Text(title),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(textfieldRadiusRegular),
-      ),
       content: Text(body),
       actions: [
         TextButton(
           onPressed: Navigator.of(context).pop,
           child: Text(t.global.dialogAccept),
-        )
+        ),
       ],
     ),
   );
@@ -309,15 +301,15 @@ void showQrCode(BuildContext context, String data, {bool embedLogo = true}) {
         child: SizedBox(
           width: 220,
           height: 220,
-          child: QrImage(
+          child: QrImageView(
             data: data,
             size: 220,
             backgroundColor: Colors.white,
             embeddedImage:
                 embedLogo ? const AssetImage('assets/images/logo.png') : null,
             embeddedImageStyle: embedLogo
-                ? QrEmbeddedImageStyle(
-                    size: const Size(50, 50),
+                ? const QrEmbeddedImageStyle(
+                    size: Size(50, 50),
                   )
                 : null,
           ),
@@ -461,28 +453,46 @@ Future<void> openFile(String path) async {
   }
 }
 
+/// Computes the config to use for the [EmojiPicker] widget.
+/// [backgroundColor] is the color to use for the [EmojiPicker]'s
+/// bgColor attribute.
+Config getEmojiPickerConfig(Color backgroundColor) {
+  return Config(
+    bgColor: backgroundColor,
+    // Make the "no recents" text translatable.
+    noRecents: Text(
+      t.emojiPicker.noRecents,
+      style: const TextStyle(fontSize: 20),
+      textAlign: TextAlign.center,
+    ),
+  );
+}
+
 /// Opens a modal bottom sheet with an emoji picker. Resolves to the picked emoji,
 /// if one was picked. If the picker was dismissed, resolves to null.
 Future<String?> pickEmoji(BuildContext context, {bool pop = true}) async {
   final emoji = await showModalBottomSheet<String>(
     context: context,
-    // TODO(PapaTutuWawa): Move this to the theme
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.only(
-        topLeft: radiusLarge,
-        topRight: radiusLarge,
-      ),
-    ),
-    builder: (context) => Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: EmojiPicker(
-        onEmojiSelected: (_, emoji) {
-          // ignore: use_build_context_synchronously
-          Navigator.of(context).pop(emoji.emoji);
-        },
-        //height: pickerHeight,
-        config: Config(
-          bgColor: Theme.of(context).scaffoldBackgroundColor,
+    builder: (context) => Align(
+      alignment: Alignment.bottomCenter,
+      child: Padding(
+        padding: const EdgeInsets.only(
+          // The corner radius of the modal bottom sheet, extracted from
+          // https://github.com/flutter/flutter/blob/ff10c52ad6de098b4946f9ef33fdde8ebd5bc594/packages/flutter/lib/src/material/bottom_sheet.dart#L1392
+          // as it seems that there's no other way to access this value.
+          top: 28,
+        ),
+        child: EmojiPicker(
+          onEmojiSelected: (_, emoji) {
+            // ignore: use_build_context_synchronously
+            Navigator.of(context).pop(emoji.emoji);
+          },
+          config: getEmojiPickerConfig(
+            // Hack: I cannot figure out how the background color of the modal
+            //       is computed (probably a mixture of the surfaceColor and surfaceTintColor),
+            //       so just make the picker's background transparent to work around that.
+            Colors.transparent,
+          ),
         ),
       ),
     ),

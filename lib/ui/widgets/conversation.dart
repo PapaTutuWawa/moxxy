@@ -223,8 +223,8 @@ class ConversationsListRowState extends State<ConversationsListRow> {
           size: 30,
         );
       } else {
-        preview = const Icon(
-          PhosphorIcons.stickerBold,
+        preview = Icon(
+          PhosphorIcons.regular.sticker,
           size: 30,
         );
       }
@@ -423,11 +423,13 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                                 child: _buildLastMessageBody(),
                               ),
                               _getLastMessageIcon(sentBySelf),
-                              if (showBadge)
-                                badges.Badge(
-                                  badgeContent: Text(badgeText),
+                              badges.Badge(
+                                badgeContent: Text(badgeText),
+                                showBadge: showBadge,
+                                badgeStyle: const badges.BadgeStyle(
                                   badgeColor: bubbleColorSent,
                                 ),
+                              ),
                             ],
                           ),
                         ],

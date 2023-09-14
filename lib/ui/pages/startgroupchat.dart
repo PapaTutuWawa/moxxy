@@ -3,9 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/groupchat/joingroupchat_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/widgets/button.dart';
-import 'package:moxxyv2/ui/widgets/textfield.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class JoinGroupchatArguments {
   JoinGroupchatArguments(this.jid);
@@ -51,7 +48,9 @@ class JoinGroupchatPageState extends State<JoinGroupchatPage> {
           return true;
         },
         child: Scaffold(
-          appBar: BorderlessTopbar.title(t.pages.newconversation.enterNickname),
+          appBar: AppBar(
+            title: Text(t.pages.newconversation.enterNickname),
+          ),
           body: Column(
             children: [
               Visibility(
@@ -62,17 +61,18 @@ class JoinGroupchatPageState extends State<JoinGroupchatPage> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: paddingVeryLarge)
                         .add(const EdgeInsets.only(top: 8)),
-                child: CustomTextField(
+                child: TextField(
                   onChanged: (value) => context.read<JoinGroupchatBloc>().add(
                         NickChangedEvent(value),
                       ),
-                  labelText: t.pages.newconversation.nick,
                   controller: _nickController,
                   enabled: !state.isWorking,
-                  cornerRadius: textfieldRadiusRegular,
-                  borderColor: primaryColor,
-                  borderWidth: 1,
-                  errorText: state.nickError,
+                  decoration: InputDecoration(
+                    error:
+                        state.nickError != null ? Text(state.nickError!) : null,
+                    labelText: t.pages.newconversation.nick,
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
               ),
               Padding(
@@ -88,20 +88,20 @@ class JoinGroupchatPageState extends State<JoinGroupchatPage> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: RoundedButton(
-                        cornerRadius: 32,
-                        onTap: () => context.read<JoinGroupchatBloc>().add(
-                              StartGroupchatEvent(
-                                widget.arguments.jid,
-                              ),
-                            ),
-                        enabled: !state.isWorking,
+                      child: FilledButton(
+                        onPressed: state.isWorking
+                            ? null
+                            : () => context.read<JoinGroupchatBloc>().add(
+                                  StartGroupchatEvent(
+                                    widget.arguments.jid,
+                                  ),
+                                ),
                         child: Text(t.pages.newconversation.joinGroupChat),
                       ),
-                    )
+                    ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),

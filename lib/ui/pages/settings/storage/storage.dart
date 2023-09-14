@@ -16,7 +16,6 @@ import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:moxxyv2/ui/widgets/stacked_bar_chart.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 /// The various time offsets for deleting old media files.
 enum OlderThan {
@@ -71,9 +70,6 @@ class DeleteMediaDialogState extends State<DeleteMediaDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(t.pages.settings.storage.removeOldMediaDialog.title),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(textfieldRadiusRegular),
-      ),
       actions: [
         TextButton(
           onPressed: () async {
@@ -163,7 +159,9 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.title(t.pages.settings.storage.title),
+      appBar: AppBar(
+        title: Text(t.pages.settings.storage.title),
+      ),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => ListView(
           children: [
@@ -188,22 +186,28 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
             Center(
               child: StreamBuilder<StorageState>(
                 stream: _controller.stream,
-                builder: (context, snapshot) => StackedBarChart(
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  items: [
-                    BartChartItem(
-                      t.pages.settings.storage.types.media,
-                      snapshot.data?.mediaUsage ?? 0,
-                      primaryColor,
-                    ),
-                    BartChartItem(
-                      t.pages.settings.storage.types.stickers,
-                      snapshot.data?.stickersUsage ?? 0,
-                      Colors.blue,
-                    ),
-                  ],
-                  showPlaceholderBars: !snapshot.hasData,
-                ),
+                builder: (context, snapshot) {
+                  final mediaUsage = snapshot.data?.mediaUsage ?? 0;
+                  final stickerUsage = snapshot.data?.stickersUsage ?? 0;
+                  return StackedBarChart(
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    items: [
+                      BartChartItem(
+                        t.pages.settings.storage.types.media,
+                        mediaUsage,
+                        primaryColor,
+                      ),
+                      BartChartItem(
+                        t.pages.settings.storage.types.stickers,
+                        stickerUsage,
+                        Colors.blue,
+                      ),
+                    ],
+                    showPlaceholderBars: !snapshot.hasData ||
+                        // Prevent an error when we have no data stored
+                        mediaUsage == 0 && stickerUsage == 0,
+                  );
+                },
               ),
             ),
             Center(

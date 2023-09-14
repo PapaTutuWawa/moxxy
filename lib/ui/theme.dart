@@ -92,17 +92,19 @@ MaterialStateProperty<Color> _makeEnabledDisabledProperty(
 // NOTE: Inspired by syphon's code: https://github.com/syphon-org/syphon/blob/dev/lib/global/themes.dart
 ThemeData getThemeData(BuildContext context, Brightness brightness) {
   return ThemeData(
+    useMaterial3: true,
+
     brightness: brightness,
 
     // NOTE: Mainly for the SettingsSection
     colorScheme: brightness == Brightness.dark
         ? const ColorScheme.dark(
             secondary: primaryColor,
-            background: Color(0xff303030),
+            //background: Color(0xff303030),
           )
         : const ColorScheme.light(
             secondary: primaryColor,
-            background: Color(0xff303030),
+            //background: Color(0xff303030),
           ),
 
     // UI elements

@@ -11,7 +11,6 @@ import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:path/path.dart' as path;
-import 'package:stack_blur/stack_blur.dart';
 
 part 'cropbackground_bloc.freezed.dart';
 part 'cropbackground_event.dart';
@@ -19,7 +18,9 @@ part 'cropbackground_state.dart';
 
 // This function in an isolate allows to perform the cropping without blocking the UI
 // at all. Sending the image data to the isolate would result in UI blocking.
-void _cropImage(List<dynamic> data) {
+// TODO(Unknown): Maybe make use of image's executeThread method to replace our own
+//                isolate code.
+Future<void> _cropImage(List<dynamic> data) async {
   final port = data[0] as SendPort;
   final originalPath = data[1] as String;
   final destination = data[2] as String;
@@ -33,20 +34,23 @@ void _cropImage(List<dynamic> data) {
   final inverse = 1 / q;
   final xp = (x.abs() * inverse).toInt();
   final yp = (y.abs() * inverse).toInt();
-  final image = decodeImage(File(originalPath).readAsBytesSync())!;
-  final cropped = copyCrop(
-    image,
-    xp,
-    yp,
-    (vw * inverse).toInt(),
-    (vh * inverse).toInt(),
-  );
+
+  final cmd = Command()
+    ..decodeImageFile(originalPath)
+    ..copyCrop(
+      x: xp,
+      y: yp,
+      width: (vw * inverse).toInt(),
+      height: (vh * inverse).toInt(),
+    );
 
   if (blur) {
-    stackBlurRgba(cropped.data, cropped.width, cropped.height, 20);
+    cmd.gaussianBlur(radius: 10);
   }
 
-  File(destination).writeAsBytesSync(encodeJpg(cropped, quality: 85));
+  cmd.writeToFile(destination);
+
+  await cmd.execute();
   port.send(true);
 }
 

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/sticker_picker.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -44,9 +45,9 @@ class CombinedPicker extends StatelessWidget {
                 TabBar(
                   controller: tabController,
                   indicatorColor: primaryColor,
-                  tabs: const [
-                    Tab(icon: Icon(Icons.insert_emoticon)),
-                    Tab(icon: Icon(PhosphorIcons.stickerBold)),
+                  tabs: [
+                    const Tab(icon: Icon(Icons.insert_emoticon)),
+                    Tab(icon: Icon(PhosphorIcons.regular.sticker)),
                   ],
                 ),
                 Expanded(
@@ -56,8 +57,8 @@ class CombinedPicker extends StatelessWidget {
                       EmojiPicker(
                         onEmojiSelected: (_, emoji) => onEmojiTapped(emoji),
                         onBackspacePressed: onBackspaceTapped,
-                        config: Config(
-                          bgColor: scaffoldColor,
+                        config: getEmojiPickerConfig(
+                          scaffoldColor,
                         ),
                       ),
                       StickerPicker(

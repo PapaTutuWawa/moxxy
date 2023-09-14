@@ -56,6 +56,9 @@
         "allow": "Allow",
         "skip": "Skip"
     },
+    "emojiPicker": {
+        "noRecents": "No recents"
+    },
     "dateTime": {
         "justNow": "Just now",
         "nMinutesAgo": "${min}min ago",
@@ -152,7 +155,8 @@
             "integrityCheckFailed": "Could not verify file integrity"
         },
         "conversation": {
-            "holdForLonger": "Hold button longer to record a voice message"
+            "holdForLonger": "Hold button longer to record a voice message",
+            "microphoneDenied": "Microphon access denied"
         }
     },
     "pages": {
@@ -166,7 +170,8 @@
             "xmppAddress": "XMPP-Address",
             "password": "Password",
             "advancedOptions": "Advanced options",
-            "createAccount": "Create account on server"
+            "createAccount": "Create account on server",
+            "login": "Login"
         },
         "conversations": {
             "speeddialNewChat": "New chat",
@@ -216,7 +221,17 @@
             "messageHint": "Send a message…",
             "sendImages": "Send images",
             "sendFiles": "Send files",
-            "takePhotos": "Take photos"
+            "takePhotos": "Take photos",
+            "voiceRecording": {
+                "cancel": "Cancel",
+                "dragToCancel": "Drag to cancel",
+                "leaveConfirmation": {
+                    "title": "Cancel recording",
+                    "body": "You are currently recording a voice message. Do you want to discard the recording?",
+                    "affirmative": "Discard",
+                    "negative": "Cancel"
+                }
+            }
         },
         "startchat": {
             "title": "New Chat",
@@ -273,6 +288,9 @@
                 "recreateSessionsConfirmTitle": "Rebuild sessions?",
                 "recreateSessionsConfirmBody": "This will recreate the cryptographic sessions with your own devices. Use only if your own devices throw decryption errors.",
                 "noSessions": "There are no cryptographic sessions that are used for end-to-end encryption."
+            },
+            "serverInfo": {
+                "title": "Server Information"
             }
         },
         "blocklist": {

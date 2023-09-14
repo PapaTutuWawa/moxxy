@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 part 'licenses.moxxy.dart';
@@ -52,7 +51,9 @@ class SettingsLicensesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.title(t.pages.settings.licenses.title),
+      appBar: AppBar(
+        title: Text(t.pages.settings.licenses.title),
+      ),
       body: ListView.builder(
         itemCount: usedLibraryList.length,
         itemBuilder: (context, index) =>

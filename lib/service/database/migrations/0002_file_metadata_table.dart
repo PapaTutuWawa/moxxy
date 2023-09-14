@@ -129,8 +129,8 @@ Future<void> upgradeFromV31ToV32(Database db) async {
         hashes = deserializeHashMap(sticker['hashes']! as String);
         filePath = sticker['path']! as String;
         urlSource =
-            ((jsonDecode(sticker['urlSources']! as String) as List<dynamic>)
-                    .cast<String>())
+            (jsonDecode(sticker['urlSources']! as String) as List<dynamic>)
+                .cast<String>()
                 .first;
         mediaType = sticker['mediaType']! as String;
         filename = path.basename(sticker['path']! as String);

@@ -3,9 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/login_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/widgets/button.dart';
-import 'package:moxxyv2/ui/widgets/textfield.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class Login extends StatelessWidget {
   const Login({super.key});
@@ -23,7 +20,9 @@ class Login extends StatelessWidget {
       builder: (BuildContext context, LoginState state) => WillPopScope(
         onWillPop: () async => !state.working,
         child: Scaffold(
-          appBar: BorderlessTopbar.title(t.pages.login.title),
+          appBar: AppBar(
+            title: Text(t.pages.login.title),
+          ),
           body: Column(
             children: [
               Visibility(
@@ -36,15 +35,15 @@ class Login extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: paddingVeryLarge)
                         .add(const EdgeInsets.only(top: 8)),
-                child: CustomTextField(
-                  // ignore: avoid_dynamic_calls
-                  errorText: state.jidState.error,
-                  labelText: t.pages.login.xmppAddress,
+                child: TextField(
                   enabled: !state.working,
-                  cornerRadius: textfieldRadiusRegular,
-                  borderColor: primaryColor,
-                  borderWidth: 1,
-                  enableIMEFeatures: false,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: t.pages.login.xmppAddress,
+                    errorText: state.jidState.error,
+                  ),
                   onChanged: (value) => context
                       .read<LoginBloc>()
                       .add(LoginJidChangedEvent(value)),
@@ -54,29 +53,29 @@ class Login extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: paddingVeryLarge)
                         .add(const EdgeInsets.only(top: 8)),
-                child: CustomTextField(
-                  // ignore: avoid_dynamic_calls
-                  errorText: state.passwordState.error,
-                  labelText: t.pages.login.password,
-                  suffixIcon: Padding(
-                    padding: const EdgeInsetsDirectional.only(end: 8),
-                    child: InkWell(
-                      onTap: () => context
-                          .read<LoginBloc>()
-                          .add(LoginPasswordVisibilityToggledEvent()),
-                      child: Icon(
-                        state.passwordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
+                child: TextField(
+                  enabled: !state.working,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: t.pages.login.password,
+                    errorText: state.passwordState.error,
+                    suffixIcon: Padding(
+                      padding: const EdgeInsetsDirectional.only(end: 8),
+                      child: InkWell(
+                        onTap: () => context
+                            .read<LoginBloc>()
+                            .add(LoginPasswordVisibilityToggledEvent()),
+                        child: Icon(
+                          state.passwordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
                       ),
                     ),
                   ),
-                  enabled: !state.working,
                   obscureText: !state.passwordVisible,
-                  cornerRadius: textfieldRadiusRegular,
-                  borderColor: primaryColor,
-                  borderWidth: 1,
-                  enableIMEFeatures: false,
                   onChanged: (value) => context
                       .read<LoginBloc>()
                       .add(LoginPasswordChangedEvent(value)),
@@ -96,9 +95,9 @@ class Login extends StatelessWidget {
                           value: false,
                           // TODO(Unknown): Implement
                           onChanged: state.working ? null : (value) {},
-                        )
+                        ),
                       ],
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -109,18 +108,20 @@ class Login extends StatelessWidget {
                 child: Row(
                   children: [
                     Expanded(
-                      child: RoundedButton(
-                        cornerRadius: 32,
-                        enabled: !state.working,
-                        onTap: () => context
-                            .read<LoginBloc>()
-                            .add(LoginSubmittedEvent()),
-                        child: const Text('Login'),
+                      child: FilledButton(
+                        onPressed: state.working
+                            ? null
+                            : () => context
+                                .read<LoginBloc>()
+                                .add(LoginSubmittedEvent()),
+                        child: Text(
+                          t.pages.login.login,
+                        ),
                       ),
-                    )
+                    ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),

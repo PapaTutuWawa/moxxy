@@ -162,7 +162,7 @@ class XmppStateService {
         <String, String?>{
           'key': tuple.key,
           'value': tuple.value,
-          'accountJid': accountJid
+          'accountJid': accountJid,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );

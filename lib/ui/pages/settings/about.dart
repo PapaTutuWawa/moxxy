@@ -6,7 +6,6 @@ import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/version.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // TODO(PapaTutuWawa): Include license text
@@ -43,7 +42,9 @@ class SettingsAboutPageState extends State<SettingsAboutPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.title(t.pages.settings.about.title),
+      appBar: AppBar(
+        title: Text(t.pages.settings.about.title),
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
         child: Column(
@@ -126,7 +127,7 @@ class SettingsAboutPageState extends State<SettingsAboutPage> {
                 onPressed: () =>
                     _openUrl('https://github.com/PapaTutuWawa/moxxyv2'),
               ),
-            )
+            ),
           ],
         ),
       ),

@@ -12,7 +12,6 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/service/connectivity.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class NewConversationPage extends StatelessWidget {
   const NewConversationPage({super.key});
@@ -50,7 +49,7 @@ class NewConversationPage extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -62,7 +61,9 @@ class NewConversationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.title(t.pages.newconversation.title),
+      appBar: AppBar(
+        title: Text(t.pages.newconversation.title),
+      ),
       body: BlocBuilder<NewConversationBloc, NewConversationState>(
         builder: (BuildContext context, NewConversationState state) =>
             ListView.builder(
@@ -113,15 +114,15 @@ class NewConversationPage extends StatelessWidget {
                   onDismissed: (_) => context.read<NewConversationBloc>().add(
                         NewConversationRosterItemRemovedEvent(item.jid),
                       ),
-                  background: ColoredBox(
+                  background: const ColoredBox(
                     color: Colors.red,
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(16),
                       child: Row(
-                        children: const [
+                        children: [
                           Icon(Icons.delete),
                           Spacer(),
-                          Icon(Icons.delete)
+                          Icon(Icons.delete),
                         ],
                       ),
                     ),

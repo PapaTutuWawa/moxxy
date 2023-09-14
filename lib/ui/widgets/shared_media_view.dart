@@ -6,7 +6,6 @@ import 'package:moxxyv2/ui/controller/shared_media_controller.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared.dart';
 import 'package:moxxyv2/ui/widgets/grouped_grid_view.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 /// A widget that displays a lazily-loaded list of media files in a grid, grouped
 /// by the send/receive date.
@@ -45,17 +44,10 @@ class SharedMediaView extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     return Scaffold(
-      appBar: BorderlessTopbar(
-        showBackButton: showBackButton,
-        // Ensure the top bar has a height
-        children: [
-          if (title == null)
-            const SizedBox(
-              height: BorderlessTopbar.topbarPreferredHeight,
-            )
-          else
-            Expanded(
-              child: Padding(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: title != null
+            ? Padding(
                 padding: const EdgeInsets.all(8),
                 child: Text(
                   title!,
@@ -63,9 +55,8 @@ class SharedMediaView extends StatelessWidget {
                     fontSize: fontsizeAppbar,
                   ),
                 ),
-              ),
-            ),
-        ],
+              )
+            : null,
       ),
       body: Stack(
         children: [

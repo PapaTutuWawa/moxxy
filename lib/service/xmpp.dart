@@ -407,7 +407,7 @@ class XmppService {
           ChatMarkerData(
             ChatMarker.received,
             originId ?? event.id!,
-          )
+          ),
         ]),
       );
     } else if (deliveryReceiptRequested &&

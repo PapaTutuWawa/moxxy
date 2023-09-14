@@ -1,9 +1,6 @@
-import 'package:meta/meta.dart';
-
 typedef EventCallbackType<E> = Future<void> Function(E event, {dynamic extra});
 
 abstract class EventMatcher<E> {
-  @mustCallSuper
   EventMatcher(this.callback);
 
   /// Return true if the event matches some criteria. False if

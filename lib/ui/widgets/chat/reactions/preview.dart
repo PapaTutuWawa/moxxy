@@ -26,11 +26,6 @@ class ReactionsPreview extends StatelessWidget {
         showModalBottomSheet<void>(
           context: context,
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(textfieldRadiusRegular),
-            ),
-          ),
           builder: (context) {
             return ReactionList(
               message.id,

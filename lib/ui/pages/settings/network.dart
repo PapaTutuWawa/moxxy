@@ -6,7 +6,6 @@ import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class _AutoDownloadSizes {
   const _AutoDownloadSizes(this.text, this.value);
@@ -46,9 +45,6 @@ class AutoDownloadSizeDialogState extends State<AutoDownloadSizeDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(textfieldRadiusRegular),
-      ),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: 32,
         vertical: 12,
@@ -106,7 +102,9 @@ class NetworkPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.title(t.pages.settings.network.title),
+      appBar: AppBar(
+        title: Text(t.pages.settings.network.title),
+      ),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => ListView(
           children: [

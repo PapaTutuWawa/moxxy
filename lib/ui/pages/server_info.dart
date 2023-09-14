@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/server_info_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 const TextStyle _labelStyle = TextStyle(
   fontSize: 18,
@@ -45,14 +45,15 @@ class ServerInfoPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // TODO(PapaTutuWawa): Translate
-      appBar: BorderlessTopbar.title('Server Information'),
+      appBar: AppBar(
+        title: Text(t.pages.profile.serverInfo.title),
+      ),
       body: BlocBuilder<ServerInfoBloc, ServerInfoState>(
         builder: (BuildContext context, ServerInfoState state) {
           if (state.working) {
-            return Column(
+            return const Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 Center(child: CircularProgressIndicator()),
               ],
             );

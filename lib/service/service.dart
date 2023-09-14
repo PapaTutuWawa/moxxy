@@ -391,7 +391,7 @@ Future<void> handleUIEvent(Map<String, dynamic>? data) async {
         jid: command.jid,
         password: '*******',
         useDirectTLS: command.useDirectTLS,
-      ).toJson()
+      ).toJson(),
     };
     log.fine('F2S: $redacted');
   } else {

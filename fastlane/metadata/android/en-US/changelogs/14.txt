@@ -1,0 +1,2 @@
+- Migrate to Flutter's Material 3 implementation.
+- Rework the voice message recorder.

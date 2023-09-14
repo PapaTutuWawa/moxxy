@@ -27,7 +27,7 @@ class QrCodeScanningPage extends StatelessWidget {
     return Scaffold(
       body: ReaderWidget(
         onScan: (value) {
-          final content = value.textString;
+          final content = value.text;
           if (args.validator(content)) {
             Vibrate.feedback(FeedbackType.heavy);
             Navigator.of(context).pop(content);

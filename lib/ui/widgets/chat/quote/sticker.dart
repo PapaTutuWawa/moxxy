@@ -44,10 +44,10 @@ class QuotedStickerWidget extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Padding(
-              padding: EdgeInsets.only(right: 8),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
               child: Icon(
-                PhosphorIcons.stickerBold,
+                PhosphorIcons.regular.sticker,
               ),
             ),
             Text(

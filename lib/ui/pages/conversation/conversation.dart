@@ -15,21 +15,20 @@ import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
-import 'package:moxxyv2/ui/pages/conversation/blink.dart';
-import 'package:moxxyv2/ui/pages/conversation/bottom.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/keyboard_dodging.dart';
 import 'package:moxxyv2/ui/pages/conversation/selected_message.dart';
 import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
-import 'package:moxxyv2/ui/pages/conversation/typing_indicator.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/read.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/bubbles.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
+import 'package:moxxyv2/ui/widgets/chat/typing_indicator.dart';
 import 'package:moxxyv2/ui/widgets/combined_picker.dart';
 import 'package:moxxyv2/ui/widgets/context_menu.dart';
+import 'package:moxxyv2/ui/widgets/messaging_textfield/messaging_textfield.dart';
 
 class ConversationPageArguments {
   const ConversationPageArguments(
@@ -235,7 +234,7 @@ class ConversationPageState extends State<ConversationPage>
                 ),
                 onPressed: () => blockJid(state.conversation!.jid, context),
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -362,14 +361,33 @@ class ConversationPageState extends State<ConversationPage>
     final maxWidth = MediaQuery.of(context).size.width * 0.6;
     return WillPopScope(
       onWillPop: () async {
-        // If the keyboard is open, dismiss it
         if (_keyboardController.currentData.visible) {
+          // If the keyboard is open, dismiss it.
           dismissSoftKeyboard(context);
           return false;
         } else if (_keyboardController.currentData.showWidget) {
+          // If the emoji/sticker picker is open, dismiss it.
           _keyboardController.hideWidget();
           _textfieldFocusNode.unfocus();
           return false;
+        } else if (_conversationController
+            .messagingController.isRecordingNotifier.value) {
+          // If we are recording a voice message, ask if we should continue or discard it.
+          final result = await showConfirmationDialog(
+            t.pages.conversation.voiceRecording.leaveConfirmation.title,
+            t.pages.conversation.voiceRecording.leaveConfirmation.body,
+            context,
+            affirmativeText: t.pages.conversation.voiceRecording
+                .leaveConfirmation.affirmative,
+            negativeText:
+                t.pages.conversation.voiceRecording.leaveConfirmation.negative,
+          );
+          if (!result) {
+            return false;
+          }
+
+          // Cancel the recording
+          _conversationController.messagingController.cancelRecording();
         }
 
         // Clear the read marker cache
@@ -580,108 +598,6 @@ class ConversationPageState extends State<ConversationPage>
                     ),
                   ),
                 ),
-                Positioned(
-                  right: 45 + 16 + 8,
-                  bottom: 300,
-                  child: StreamBuilder<RecordingData>(
-                    initialData: const RecordingData(
-                      false,
-                      false,
-                    ),
-                    stream: _conversationController.recordingAudioMessageStream,
-                    builder: (context, snapshot) => AnimatedScale(
-                      scale: (snapshot.data!.isRecording ||
-                              snapshot.data!.isLocked)
-                          ? 1
-                          : 0,
-                      duration: const Duration(milliseconds: 200),
-                      child: IgnorePointer(
-                        ignoring: !snapshot.data!.isRecording,
-                        child: DragTarget(
-                          onWillAccept: (_) => snapshot.data!.isRecording,
-                          onAccept: (_) {
-                            _conversationController
-                                .cancelAudioMessageRecording();
-                          },
-                          builder: (context, _, __) {
-                            return SizedBox(
-                              width: 45,
-                              height: 45,
-                              child: FloatingActionButton(
-                                heroTag: 'fabAudioRecordingCancel',
-                                onPressed: snapshot.data!.isLocked
-                                    ? _conversationController
-                                        .cancelAudioMessageRecording
-                                    : null,
-                                backgroundColor: Theme.of(context)
-                                    .extension<MoxxyThemeData>()!
-                                    .conversationTextFieldColor,
-                                child: Icon(
-                                  Icons.delete,
-                                  color: Theme.of(context)
-                                      .extension<MoxxyThemeData>()!
-                                      .conversationTextFieldTextColor,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: 45 + 16 + 8,
-                  bottom: 100,
-                  child: StreamBuilder<RecordingData>(
-                    initialData: const RecordingData(
-                      false,
-                      false,
-                    ),
-                    stream: _conversationController.recordingAudioMessageStream,
-                    builder: (context, snapshot) => AnimatedScale(
-                      scale: (snapshot.data!.isRecording ||
-                              snapshot.data!.isLocked)
-                          ? 1
-                          : 0,
-                      duration: const Duration(milliseconds: 200),
-                      child: IgnorePointer(
-                        ignoring: !snapshot.data!.isRecording,
-                        child: DragTarget(
-                          onWillAccept: (_) => snapshot.data!.isRecording,
-                          onAccept: (_) {
-                            _conversationController.lockAudioMessageRecording();
-                          },
-                          builder: (context, _, __) {
-                            return SizedBox(
-                              width: 45,
-                              height: 45,
-                              child: FloatingActionButton(
-                                heroTag: 'fabAudioRecordingLock',
-                                onPressed: _conversationController
-                                    .endAudioMessageRecording,
-                                child: snapshot.data!.isLocked
-                                    ? BlinkingIcon(
-                                        icon: Icons.mic,
-                                        duration:
-                                            const Duration(milliseconds: 600),
-                                        start: Colors.white,
-                                        end: Colors.red.shade600,
-                                      )
-                                    : Icon(
-                                        Icons.lock,
-                                        color: Theme.of(context)
-                                            .extension<MoxxyThemeData>()!
-                                            .conversationTextFieldTextColor,
-                                      ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
@@ -698,12 +614,12 @@ class ConversationPageState extends State<ConversationPage>
           BlocBuilder<ConversationBloc, ConversationState>(
             buildWhen: (prev, next) =>
                 prev.conversation?.encrypted != next.conversation?.encrypted,
-            builder: (context, state) => ConversationInput(
+            builder: (context, state) => MobileMessagingTextField(
               keyboardController: _keyboardController,
               conversationController: _conversationController,
               tabController: _tabController,
               speedDialValueNotifier: _speedDialValueNotifier,
-              textfieldFocusNode: _textfieldFocusNode,
+              textFieldFocusNode: _textfieldFocusNode,
               isEncrypted: state.conversation?.encrypted ?? false,
             ),
           ),

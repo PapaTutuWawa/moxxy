@@ -464,7 +464,7 @@ class NotificationsService {
     if (![
       MessageErrorType.remoteServerTimeout,
       MessageErrorType.remoteServerNotFound,
-      MessageErrorType.serviceUnavailable
+      MessageErrorType.serviceUnavailable,
     ].contains(type)) {
       return;
     }
