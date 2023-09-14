@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/pages/conversation/blink.dart';
+import 'package:moxxyv2/ui/widgets/messaging_textfield/constants.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/controller.dart';
 
-const double lockButtonWidth = 45;
-const double recordButtonSize = 80;
 
 class RecordButtonOverlay extends StatefulWidget {
   const RecordButtonOverlay(
@@ -60,7 +59,7 @@ class RecordButtonOverlayState extends State<RecordButtonOverlay> {
       children: [
         Container(),
         Positioned(
-          right: 8 + lockButtonWidth + 16 + 8,
+          right: lockButtonHorizontalCenteringOffset,
           bottom: 250,
           child: AnimatedScale(
             scale: _showElements ? 1 : 0,
@@ -98,17 +97,9 @@ class RecordButtonOverlayState extends State<RecordButtonOverlay> {
           ),
         ),
         Positioned(
-          right: _position?.dx ??
-              8 +
-                  lockButtonWidth +
-                  16 +
-                  8 -
-                  (recordButtonSize - lockButtonWidth) / 2,
+          right: _position?.dx ?? recordButtonHorizontalCenteringOffset,
           top: _position?.dy ??
-              MediaQuery.of(context).size.height -
-                  8 -
-                  recordButtonSize +
-                  40 / 2,
+              MediaQuery.of(context).size.height - recordButtonVerticalCenteringOffset,
           child: AnimatedScale(
             scale: _showElements ? 1 : 0,
             duration: const Duration(milliseconds: 150),

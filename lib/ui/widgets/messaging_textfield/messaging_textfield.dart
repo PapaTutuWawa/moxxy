@@ -8,6 +8,7 @@ import 'package:moxxyv2/ui/pages/conversation/keyboard_dodging.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/message.dart';
+import 'package:moxxyv2/ui/widgets/messaging_textfield/constants.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/record_icon.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/send_button.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/slider.dart';
@@ -32,7 +33,7 @@ class EmojiStickerPickerIcon extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: Padding(
-          padding: const EdgeInsets.all(8),
+          padding: iconPadding,
           child: StreamBuilder<KeyboardReplacerData>(
             stream: keyboardController.stream,
             initialData: keyboardController.currentData,
@@ -47,7 +48,7 @@ class EmojiStickerPickerIcon extends StatelessWidget {
                       : (tabController.index == 0
                           ? Icons.emoji_emotions
                           : PhosphorIcons.thin.sticker),
-                  size: 24,
+                  size: iconSize,
                   color: primaryColor,
                 ),
               );
@@ -138,7 +139,7 @@ class MobileMessagingTextFieldState extends State<MobileMessagingTextField>
         children: [
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(8),
+              padding: bottomBarPadding,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(25),
                 child: Stack(
@@ -148,10 +149,7 @@ class MobileMessagingTextFieldState extends State<MobileMessagingTextField>
                           .extension<MoxxyThemeData>()!
                           .conversationTextFieldColor,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 4,
-                          horizontal: 12,
-                        ),
+                        padding: textFieldInnerPadding,
                         child: Column(
                           children: [
                             StreamBuilder<TextFieldData>(
@@ -165,21 +163,16 @@ class MobileMessagingTextFieldState extends State<MobileMessagingTextField>
                                 if (snapshot.data!.quotedMessage == null) {
                                   return const SizedBox();
                                 }
-                                return Padding(
-                                  padding: const EdgeInsets.only(
-                                    bottom: 8,
-                                  ),
-                                  child: buildQuoteMessageWidget(
+                                return buildQuoteMessageWidget(
+                                  snapshot.data!.quotedMessage!,
+                                  isSent(
                                     snapshot.data!.quotedMessage!,
-                                    isSent(
-                                      snapshot.data!.quotedMessage!,
-                                      GetIt.I.get<UIDataService>().ownJid!,
-                                    ),
-                                    textfieldQuotedMessageRadius,
-                                    textfieldQuotedMessageRadius,
-                                    resetQuote: widget
-                                        .conversationController.removeQuote,
+                                    GetIt.I.get<UIDataService>().ownJid!,
                                   ),
+                                  textfieldQuotedMessageRadius,
+                                  textfieldQuotedMessageRadius,
+                                  resetQuote:
+                                      widget.conversationController.removeQuote,
                                 );
                               },
                             ),
@@ -201,35 +194,30 @@ class MobileMessagingTextFieldState extends State<MobileMessagingTextField>
                                           widget.textFieldFocusNode,
                                     ),
                                     Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 12,
+                                      child: TextField(
+                                        controller: widget
+                                            .conversationController
+                                            .textController,
+                                        focusNode: widget.textFieldFocusNode,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .extension<MoxxyThemeData>()!
+                                              .conversationTextFieldTextColor,
                                         ),
-                                        child: TextField(
-                                          controller: widget
-                                              .conversationController
-                                              .textController,
-                                          focusNode: widget.textFieldFocusNode,
-                                          style: TextStyle(
+                                        decoration: InputDecoration(
+                                          border: InputBorder.none,
+                                          contentPadding: EdgeInsets.zero,
+                                          isDense: true,
+                                          hintText:
+                                              t.pages.conversation.messageHint,
+                                          hintStyle: TextStyle(
                                             color: Theme.of(context)
                                                 .extension<MoxxyThemeData>()!
-                                                .conversationTextFieldTextColor,
+                                                .conversationTextFieldHintTextColor,
                                           ),
-                                          decoration: InputDecoration(
-                                            border: InputBorder.none,
-                                            contentPadding: EdgeInsets.zero,
-                                            isDense: true,
-                                            hintText: t
-                                                .pages.conversation.messageHint,
-                                            hintStyle: TextStyle(
-                                              color: Theme.of(context)
-                                                  .extension<MoxxyThemeData>()!
-                                                  .conversationTextFieldHintTextColor,
-                                            ),
-                                          ),
-                                          minLines: 1,
-                                          maxLines: 5,
                                         ),
+                                        minLines: 1,
+                                        maxLines: 5,
                                       ),
                                     ),
                                     AnimatedOpacity(
@@ -264,10 +252,10 @@ class MobileMessagingTextFieldState extends State<MobileMessagingTextField>
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(left: 16, right: 8),
+            padding: sendButtonPadding,
             child: SizedBox(
-              width: 45,
-              height: 45,
+              width: sendButtonSize,
+              height: sendButtonSize,
               child: SendButton(
                 controller: widget.conversationController.messagingController,
                 conversationController: widget.conversationController,

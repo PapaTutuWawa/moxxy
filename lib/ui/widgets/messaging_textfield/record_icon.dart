@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/widgets/messaging_textfield/constants.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/controller.dart';
-import 'package:moxxyv2/ui/widgets/messaging_textfield/overlay.dart';
 
 /// Describes on what axis the record button is locked.
 enum AxisLock {
@@ -53,12 +53,12 @@ class RecordIconState extends State<RecordIcon> {
         final size = MediaQuery.of(context).size;
         _initialPosition = event.position;
 
-        const buttonX = 8 + 45 + 16 + 8 - (80 - 45) / 2;
+        const buttonX = recordButtonHorizontalCenteringOffset;
         _buttonLockPosition = Offset(
-          8 + 45 + 16 + 8 - (80 - 45) / 2,
-          size.height - 250 - 80,
+          recordButtonHorizontalCenteringOffset,
+          size.height - 250 - recordButtonSize,
         );
-        _cancellationDistance = (size.width - buttonX - 80) * 0.8;
+        _cancellationDistance = (size.width - buttonX - recordButtonSize) * 0.8;
         widget.controller.startRecording(context);
       },
       onPointerMove: (event) {
@@ -90,21 +90,22 @@ class RecordIconState extends State<RecordIcon> {
         double y;
         switch (lock) {
           case AxisLock.origin:
-            x = 8 + 45 + 16 + 8 - (80 - 45) / 2;
-            y = size.height - 8 - 80 + 40 / 2;
+            x = recordButtonHorizontalCenteringOffset;
+            y = size.height - recordButtonVerticalCenteringOffset;
             break;
           case AxisLock.vertical:
-            x = 8 + 45 + 16 + 8 - (80 - 45) / 2;
-            y = size.height - 8 + dyRaw;
+            x = recordButtonHorizontalCenteringOffset;
+            y = size.height - recordButtonVerticalCenteringOffset + dyRaw;
             break;
           case AxisLock.horizonal:
-            x = 8 + 45 + 16 + 8 - (80 - 45) / 2 - dxRaw;
-            y = size.height - 8 - 80 + 40 / 2;
+            x = recordButtonHorizontalCenteringOffset - dxRaw;
+            y = size.height - recordButtonVerticalCenteringOffset;
             break;
         }
 
         // Handle haptic feedback and locking once we reach a certain
         // threshold.
+        // TODO: Maybe use half the height of the lock button
         if (dy >= 250 - 45) {
           if (!hasVibrated) {
             hasVibrated = true;
@@ -134,12 +135,12 @@ class RecordIconState extends State<RecordIcon> {
         // Clamp the position to not move off of the screen.
         widget.controller.positionNotifier.value = Offset(
           x.clamp(
-            8 + 45 + 16 + 8 - (recordButtonSize - 45) / 2,
+            recordButtonHorizontalCenteringOffset,
             double.infinity,
           ),
           y.clamp(
             -double.infinity,
-            size.height - 8 - recordButtonSize + 40 / 2,
+            size.height - recordButtonVerticalCenteringOffset,
           ),
         );
       },
@@ -158,18 +159,15 @@ class RecordIconState extends State<RecordIcon> {
       },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
-        child: Material(
+        child: const Material(
           color: Colors.transparent,
           child: InkWell(
-            onLongPress: () {
-              //widget.controller.draggingNotifier.value = true;
-            },
-            child: const Padding(
-              padding: EdgeInsets.all(8),
+            child: Padding(
+              padding: iconPadding,
               child: Icon(
                 Icons.mic_sharp,
                 color: primaryColor,
-                size: 24,
+                size: iconSize,
               ),
             ),
           ),
