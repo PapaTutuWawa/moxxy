@@ -78,7 +78,7 @@ class RecordIconState extends State<RecordIcon> {
             const buttonX = recordButtonHorizontalCenteringOffset;
             _buttonLockPosition = Offset(
               recordButtonHorizontalCenteringOffset,
-              size.height - 250 - recordButtonSize,
+              size.height - lockButtonBottomPosition - recordButtonSize,
             );
             _cancellationDistance =
                 (size.width - buttonX - recordButtonSize) * 0.8;
@@ -128,8 +128,7 @@ class RecordIconState extends State<RecordIcon> {
 
             // Handle haptic feedback and locking once we reach a certain
             // threshold.
-            // TODO: Maybe use half the height of the lock button
-            if (dy >= 250 - 45) {
+            if (dy >= lockButtonBottomPosition - lockButtonHeight / 2) {
               if (!hasVibrated) {
                 hasVibrated = true;
                 widget.controller.lockedNotifier.value = true;

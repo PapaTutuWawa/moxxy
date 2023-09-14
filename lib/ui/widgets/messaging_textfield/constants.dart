@@ -43,6 +43,30 @@ const double noTextBarHeight = 2 * _bottomBarPadding +
     2 * _iconPadding +
     iconSize;
 
+/// The padding of the top icon inside the lock button.
+const double _lockButtonTopIconTopPadding = 8;
+const EdgeInsets lockButtonTopIconPadding = EdgeInsets.only(
+  top: _lockButtonTopIconTopPadding,
+);
+
+/// The padding of the bottom icon inside the lock button.
+const double _lockButtonBottomIconTopPadding = 4;
+const double _lockButtonBottomIconBottomPadding = 8;
+const EdgeInsets lockButtonBottomIconPadding = EdgeInsets.only(
+  top: _lockButtonBottomIconTopPadding,
+  bottom: _lockButtonBottomIconBottomPadding,
+);
+
+/// The "bottom" coordinate of the lock button.
+const double lockButtonBottomPosition = 250;
+
+/// The height of the lock button.
+const double lockButtonHeight = _lockButtonBottomIconTopPadding +
+    iconSize +
+    _lockButtonTopIconTopPadding +
+    iconSize +
+    _lockButtonBottomIconBottomPadding;
+
 /// The value to remove from the viewport height to center the record button overlay
 /// vertically over the record icon.
 const double recordButtonVerticalCenteringOffset =

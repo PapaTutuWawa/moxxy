@@ -60,7 +60,7 @@ class RecordButtonOverlayState extends State<RecordButtonOverlay> {
         Container(),
         Positioned(
           right: lockButtonHorizontalCenteringOffset,
-          bottom: 250,
+          bottom: lockButtonBottomPosition,
           child: AnimatedScale(
             scale: _showElements ? 1 : 0,
             duration: const Duration(milliseconds: 150),
@@ -76,17 +76,19 @@ class RecordButtonOverlayState extends State<RecordButtonOverlay> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Padding(
-                        padding: EdgeInsets.only(top: 8),
+                        padding: lockButtonTopIconPadding,
                         child: Icon(
                           Icons.lock_sharp,
                           color: Colors.white,
+                          size: iconSize,
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(top: 4, bottom: 8),
+                        padding: lockButtonBottomIconPadding,
                         child: Icon(
                           Icons.expand_less,
                           color: Colors.white,
+                          size: iconSize,
                         ),
                       ),
                     ],
