@@ -220,18 +220,11 @@ class MobileMessagingTextFieldState extends State<MobileMessagingTextField>
                                         maxLines: 5,
                                       ),
                                     ),
-                                    AnimatedOpacity(
-                                      opacity: snapshot.data!.isBodyEmpty &&
-                                              snapshot.data!.quotedMessage ==
-                                                  null
-                                          ? 1
-                                          : 0,
-                                      duration:
-                                          const Duration(milliseconds: 200),
-                                      child: RecordIcon(
-                                        widget.conversationController
-                                            .messagingController,
-                                      ),
+                                    RecordIcon(
+                                      widget.conversationController
+                                          .messagingController,
+                                      visible: snapshot.data!.isBodyEmpty &&
+                                          snapshot.data!.quotedMessage == null,
                                     ),
                                   ],
                                 );

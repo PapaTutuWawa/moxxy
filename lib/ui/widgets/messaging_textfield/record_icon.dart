@@ -21,10 +21,15 @@ enum AxisLock {
 class RecordIcon extends StatefulWidget {
   const RecordIcon(
     this.controller, {
+    required this.visible,
     super.key,
   });
 
+  /// The controller managing voice message recording.
   final MobileMessagingTextFieldController controller;
+
+  /// Flag indicating whether the widget should be visible or not.
+  final bool visible;
 
   @override
   RecordIconState createState() => RecordIconState();
@@ -41,133 +46,153 @@ class RecordIconState extends State<RecordIcon> {
   /// Keep track if we have already vibrated for a "lock" event.
   bool hasVibrated = false;
 
+  /// The distance to drag the pointer to the left to cancel the voice recording.
   double _cancellationDistance = 0;
+
+  /// Flag indicating whether the widget should be layouted, painted, and hit tested
+  /// (true) or handled off stage (false).
+  bool _takeUpSpace = true;
 
   @override
   Widget build(BuildContext context) {
-    return Listener(
-      onPointerDown: (event) {
-        // Get rid of the keyboard.
-        dismissSoftKeyboard(context);
+    return Offstage(
+      offstage: !_takeUpSpace,
+      child: AnimatedOpacity(
+        opacity: widget.visible ? 1 : 0,
+        duration: const Duration(milliseconds: 200),
+        onEnd: () {
+          // Ensure that we do not layout the child when it should not
+          // be visible.
+          setState(() {
+            _takeUpSpace = widget.visible;
+          });
+        },
+        child: Listener(
+          onPointerDown: (event) {
+            // Get rid of the keyboard.
+            dismissSoftKeyboard(context);
 
-        final size = MediaQuery.of(context).size;
-        _initialPosition = event.position;
+            final size = MediaQuery.of(context).size;
+            _initialPosition = event.position;
 
-        const buttonX = recordButtonHorizontalCenteringOffset;
-        _buttonLockPosition = Offset(
-          recordButtonHorizontalCenteringOffset,
-          size.height - 250 - recordButtonSize,
-        );
-        _cancellationDistance = (size.width - buttonX - recordButtonSize) * 0.8;
-        widget.controller.startRecording(context);
-      },
-      onPointerMove: (event) {
-        final delta = event.position - _initialPosition;
-        final dxRaw = delta.dx;
-        final dyRaw = delta.dy;
-        final dx = delta.dx.abs();
-        final dy = delta.dy.abs();
+            const buttonX = recordButtonHorizontalCenteringOffset;
+            _buttonLockPosition = Offset(
+              recordButtonHorizontalCenteringOffset,
+              size.height - 250 - recordButtonSize,
+            );
+            _cancellationDistance =
+                (size.width - buttonX - recordButtonSize) * 0.8;
+            widget.controller.startRecording(context);
+          },
+          onPointerMove: (event) {
+            final delta = event.position - _initialPosition;
+            final dxRaw = delta.dx;
+            final dyRaw = delta.dy;
+            final dx = delta.dx.abs();
+            final dy = delta.dy.abs();
 
-        // Figure out what axis to lock.
-        AxisLock lock;
-        if (dy > dx) {
-          lock = AxisLock.vertical;
-        } else if (dx > dy) {
-          lock = AxisLock.horizonal;
-          // Prevent locking, then moving to horizontal from counting
-          // as "locked".
-          widget.controller.lockedNotifier.value = false;
-        } else {
-          lock = AxisLock.origin;
-          // Prevent locking, then moving to horizontal from counting
-          // as "locked".
-          widget.controller.lockedNotifier.value = false;
-        }
+            // Figure out what axis to lock.
+            AxisLock lock;
+            if (dy > dx) {
+              lock = AxisLock.vertical;
+            } else if (dx > dy) {
+              lock = AxisLock.horizonal;
+              // Prevent locking, then moving to horizontal from counting
+              // as "locked".
+              widget.controller.lockedNotifier.value = false;
+            } else {
+              lock = AxisLock.origin;
+              // Prevent locking, then moving to horizontal from counting
+              // as "locked".
+              widget.controller.lockedNotifier.value = false;
+            }
 
-        // Lock the dragging to a given axis.
-        final size = MediaQuery.of(context).size;
-        double x;
-        double y;
-        switch (lock) {
-          case AxisLock.origin:
-            x = recordButtonHorizontalCenteringOffset;
-            y = size.height - recordButtonVerticalCenteringOffset;
-            break;
-          case AxisLock.vertical:
-            x = recordButtonHorizontalCenteringOffset;
-            y = size.height - recordButtonVerticalCenteringOffset + dyRaw;
-            break;
-          case AxisLock.horizonal:
-            x = recordButtonHorizontalCenteringOffset - dxRaw;
-            y = size.height - recordButtonVerticalCenteringOffset;
-            break;
-        }
+            // Lock the dragging to a given axis.
+            final size = MediaQuery.of(context).size;
+            double x;
+            double y;
+            switch (lock) {
+              case AxisLock.origin:
+                x = recordButtonHorizontalCenteringOffset;
+                y = size.height - recordButtonVerticalCenteringOffset;
+                break;
+              case AxisLock.vertical:
+                x = recordButtonHorizontalCenteringOffset;
+                y = size.height - recordButtonVerticalCenteringOffset + dyRaw;
+                break;
+              case AxisLock.horizonal:
+                x = recordButtonHorizontalCenteringOffset - dxRaw;
+                y = size.height - recordButtonVerticalCenteringOffset;
+                break;
+            }
 
-        // Handle haptic feedback and locking once we reach a certain
-        // threshold.
-        // TODO: Maybe use half the height of the lock button
-        if (dy >= 250 - 45) {
-          if (!hasVibrated) {
-            hasVibrated = true;
-            widget.controller.lockedNotifier.value = true;
-            unawaited(HapticFeedback.heavyImpact());
-          }
+            // Handle haptic feedback and locking once we reach a certain
+            // threshold.
+            // TODO: Maybe use half the height of the lock button
+            if (dy >= 250 - 45) {
+              if (!hasVibrated) {
+                hasVibrated = true;
+                widget.controller.lockedNotifier.value = true;
+                unawaited(HapticFeedback.heavyImpact());
+              }
 
-          widget.controller.positionNotifier.value = _buttonLockPosition;
-          return;
-        } else {
-          if (hasVibrated) {
-            widget.controller.lockedNotifier.value = false;
-            hasVibrated = false;
-          }
-        }
+              widget.controller.positionNotifier.value = _buttonLockPosition;
+              return;
+            } else {
+              if (hasVibrated) {
+                widget.controller.lockedNotifier.value = false;
+                hasVibrated = false;
+              }
+            }
 
-        // Handle cancelling the recording.
-        if (dx >= _cancellationDistance &&
-            !widget.controller.isCancellingNotifier.value) {
-          widget.controller.isCancellingNotifier.value = true;
-          unawaited(HapticFeedback.heavyImpact());
-        } else if (dx < _cancellationDistance &&
-            widget.controller.isCancellingNotifier.value) {
-          widget.controller.isCancellingNotifier.value = false;
-        }
+            // Handle cancelling the recording.
+            if (dx >= _cancellationDistance &&
+                !widget.controller.isCancellingNotifier.value) {
+              widget.controller.isCancellingNotifier.value = true;
+              unawaited(HapticFeedback.heavyImpact());
+            } else if (dx < _cancellationDistance &&
+                widget.controller.isCancellingNotifier.value) {
+              widget.controller.isCancellingNotifier.value = false;
+            }
 
-        // Clamp the position to not move off of the screen.
-        widget.controller.positionNotifier.value = Offset(
-          x.clamp(
-            recordButtonHorizontalCenteringOffset,
-            double.infinity,
-          ),
-          y.clamp(
-            -double.infinity,
-            size.height - recordButtonVerticalCenteringOffset,
-          ),
-        );
-      },
-      onPointerUp: (event) {
-        if (widget.controller.requestingPermission) {
-          return;
-        }
+            // Clamp the position to not move off of the screen.
+            widget.controller.positionNotifier.value = Offset(
+              x.clamp(
+                recordButtonHorizontalCenteringOffset,
+                double.infinity,
+              ),
+              y.clamp(
+                -double.infinity,
+                size.height - recordButtonVerticalCenteringOffset,
+              ),
+            );
+          },
+          onPointerUp: (event) {
+            if (widget.controller.requestingPermission) {
+              return;
+            }
 
-        // Reset the dragging value.
-        widget.controller.draggingNotifier.value = false;
+            // Reset the dragging value.
+            widget.controller.draggingNotifier.value = false;
 
-        // End the recording if the button is not locked.
-        if (!widget.controller.lockedNotifier.value) {
-          widget.controller.endRecording();
-        }
-      },
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: const Material(
-          color: Colors.transparent,
-          child: InkWell(
-            child: Padding(
-              padding: iconPadding,
-              child: Icon(
-                Icons.mic_sharp,
-                color: primaryColor,
-                size: iconSize,
+            // End the recording if the button is not locked.
+            if (!widget.controller.lockedNotifier.value) {
+              widget.controller.endRecording();
+            }
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: const Material(
+              color: Colors.transparent,
+              child: InkWell(
+                child: Padding(
+                  padding: iconPadding,
+                  child: Icon(
+                    Icons.mic_sharp,
+                    color: primaryColor,
+                    size: iconSize,
+                  ),
+                ),
               ),
             ),
           ),
