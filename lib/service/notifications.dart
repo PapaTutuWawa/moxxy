@@ -523,7 +523,7 @@ class NotificationsService {
   Future<void> maybeSetAvatarFromState() async {
     final xss = GetIt.I.get<XmppStateService>();
     final avatarPath = (await xss.state).avatarUrl;
-    if (avatarPath.isNotEmpty) {
+    if (avatarPath != null) {
       await _api.setNotificationSelfAvatar(avatarPath);
     }
   }

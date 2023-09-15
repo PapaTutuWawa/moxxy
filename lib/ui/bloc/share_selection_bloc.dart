@@ -39,7 +39,7 @@ class ShareListItem {
     this.contactAvatarPath,
     this.contactDisplayName,
   );
-  final String avatarPath;
+  final String? avatarPath;
   final String? avatarHash;
   final String jid;
   final String title;
@@ -230,8 +230,7 @@ class ShareSelectionBloc
                 return SendFilesRecipient(
                   item.jid,
                   item.title,
-                  // TODO(Unknown): Fix
-                  item.avatarPath.isEmpty ? null : item.avatarPath,
+                  item.avatarPath,
                   item.avatarHash,
                   item.contactId != null,
                 );

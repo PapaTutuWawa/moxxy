@@ -11,7 +11,7 @@ class InitConversationEvent extends ConversationEvent {
 /// Triggered when the background image changed
 class BackgroundChangedEvent extends ConversationEvent {
   BackgroundChangedEvent(this.backgroundPath);
-  final String backgroundPath;
+  final String? backgroundPath;
 }
 
 /// Triggered before navigating to the ConversationPage to load the conversation
@@ -29,7 +29,7 @@ class RequestedConversationEvent extends ConversationEvent {
   /// These are placeholders in case we have to wait a bit longer
   final String jid;
   final String title;
-  final String avatarUrl;
+  final String? avatarUrl;
   final bool removeUntilConversations;
 
   /// Initial value to put in the input field.

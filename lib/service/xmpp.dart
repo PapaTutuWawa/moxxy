@@ -640,7 +640,7 @@ class XmppService {
             rosterItem?.title ?? recipient.split('@').first,
             lastMessages[recipient],
             ConversationType.chat,
-            rosterItem?.avatarPath ?? '',
+            rosterItem?.avatarPath,
             recipient,
             0,
             DateTime.now().millisecondsSinceEpoch,
@@ -854,8 +854,8 @@ class XmppService {
             (state) => state.copyWith(
               jid: connection.connectionSettings.jid.toString(),
               displayName: connection.connectionSettings.jid.local,
-              avatarUrl: '',
-              avatarHash: '',
+              avatarUrl: null,
+              avatarHash: null,
             ),
           );
     }
@@ -1531,7 +1531,7 @@ class XmppService {
           rosterItem?.title ?? conversationJid.split('@')[0],
           message,
           ConversationType.chat,
-          rosterItem?.avatarPath ?? '',
+          rosterItem?.avatarPath,
           conversationJid,
           sent ? 0 : 1,
           messageTimestamp,

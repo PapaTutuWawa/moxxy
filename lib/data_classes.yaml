@@ -382,7 +382,7 @@ files:
         attributes:
           title: String
           lastMessageBody: String
-          avatarUrl: String
+          avatarUrl: String?
           jid: String
           conversationType: String
       - name: SetOpenConversationCommand

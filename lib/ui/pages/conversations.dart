@@ -416,7 +416,7 @@ class ConversationsPageState extends State<ConversationsPage>
                         NewConversationAddedEvent(
                           '',
                           t.pages.conversations.speeddialAddNoteToSelf,
-                          '',
+                          null,
                           ConversationType.note,
                         ),
                       );

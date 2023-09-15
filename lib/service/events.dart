@@ -549,7 +549,7 @@ Future<void> _maybeAchieveBothSubscription(
         break;
     }
   } else {
-    await roster.addToRosterWrapper(accountJid, '', '', jid, jid.split('@')[0]);
+    await roster.addToRosterWrapper(accountJid, null, null, jid, jid.split('@')[0]);
   }
 }
 
@@ -642,7 +642,7 @@ Future<void> performAddContact(
             jid.split('@')[0],
             null,
             ConversationType.chat,
-            '',
+            null,
             jid,
             0,
             DateTime.now().millisecondsSinceEpoch,
@@ -1621,7 +1621,7 @@ Future<void> performJoinGroupchat(
           jid.split('@')[0],
           null,
           ConversationType.groupchat,
-          '',
+          null,
           jid,
           0,
           DateTime.now().millisecondsSinceEpoch,
@@ -1666,8 +1666,8 @@ Future<void> performFetchRecipientInformation(
         SendFilesRecipient(
           rosterItem.jid,
           await rosterItem.titleWithOptionalContactService,
-          rosterItem.avatarPath.isEmpty ? null : rosterItem.avatarPath,
-          rosterItem.avatarHash.isEmpty ? null : rosterItem.avatarHash,
+          rosterItem.avatarPath,
+          rosterItem.avatarHash,
           rosterItem.contactId != null,
         ),
       );
@@ -1681,7 +1681,7 @@ Future<void> performFetchRecipientInformation(
         SendFilesRecipient(
           conversation.jid,
           await conversation.titleWithOptionalContactService,
-          conversation.avatarPath.isEmpty ? null : conversation.avatarPath,
+          conversation.avatarPath,
           conversation.avatarHash,
           conversation.contactId != null,
         ),

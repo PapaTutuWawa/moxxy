@@ -42,7 +42,7 @@ class UISharingService {
               RequestedConversationEvent(
                 conversationJid!,
                 '',
-                '',
+                null,
                 removeUntilConversations: true,
                 initialText: media.content,
               ),

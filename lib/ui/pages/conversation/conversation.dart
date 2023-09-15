@@ -489,9 +489,9 @@ class ConversationPageState extends State<ConversationPage>
           builder: (context, state) {
             final query = MediaQuery.of(context);
 
-            if (state.backgroundPath.isNotEmpty) {
+            if (state.backgroundPath != null) {
               return Image.file(
-                File(state.backgroundPath),
+                File(state.backgroundPath!),
                 fit: BoxFit.cover,
                 width: query.size.width,
                 height: query.size.height - query.padding.top,

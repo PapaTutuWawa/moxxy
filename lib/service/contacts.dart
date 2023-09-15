@@ -318,8 +318,8 @@ class ContactsService {
       } else {
         final newRosterItem = await rs.addRosterItemFromData(
           accountJid,
-          '',
-          '',
+          null,
+          null,
           contact.jid,
           contact.jid.split('@').first,
           'none',

@@ -68,7 +68,7 @@ class CropBackgroundBloc
       state.copyWith(
         image: null,
         blurEnabled: false,
-        imagePath: '',
+        imagePath: null,
         imageHeight: 0,
         imageWidth: 0,
         isWorking: false,

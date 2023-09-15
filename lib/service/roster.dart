@@ -32,8 +32,8 @@ class RosterService {
   /// Wrapper around [DatabaseService]'s addRosterItemFromData that updates the cache.
   Future<RosterItem> addRosterItemFromData(
     String accountJid,
-    String avatarPath,
-    String avatarHash,
+    String? avatarPath,
+    String? avatarHash,
     String jid,
     String title,
     String subscription,
@@ -187,8 +187,8 @@ class RosterService {
   /// [RosterItem] model object.
   Future<RosterItem> addToRosterWrapper(
     String accountJid,
-    String avatarPath,
-    String avatarHash,
+    String? avatarPath,
+    String? avatarHash,
     String jid,
     String title,
   ) async {

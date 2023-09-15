@@ -14,10 +14,10 @@ class RosterItem with _$RosterItem {
     String accountJid,
 
     // Path to the roster avatar.
-    String avatarPath,
+    String? avatarPath,
 
     // The SHA-1 hash of the roster avatar.
-    String avatarHash,
+    String? avatarHash,
 
     // The JID of the roster item.
     String jid,

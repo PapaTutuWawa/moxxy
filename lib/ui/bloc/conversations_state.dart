@@ -5,7 +5,7 @@ class ConversationsState with _$ConversationsState {
   factory ConversationsState({
     @Default(<Conversation>[]) List<Conversation> conversations,
     @Default('') String displayName,
-    @Default('') String avatarPath,
+    String? avatarPath,
     @Default('') String jid,
   }) = _ConversationsState;
 }

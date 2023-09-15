@@ -13,6 +13,7 @@ import 'package:moxxyv2/shared/avatar.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 
+// TODO: Rewrite to allow building a base that can share code with the file service
 class AvatarService {
   final Logger _log = Logger('AvatarService');
 
@@ -64,8 +65,18 @@ class AvatarService {
     }
     final id = rawId.get<String>();
     if (id == oldHash) {
-      _log.finest('Not fetching avatar for $jid since the hashes are equal');
-      return true;
+      if (oldHash != null) {
+        final (_, path) = await getAvatarPath(oldHash);
+        if (!File(path).existsSync()) {
+          _log.finest('Avatar hashes match for $jid but the avatar at $path does not exist. Fetching avatar...');
+        } else {
+         _log.finest('Hashes match for $jid and the file exists. Not fetching avatar...');
+         return true;
+        }
+      } else {
+        _log.finest('Not fetching avatar for $jid since the hashes are equal');
+        return true;
+      }
     }
 
     return _fetchAvatarForJid(jid, id);
@@ -101,7 +112,7 @@ class AvatarService {
       data,
       hash,
       jid.toString(),
-      (originalConversation?.avatarPath ?? originalRoster?.avatarPath)!,
+      originalConversation?.avatarPath ?? originalRoster?.avatarPath,
     );
 
     if (originalConversation != null) {
@@ -218,9 +229,20 @@ class AvatarService {
     }
     final id = rawId.get<String>();
 
+
     if (id == state.avatarHash) {
-      _log.finest('Not fetching avatar for $jid since the hashes are equal');
-      return;
+      if (state.avatarHash != null) {
+        final (_, path) = await getAvatarPath(state.avatarHash!);
+        if (!File(path).existsSync()) {
+          _log.finest('Avatar hashes match for our own avatar but the file at $path does not exist. Fetching avatar...');
+        } else {
+         _log.finest('Hashes match for own avatar and the file exists. Not fetching avatar...');
+         return;
+        }
+      } else {
+        _log.finest('Not fetching own avatar since the hashes are equal');
+        return;
+      }
     }
 
     final rawAvatar = await am.getUserAvatar(jid);

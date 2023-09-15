@@ -20,7 +20,7 @@ const defaultSendButtonState = SendButtonState.multi;
 class ConversationState with _$ConversationState {
   factory ConversationState({
     @Default(null) Conversation? conversation,
-    @Default('') String backgroundPath,
+    String? backgroundPath,
 
     // For recording
     @Default(false) bool isDragging,

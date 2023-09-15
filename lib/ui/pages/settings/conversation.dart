@@ -46,7 +46,7 @@ class ConversationSettingsPage extends StatelessWidget {
     PreferencesState state,
   ) async {
     final backgroundPath = state.backgroundPath;
-    if (backgroundPath.isEmpty) return;
+    if (backgroundPath == null) return;
 
     // TODO(Unknown): Move this into the [PreferencesBloc]
     final file = File(backgroundPath);
@@ -61,7 +61,7 @@ class ConversationSettingsPage extends StatelessWidget {
     // ignore: use_build_context_synchronously
     context.read<PreferencesBloc>().add(
           PreferencesChangedEvent(
-            state.copyWith(backgroundPath: ''),
+            state.copyWith(backgroundPath: null),
           ),
         );
   }

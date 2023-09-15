@@ -14,7 +14,7 @@ class NewConversationAddedEvent extends NewConversationEvent {
   NewConversationAddedEvent(this.jid, this.title, this.avatarUrl, this.type);
   final String jid;
   final String title;
-  final String avatarUrl;
+  final String? avatarUrl;
   final ConversationType type;
 }
 
