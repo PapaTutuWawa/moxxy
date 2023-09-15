@@ -249,49 +249,54 @@ class ConversationsPageState extends State<ConversationsPage>
         builder: (BuildContext context, ConversationsState state) => Scaffold(
           appBar: AppBar(
             automaticallyImplyLeading: false,
-            title: InkWell(
-              onTap: () {
-                // Dismiss the selection, if we have an active one
-                if (_selectedConversation != null) {
-                  dismissContextMenu();
-                }
+            title: ClipRRect(
+              borderRadius: BorderRadius.circular(textfieldRadiusConversation),
+              child: Material(
+                child: InkWell(
+                  onTap: () {
+                    // Dismiss the selection, if we have an active one
+                    if (_selectedConversation != null) {
+                      dismissContextMenu();
+                    }
 
-                GetIt.I.get<profile.ProfileBloc>().add(
-                      profile.ProfilePageRequestedEvent(
-                        true,
-                        jid: state.jid,
-                        avatarUrl: state.avatarPath,
-                        displayName: state.displayName,
-                      ),
-                    );
-              },
-              child: Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Hero(
-                      tag: 'self_profile_picture',
-                      child: Material(
-                        color: const Color.fromRGBO(0, 0, 0, 0),
-                        // NOTE: We do not care about the avatar hash because
-                        //       we just read it from the XMPP state in the
-                        //       avatar service.
-                        child: CachingXMPPAvatar.self(
-                          radius: 20,
+                    GetIt.I.get<profile.ProfileBloc>().add(
+                          profile.ProfilePageRequestedEvent(
+                            true,
+                            jid: state.jid,
+                            avatarUrl: state.avatarPath,
+                            displayName: state.displayName,
+                          ),
+                        );
+                  },
+                  child: Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Hero(
+                          tag: 'self_profile_picture',
+                          child: Material(
+                            color: Colors.transparent,
+                            // NOTE: We do not care about the avatar hash because
+                            //       we just read it from the XMPP state in the
+                            //       avatar service.
+                            child: CachingXMPPAvatar.self(
+                              radius: 20,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: Text(
-                      state.displayName,
-                      style: const TextStyle(
-                        fontSize: fontsizeAppbar,
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Text(
+                          state.displayName,
+                          style: const TextStyle(
+                            fontSize: fontsizeAppbar,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
             actions: [
