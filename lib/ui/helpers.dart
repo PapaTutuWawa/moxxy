@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:better_open_file/better_open_file.dart';
 import 'package:cryptography/cryptography.dart';
@@ -11,13 +12,13 @@ import 'package:hex/hex.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/shared/avatar.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/util/qrcode.dart';
 import 'package:moxxyv2/ui/redirects.dart';
+import 'package:path/path.dart' as p;
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -211,10 +212,13 @@ Future<PickedAvatar?> pickAvatar(
 
     final hash = (await Sha1().hash(compressedData)).bytes;
     final hashhex = HEX.encode(hash);
-    final avatarPath =
-        await saveAvatarInCache(compressedData, hashhex, jid, oldPath);
+    final tempAvatarPath = p.join(
+      await MoxxyPlatformApi().getCacheDataPath(),
+      '$hashhex.png',
+    );
+    await File(tempAvatarPath).writeAsBytes(compressedData);
 
-    return PickedAvatar(avatarPath, hashhex);
+    return PickedAvatar(tempAvatarPath, hashhex);
   }
 
   return null;

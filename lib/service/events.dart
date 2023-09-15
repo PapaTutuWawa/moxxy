@@ -549,7 +549,8 @@ Future<void> _maybeAchieveBothSubscription(
         break;
     }
   } else {
-    await roster.addToRosterWrapper(accountJid, null, null, jid, jid.split('@')[0]);
+    await roster.addToRosterWrapper(
+        accountJid, null, null, jid, jid.split('@')[0]);
   }
 }
 
@@ -748,18 +749,8 @@ Future<void> performRequestDownload(
 }
 
 Future<void> performSetAvatar(SetAvatarCommand command, {dynamic extra}) async {
-  await GetIt.I.get<XmppStateService>().modifyXmppState(
-        (state) => state.copyWith(
-          avatarUrl: command.path,
-          avatarHash: command.hash,
-        ),
-      );
-
-  // Update our notification avatar
-  await GetIt.I.get<NotificationsService>().maybeSetAvatarFromState();
-
   // Publish our avatar
-  await GetIt.I.get<AvatarService>().publishAvatar(command.path, command.hash);
+  await GetIt.I.get<AvatarService>().setNewAvatar(command.path, command.hash);
 }
 
 Future<void> performSetShareOnlineStatus(

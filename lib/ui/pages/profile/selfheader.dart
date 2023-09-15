@@ -19,7 +19,7 @@ class SelfProfileHeader extends StatelessWidget {
     if (avatar != null) {
       // ignore: use_build_context_synchronously
       context.read<ProfileBloc>().add(
-            AvatarSetEvent(avatar.path, avatar.hash),
+            AvatarSetEvent(avatar.path, avatar.hash, true),
           );
     }
   }

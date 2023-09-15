@@ -27,10 +27,11 @@ class ConversationUpdatedEvent extends ProfileEvent {
 
 /// Triggered by the UI when a new avatar has been set
 class AvatarSetEvent extends ProfileEvent {
-  AvatarSetEvent(this.path, this.hash);
+  AvatarSetEvent(this.path, this.hash, this.userTriggered);
 
   final String path;
   final String hash;
+  final bool userTriggered;
 }
 
 /// Triggered by the UI when the subscription state should be set

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -147,14 +146,8 @@ Future<void> onSelfAvatarChanged(
   SelfAvatarChangedEvent event, {
   dynamic extra,
 }) async {
-  // Evict the profile picture from the cache
-  await FileImage(File(event.path)).evict();
-
-  GetIt.I.get<conversations.ConversationsBloc>().add(
-        conversations.AvatarChangedEvent(event.path),
-      );
   GetIt.I.get<profile.ProfileBloc>().add(
-        profile.AvatarSetEvent(event.path, event.hash),
+        profile.AvatarSetEvent(event.path, event.hash, false),
       );
 }
 
