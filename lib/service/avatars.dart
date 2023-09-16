@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:cryptography/cryptography.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hex/hex.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxy_native/moxxy_native.dart';
@@ -106,11 +108,21 @@ class AvatarService {
       return null;
     }
 
-    // TODO: Check if the hash matches
+    // Verify the hash
+    final data = rawAvatar.get<UserAvatarData>().data;
+    final hexHash = rawAvatar.get<UserAvatarData>().hash;
+    final actualHexHash = HEX.encode(
+      (await Sha1().hash(data)).bytes,
+    );
+    if (actualHexHash != hexHash) {
+      _log.warning(
+          'Avatar hash of $jid ($hexHash) is not equal to the computed hash ($actualHexHash)');
+      return null;
+    }
 
     await _saveAvatarInCache(
-      rawAvatar.get<UserAvatarData>().data,
-      rawAvatar.get<UserAvatarData>().hash,
+      data,
+      hexHash,
     );
     return _computeAvatarPath(id);
   }
@@ -180,6 +192,9 @@ class AvatarService {
       return;
     }
 
+    // Add the JID to the pending requests list.
+    _requestedInStream.add(event.jid);
+
     // Fetch the new avatar.
     final id = event.metadata.first.id;
     final newAvatarPath = await _maybeFetchAvatarForJid(
@@ -188,11 +203,15 @@ class AvatarService {
     );
     if (newAvatarPath == null) {
       _log.warning('Failed to fetch avatar $id for ${event.jid}');
+      _requestedInStream.remove(event.jid);
       return;
     }
 
     // Update the conversation.
     await _applyNewAvatarToJid(event.jid, id);
+
+    // Remove the JID from the pending requests list.
+    _requestedInStream.remove(event.jid);
   }
 
   /// Request the avatar for [jid], given its optional previous avatar hash [oldHash].
@@ -210,6 +229,7 @@ class AvatarService {
         .getAvatarId(jid);
     if (rawId.isType<AvatarError>()) {
       _log.warning('Failed to get id for $jid');
+      _requestedInStream.remove(jid);
       return false;
     }
 
@@ -217,7 +237,9 @@ class AvatarService {
     final id = rawId.get<String>();
     if (id == oldHash) {
       _log.finest(
-          'Remote id ($id) is equal to local id ($oldHash) for $jid. Not fetching avatar.');
+        'Remote id ($id) is equal to local id ($oldHash) for $jid. Not fetching avatar.',
+      );
+      _requestedInStream.remove(jid);
       return true;
     }
 
@@ -228,11 +250,15 @@ class AvatarService {
     );
     if (newAvatarPath == null) {
       _log.warning('Failed to request avatar for $jid');
+      _requestedInStream.remove(jid);
       return false;
     }
 
     // Update conversations.
     await _applyNewAvatarToJid(jid, id);
+
+    // Remove the JID from the pending requests list.
+    _requestedInStream.remove(jid);
     return true;
   }
 
@@ -255,6 +281,7 @@ class AvatarService {
         .getAvatarId(jid);
     if (rawId.isType<AvatarError>()) {
       _log.warning('Failed to get id for our own jid ($jid)');
+      _requestedInStream.remove(jid);
       return false;
     }
 
@@ -264,6 +291,7 @@ class AvatarService {
       _log.finest(
         'Not requesting our own avatar because the server-side id ($id) is equal to our current id (${state.avatarHash})',
       );
+      _requestedInStream.remove(jid);
       return true;
     }
 
@@ -275,6 +303,7 @@ class AvatarService {
     );
     if (newAvatarPath == null) {
       _log.warning('Failed to request own avatar');
+      _requestedInStream.remove(jid);
       return false;
     }
 
@@ -294,6 +323,9 @@ class AvatarService {
 
     // Update the notification UI.
     await GetIt.I.get<NotificationsService>().maybeSetAvatarFromState();
+
+    // Remove our JID from the pending requests list.
+    _requestedInStream.remove(jid);
     return true;
   }
 
