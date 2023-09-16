@@ -136,6 +136,7 @@ class MobileMessagingTextFieldState extends State<MobileMessagingTextField>
     return ColoredBox(
       color: Colors.black26,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Expanded(
             child: Padding(
