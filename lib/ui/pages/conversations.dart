@@ -305,7 +305,6 @@ class ConversationsPageState extends State<ConversationsPage>
                   switch (result) {
                     case ConversationsOptions.settings:
                       Navigator.pushNamed(context, settingsRoute);
-                      break;
                   }
                 },
                 icon: const Icon(Icons.more_vert),

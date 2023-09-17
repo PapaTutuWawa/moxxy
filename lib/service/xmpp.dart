@@ -777,22 +777,18 @@ class XmppService {
         GetIt.I.get<BackgroundService>().setNotificationBody(
               t.notifications.permanent.ready,
             );
-        break;
       case XmppConnectionState.connecting:
         GetIt.I.get<BackgroundService>().setNotificationBody(
               t.notifications.permanent.connecting,
             );
-        break;
       case XmppConnectionState.notConnected:
         GetIt.I.get<BackgroundService>().setNotificationBody(
               t.notifications.permanent.disconnect,
             );
-        break;
       case XmppConnectionState.error:
         GetIt.I.get<BackgroundService>().setNotificationBody(
               t.notifications.permanent.error,
             );
-        break;
     }
   }
 
@@ -908,7 +904,6 @@ class XmppService {
       switch (rosterItem.subscription) {
         case 'from':
           await pm.acceptSubscriptionRequest(jid);
-          break;
       }
 
       return;

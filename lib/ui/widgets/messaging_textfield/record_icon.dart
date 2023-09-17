@@ -109,22 +109,20 @@ class RecordIconState extends State<RecordIcon> {
 
             // Lock the dragging to a given axis.
             final size = MediaQuery.of(context).size;
-            double x;
-            double y;
-            switch (lock) {
-              case AxisLock.origin:
-                x = recordButtonHorizontalCenteringOffset;
-                y = size.height - recordButtonVerticalCenteringOffset;
-                break;
-              case AxisLock.vertical:
-                x = recordButtonHorizontalCenteringOffset;
-                y = size.height - recordButtonVerticalCenteringOffset + dyRaw;
-                break;
-              case AxisLock.horizonal:
-                x = recordButtonHorizontalCenteringOffset - dxRaw;
-                y = size.height - recordButtonVerticalCenteringOffset;
-                break;
-            }
+            final (x, y) = switch (lock) {
+              AxisLock.origin => (
+                  recordButtonHorizontalCenteringOffset,
+                  size.height - recordButtonVerticalCenteringOffset,
+                ),
+              AxisLock.vertical => (
+                  recordButtonHorizontalCenteringOffset,
+                  size.height - recordButtonVerticalCenteringOffset + dyRaw,
+                ),
+              AxisLock.horizonal => (
+                  recordButtonHorizontalCenteringOffset - dxRaw,
+                  size.height - recordButtonVerticalCenteringOffset,
+                ),
+            };
 
             // Handle haptic feedback and locking once we reach a certain
             // threshold.

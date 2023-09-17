@@ -542,15 +542,18 @@ Future<void> _maybeAchieveBothSubscription(
           // Try to move from "from"/"none" to "both", by going over "From + Pending Out"
           await pm.requestSubscription(JID.fromString(item.jid));
         }
-        break;
       case 'to':
         // Move from "to" to "both"
         await pm.acceptSubscriptionRequest(JID.fromString(item.jid));
-        break;
     }
   } else {
     await roster.addToRosterWrapper(
-        accountJid, null, null, jid, jid.split('@')[0]);
+      accountJid,
+      null,
+      null,
+      jid,
+      jid.split('@')[0],
+    );
   }
 }
 
@@ -772,11 +775,9 @@ Future<void> performSetShareOnlineStatus(
     switch (item.subscription) {
       case 'to':
         await pm.acceptSubscriptionRequest(jid);
-        break;
       case 'none':
       case 'from':
         await pm.requestSubscription(jid);
-        break;
     }
   } else {
     switch (item.subscription) {
@@ -784,7 +785,6 @@ Future<void> performSetShareOnlineStatus(
       case 'from':
       case 'to':
         await pm.unsubscribe(jid);
-        break;
     }
   }
 }

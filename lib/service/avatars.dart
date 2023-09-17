@@ -64,8 +64,8 @@ class AvatarService {
     return (result.first['usage']! as int) + ownModifier == 0;
   }
 
-  /// Remove the avatar file at [path], if [path] is non-null and [_canRemoveAvatar] approves.
-  /// [ignoreSelf] is passed to [_canRemoveAvatar]'s ignoreSelf parameter.
+  /// Remove the avatar file at [path], if [path] is non-null and [canRemoveAvatar] approves.
+  /// [ignoreSelf] is passed to [canRemoveAvatar]'s ignoreSelf parameter.
   Future<void> _safeRemove(String? path, bool ignoreSelf) async {
     if (path == null) {
       return;

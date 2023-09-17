@@ -197,35 +197,29 @@ class ConversationTopbar extends StatelessWidget
               onSelected: (result) async {
                 switch (result) {
                   case ConversationOption.close:
-                    {
-                      final result = await showConfirmationDialog(
-                        t.pages.conversation.closeChatConfirmTitle,
-                        t.pages.conversation.closeChatConfirmSubtext,
-                        context,
-                      );
+                    final result = await showConfirmationDialog(
+                      t.pages.conversation.closeChatConfirmTitle,
+                      t.pages.conversation.closeChatConfirmSubtext,
+                      context,
+                    );
 
-                      if (result) {
-                        // ignore: use_build_context_synchronously
-                        context.read<ConversationsBloc>().add(
-                              ConversationClosedEvent(
-                                state.conversation!.jid,
-                              ),
-                            );
-
-                        // Navigate back
-                        // ignore: use_build_context_synchronously
-                        context.read<NavigationBloc>().add(
-                              PoppedRouteEvent(),
-                            );
-                      }
-                    }
-                    break;
-                  case ConversationOption.block:
-                    {
+                    if (result) {
                       // ignore: use_build_context_synchronously
-                      await blockJid(state.conversation!.jid, context);
+                      context.read<ConversationsBloc>().add(
+                            ConversationClosedEvent(
+                              state.conversation!.jid,
+                            ),
+                          );
+
+                      // Navigate back
+                      // ignore: use_build_context_synchronously
+                      context.read<NavigationBloc>().add(
+                            PoppedRouteEvent(),
+                          );
                     }
-                    break;
+                  case ConversationOption.block:
+                    // ignore: use_build_context_synchronously
+                    await blockJid(state.conversation!.jid, context);
                 }
               },
               icon: const Icon(Icons.more_vert),

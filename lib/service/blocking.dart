@@ -148,7 +148,6 @@ class BlocklistService {
 
             await _addBlocklistEntry(item, accountJid!);
           }
-          break;
         case BlockPushType.unblock:
           {
             _blocklist!.removeWhere((i) => i == item);
@@ -156,7 +155,6 @@ class BlocklistService {
 
             await _removeBlocklistEntry(item, accountJid!);
           }
-          break;
       }
     }
 

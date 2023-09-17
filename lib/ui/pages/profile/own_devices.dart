@@ -182,10 +182,8 @@ class OwnDevicesPage extends StatelessWidget {
                 switch (result) {
                   case OwnDevicesOptions.recreateSessions:
                     _recreateSessions(context);
-                    break;
                   case OwnDevicesOptions.recreateDevice:
                     _recreateDevice(context);
-                    break;
                 }
               },
               icon: const Icon(Icons.more_vert),
