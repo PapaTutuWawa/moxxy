@@ -155,7 +155,14 @@ class DatabaseService {
         await db.execute('PRAGMA foreign_keys = ON');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        await runMigrations(_log, db, migrations, oldVersion, 'database');
+        final logger = Logger('DatabaseMigration');
+        await runMigrations(
+          _log,
+          (db, logger),
+          migrations,
+          oldVersion,
+          'database',
+        );
       },
     );
 
