@@ -122,10 +122,10 @@ dependency_overrides:
   keyboard_height_plugin:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.0.5
-    
-  # NOTE: Leave here for development purposes 
+
+  # NOTE: Leave here for development purposes
   # moxxmpp:
-  #   path: ../moxxmpp/packages/moxxmpp
+  #  path: ../moxxmpp/packages/moxxmpp
   # moxxmpp_socket_tcp:
   #   path: ../moxxmpp/packages/moxxmpp_socket_tcp
   # omemo_dart:
@@ -134,7 +134,7 @@ dependency_overrides:
   moxxmpp:
     git:
       url: https://codeberg.org/moxxy/moxxmpp.git
-      rev: 966655765584beab45f9ff6392fa7c6f1109697c
+      rev: d4416c8a47fa7ab3e436e5b6af9bdd9e43f1b2ed
       path: packages/moxxmpp
 
   # NOTE: Leave here for development purposes 
