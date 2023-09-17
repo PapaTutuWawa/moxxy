@@ -7,7 +7,7 @@ import 'package:hex/hex.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:moxxmpp/moxxmpp.dart';
-import 'package:moxxy_native/moxxy_native.dart';
+import 'package:moxxyv2/service/cache.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
@@ -26,7 +26,13 @@ class AvatarService {
   /// List of JIDs for which we have already requested the avatar in the current stream.
   final List<JID> _requestedInStream = [];
 
+  /// Cached version of the path to the avatar cache. Used to prevent constant calls
+  /// to the native side.
   late final String _avatarCacheDir;
+
+  /// Computes the path to use for cached avatars.
+  static Future<String> getCachePath() async =>
+      computeCacheDirectoryPath('avatars');
 
   @visibleForTesting
   void initializeForTesting(String cacheDir) {
@@ -34,8 +40,7 @@ class AvatarService {
   }
 
   Future<void> initialize() async {
-    final rawCacheDir = await MoxxyPlatformApi().getCacheDataPath();
-    _avatarCacheDir = p.join(rawCacheDir, 'avatars');
+    _avatarCacheDir = await getCachePath();
   }
 
   void resetCache() {

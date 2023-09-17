@@ -50,14 +50,18 @@ import 'package:moxxyv2/service/database/migrations/0003_notifications.dart';
 import 'package:moxxyv2/service/database/migrations/0003_occupant_id.dart';
 import 'package:moxxyv2/service/database/migrations/0003_remove_subscriptions.dart';
 import 'package:moxxyv2/service/database/migrations/0003_sticker_pack_timestamp.dart';
+import 'package:moxxyv2/service/database/migrations/0004_new_avatar_cache.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:path/path.dart' as path;
 // ignore: implementation_imports
 import 'package:sqflite_common/src/sql_builder.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
+/// Data passed to the migrations.
+typedef DatabaseMigrationData = (Database, Logger);
+
 @internal
-const List<Migration<Database>> migrations = [
+const List<Migration<DatabaseMigrationData>> migrations = [
   Migration(2, upgradeFromV1ToV2),
   Migration(3, upgradeFromV2ToV3),
   Migration(4, upgradeFromV3ToV4),
@@ -104,6 +108,7 @@ const List<Migration<Database>> migrations = [
   Migration(45, upgradeFromV44ToV45),
   Migration(46, upgradeFromV45ToV46),
   Migration(47, upgradeFromV46ToV47),
+  Migration(48, upgradeFromV47ToV48),
 ];
 
 class DatabaseService {

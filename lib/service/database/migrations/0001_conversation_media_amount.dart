@@ -1,7 +1,10 @@
 import 'package:moxxyv2/service/database/constants.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
-Future<void> upgradeFromV29ToV30(Database db) async {
+Future<void> upgradeFromV29ToV30(DatabaseMigrationData data) async {
+  final (db, _) = data;
+
   await db.execute(
     'ALTER TABLE $conversationsTable ADD COLUMN sharedMediaAmount INTEGER NOT NULL DEFAULT 0;',
   );

@@ -1,7 +1,9 @@
 import 'package:moxxyv2/service/database/constants.dart';
-import 'package:sqflite_sqlcipher/sqflite.dart';
+import 'package:moxxyv2/service/database/database.dart';
 
-Future<void> upgradeFromV27ToV28(Database db) async {
+Future<void> upgradeFromV27ToV28(DatabaseMigrationData data) async {
+  final (db, _) = data;
+
   // Collect conversations so that we have a mapping id -> jid
   final idMap = <int, String>{};
   final conversations = await db.query(conversationsTable);

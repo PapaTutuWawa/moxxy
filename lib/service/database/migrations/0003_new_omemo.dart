@@ -1,7 +1,9 @@
 import 'package:moxxyv2/service/database/constants.dart';
-import 'package:sqflite_sqlcipher/sqflite.dart';
+import 'package:moxxyv2/service/database/database.dart';
 
-Future<void> upgradeFromV39ToV40(Database db) async {
+Future<void> upgradeFromV39ToV40(DatabaseMigrationData data) async {
+  final (db, _) = data;
+
   // Remove the old tables
   await db.execute('DROP TABLE OmemoDevices');
   await db.execute('DROP TABLE OmemoDeviceList');

@@ -1,7 +1,9 @@
 import 'package:moxxyv2/service/database/constants.dart';
-import 'package:sqflite_sqlcipher/sqflite.dart';
+import 'package:moxxyv2/service/database/database.dart';
 
-Future<void> upgradeFromV36ToV37(Database db) async {
+Future<void> upgradeFromV36ToV37(DatabaseMigrationData data) async {
+  final (db, _) = data;
+
   // Queries against messages by id (and sid/originId happen regularly)
   await db.execute(
     'CREATE INDEX idx_messages_id ON $messagesTable (id, sid, originId)',

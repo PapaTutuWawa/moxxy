@@ -1,8 +1,10 @@
 import 'package:moxxyv2/service/database/constants.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
-import 'package:sqflite_sqlcipher/sqflite.dart';
 
-Future<void> upgradeFromV4ToV5(Database db) async {
+Future<void> upgradeFromV4ToV5(DatabaseMigrationData data) async {
+  final (db, _) = data;
+
   // Give all conversations a pseudo last message data
   await db.execute(
     'ALTER TABLE $conversationsTable ADD COLUMN lastMessageId INTEGER NOT NULL DEFAULT 0;',
