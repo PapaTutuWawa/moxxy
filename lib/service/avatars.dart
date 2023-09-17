@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:collection/collection.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
 import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/service/conversation.dart';
@@ -26,6 +28,11 @@ class AvatarService {
 
   late final String _avatarCacheDir;
 
+  @visibleForTesting
+  void initializeForTesting(String cacheDir) {
+    _avatarCacheDir = cacheDir;
+  }
+
   Future<void> initialize() async {
     final rawCacheDir = await MoxxyPlatformApi().getCacheDataPath();
     _avatarCacheDir = p.join(rawCacheDir, 'avatars');
@@ -41,7 +48,8 @@ class AvatarService {
   /// Returns whether we can remove the avatar file at [path] by checking if the
   /// avatar is referenced by any other conversation. If [ignoreSelf] is true, then
   /// our own avatar is also taken into consideration.
-  Future<bool> _canRemoveAvatar(String path, bool ignoreSelf) async {
+  @visibleForTesting
+  Future<bool> canRemoveAvatar(String path, bool ignoreSelf) async {
     final db = GetIt.I.get<DatabaseService>().database;
     final result = await db.rawQuery(
       'SELECT COUNT(*) as usage FROM $conversationsTable WHERE avatarPath = ?',
@@ -63,7 +71,7 @@ class AvatarService {
       return;
     }
 
-    if (await _canRemoveAvatar(path, ignoreSelf) && File(path).existsSync()) {
+    if (await canRemoveAvatar(path, ignoreSelf) && File(path).existsSync()) {
       await File(path).delete();
     }
   }
@@ -98,11 +106,10 @@ class AvatarService {
     }
 
     // Request the avatar data and write it to disk.
-    // TODO: Actually use [id]
     final rawAvatar = await GetIt.I
         .get<XmppConnection>()
         .getManagerById<UserAvatarManager>(userAvatarManager)!
-        .getUserAvatar(jid);
+        .getUserAvatarData(jid, id);
     if (rawAvatar.isType<AvatarError>()) {
       _log.warning('Failed to request avatar ($jid, $id)');
       return null;
@@ -116,7 +123,8 @@ class AvatarService {
     );
     if (actualHexHash != hexHash) {
       _log.warning(
-          'Avatar hash of $jid ($hexHash) is not equal to the computed hash ($actualHexHash)');
+        'Avatar hash of $jid ($hexHash) is not equal to the computed hash ($actualHexHash)',
+      );
       return null;
     }
 
@@ -196,51 +204,69 @@ class AvatarService {
     _requestedInStream.add(event.jid);
 
     // Fetch the new avatar.
-    final id = event.metadata.first.id;
+    final metadata = event.metadata
+        .firstWhereOrNull((element) => element.type == 'image/png');
+    if (metadata == null) {
+      _log.warning(
+        'Avatar metadata from ${event.jid} does not advertise an image/png avatar, which violates XEP-0084',
+      );
+      return;
+    }
     final newAvatarPath = await _maybeFetchAvatarForJid(
       event.jid,
-      id,
+      metadata.id,
     );
     if (newAvatarPath == null) {
-      _log.warning('Failed to fetch avatar $id for ${event.jid}');
+      _log.warning('Failed to fetch avatar ${metadata.id} for ${event.jid}');
       _requestedInStream.remove(event.jid);
       return;
     }
 
     // Update the conversation.
-    await _applyNewAvatarToJid(event.jid, id);
+    await _applyNewAvatarToJid(event.jid, metadata.id);
 
     // Remove the JID from the pending requests list.
     _requestedInStream.remove(event.jid);
   }
 
   /// Request the avatar for [jid], given its optional previous avatar hash [oldHash].
-  Future<bool> requestAvatar(JID jid, String? oldHash) async {
+  Future<String?> requestAvatar(JID jid, String? oldHash) async {
     // Prevent multiple requests in a row.
     if (_requestedInStream.contains(jid)) {
-      return true;
+      return null;
     }
     _requestedInStream.add(jid);
 
-    // Request the latest id.
-    final rawId = await GetIt.I
+    // Request the latest metadata.
+    final rawMetadata = await GetIt.I
         .get<XmppConnection>()
         .getManagerById<UserAvatarManager>(userAvatarManager)!
-        .getAvatarId(jid);
-    if (rawId.isType<AvatarError>()) {
-      _log.warning('Failed to get id for $jid');
+        .getLatestMetadata(jid);
+    if (rawMetadata.isType<AvatarError>()) {
+      _log.warning('Failed to get metadata for $jid');
       _requestedInStream.remove(jid);
-      return false;
+      return null;
+    }
+
+    // Find the first metadata item that advertises a PNG avatar.
+    final id = rawMetadata
+        .get<List<UserAvatarMetadata>>()
+        .firstWhereOrNull((element) => element.type == 'image/png')
+        ?.id;
+    if (id == null) {
+      _log.warning(
+        '$jid does not advertise an avatar of type image/png, which violates XEP-0084',
+      );
+      return null;
     }
 
     // Check if the id changed.
-    final id = rawId.get<String>();
     if (id == oldHash) {
       _log.finest(
         'Remote id ($id) is equal to local id ($oldHash) for $jid. Not fetching avatar.',
       );
       _requestedInStream.remove(jid);
-      return true;
+      return _computeAvatarPath(id);
     }
 
     // Request the new avatar.
@@ -251,7 +277,7 @@ class AvatarService {
     if (newAvatarPath == null) {
       _log.warning('Failed to request avatar for $jid');
       _requestedInStream.remove(jid);
-      return false;
+      return null;
     }
 
     // Update conversations.
@@ -259,7 +285,7 @@ class AvatarService {
 
     // Remove the JID from the pending requests list.
     _requestedInStream.remove(jid);
-    return true;
+    return _computeAvatarPath(id);
   }
 
   /// Request the avatar for our own avatar.
@@ -275,18 +301,24 @@ class AvatarService {
 
     // Get the current id.
     final state = await xss.state;
-    final rawId = await GetIt.I
+    final rawMetadata = await GetIt.I
         .get<XmppConnection>()
         .getManagerById<UserAvatarManager>(userAvatarManager)!
-        .getAvatarId(jid);
-    if (rawId.isType<AvatarError>()) {
-      _log.warning('Failed to get id for our own jid ($jid)');
-      _requestedInStream.remove(jid);
+        .getLatestMetadata(jid);
+
+    // Find the first metadata item that advertises a PNG avatar.
+    final id = rawMetadata
+        .get<List<UserAvatarMetadata>>()
+        .firstWhereOrNull((element) => element.type == 'image/png')
+        ?.id;
+    if (id == null) {
+      _log.warning(
+        'We ($jid) do not advertise an avatar of type image/png, which violates XEP-0084',
+      );
       return false;
     }
 
     // Check if the avatar even changed.
-    final id = rawId.get<String>();
     if (id == state.avatarHash) {
       _log.finest(
         'Not requesting our own avatar because the server-side id ($id) is equal to our current id (${state.avatarHash})',
