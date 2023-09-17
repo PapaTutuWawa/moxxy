@@ -6,6 +6,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/service/avatars.dart';
+import 'package:moxxyv2/ui/theme.dart';
 
 class CachingXMPPAvatar extends StatefulWidget {
   const CachingXMPPAvatar({
@@ -123,25 +124,41 @@ class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: widget.onTap,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(widget.radius),
       child: SizedBox(
         width: widget.radius * 2,
         height: widget.radius * 2,
-        child: StreamBuilder<AvatarUpdatedEvent>(
-          stream: GetIt.I
-              .get<UIAvatarsService>()
-              .stream
-              .where((event) => event.jid == widget.jid),
-          builder: (context, snapshot) {
-            final path = snapshot.data?.path ?? widget.path;
-            final isValidPath = path?.isNotEmpty ?? false;
-            return CircleAvatar(
-              backgroundImage:
-                  isValidPath ? FileImage(File(widget.path!)) : null,
-              child: isValidPath ? null : _buildChild(),
-            );
-          },
+        child: Material(
+          color: Colors.transparent,
+          child: StreamBuilder<AvatarUpdatedEvent>(
+            stream: GetIt.I
+                .get<UIAvatarsService>()
+                .stream
+                .where((event) => event.jid == widget.jid),
+            builder: (context, snapshot) {
+              final path = snapshot.data?.path ?? widget.path;
+              if (path == null) {
+                return Ink(
+                  color: Theme.of(context)
+                      .extension<MoxxyThemeData>()!
+                      .profileFallbackBackgroundColor,
+                  child: InkWell(
+                    onTap: widget.onTap,
+                    child: _buildChild(),
+                  ),
+                );
+              } else {
+                return Ink.image(
+                  image: FileImage(File(path)),
+                  fit: BoxFit.cover,
+                  child: InkWell(
+                    onTap: widget.onTap,
+                  ),
+                );
+              }
+            },
+          ),
         ),
       ),
     );
