@@ -184,16 +184,10 @@ Future<Uint8List?> pickAndCropImage(BuildContext context) async {
   return null;
 }
 
-class PickedAvatar {
-  const PickedAvatar(this.path, this.hash);
-  final String path;
-  final String hash;
-}
-
 /// Open the file picker to pick an image, open the cropping tool and then save it.
 /// [oldPath] is the path of the old avatar or "" if none has been set.
-/// Returns the path of the new avatar path.
-Future<PickedAvatar?> pickAvatar(
+/// Returns the tuple (path, hash) of the new avatar path, if the did not cancel.
+Future<(String, String)?> pickAvatar(
   BuildContext context,
   String jid,
   String oldPath,
@@ -218,7 +212,7 @@ Future<PickedAvatar?> pickAvatar(
     );
     await File(tempAvatarPath).writeAsBytes(compressedData);
 
-    return PickedAvatar(tempAvatarPath, hashhex);
+    return (tempAvatarPath, hashhex);
   }
 
   return null;
