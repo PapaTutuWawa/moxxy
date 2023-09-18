@@ -3,8 +3,11 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/shared_media_controller.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared.dart';
+import 'package:moxxyv2/ui/widgets/chat/viewers/image.dart';
+import 'package:moxxyv2/ui/widgets/chat/viewers/video.dart';
 import 'package:moxxyv2/ui/widgets/grouped_grid_view.dart';
 
 /// A widget that displays a lazily-loaded list of media files in a grid, grouped
@@ -126,7 +129,27 @@ class SharedMediaView extends StatelessWidget {
                   itemBuilder: (_, message) => buildSharedMediaWidget(
                     message.fileMetadata!,
                     message.conversationJid,
-                    onTap,
+                    () {
+                      if (message.fileMetadata!.mimeType!
+                          .startsWith('image/')) {
+                        showImageViewer(
+                          context,
+                          message.timestamp,
+                          message.fileMetadata!.path!,
+                          message.fileMetadata!.mimeType!,
+                        );
+                      } else if (message.fileMetadata!.mimeType!
+                          .startsWith('video/')) {
+                        showVideoViewer(
+                          context,
+                          message.timestamp,
+                          message.fileMetadata!.path!,
+                          message.fileMetadata!.mimeType!,
+                        );
+                      } else {
+                        openFile(message.fileMetadata!.path!);
+                      }
+                    },
                     onLongPress: onLongPress,
                   ),
                   separatorBuilder: (_, timestamp) => Padding(
