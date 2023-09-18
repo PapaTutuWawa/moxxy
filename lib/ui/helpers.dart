@@ -12,6 +12,7 @@ import 'package:hex/hex.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
@@ -511,4 +512,11 @@ Rect getWidgetPositionOnScreen(GlobalKey key) {
   final translation = renderObject.getTransformTo(null).getTranslation();
   final offset = Offset(translation.x, translation.y);
   return renderObject.paintBounds.shift(offset);
+}
+
+/// Format a duration [duration] in the format of "mm:ss".
+String formatDuration(Duration duration) {
+  final minutes = duration.inSeconds ~/ 60;
+  final seconds = duration.inSeconds - minutes * 60;
+  return '${padInt(minutes)}:${padInt(seconds)}';
 }
