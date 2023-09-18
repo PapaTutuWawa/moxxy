@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/thumbnails/helpers.dart';
-import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
 import 'package:moxxyv2/ui/widgets/shimmer.dart';
 
 Future<String?> _videoThumbnailWrapper(String path, String mime) async {
@@ -53,18 +52,7 @@ class VideoThumbnail extends StatelessWidget {
             child: const ShimmerWidget(),
           );
         }
-
-        return ClipRRect(
-          borderRadius: borderRadius,
-          child: Stack(
-            children: [
-              Positioned.fill(child: widget),
-              const Positioned(
-                child: PlayButton(),
-              ),
-            ],
-          ),
-        );
+        return widget;
       },
     );
   }
