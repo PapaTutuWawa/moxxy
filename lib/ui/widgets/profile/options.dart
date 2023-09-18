@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/ui/constants.dart';
 
 class ProfileOption {
   const ProfileOption({
@@ -26,38 +27,44 @@ class ProfileOptions extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: options
           .map(
-            (option) => InkWell(
-              onTap: option.onTap,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 16,
-                  horizontal: 8,
-                ),
-                child: Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 16),
-                      child: Icon(
-                        option.icon,
-                        size: 32,
-                      ),
+            (option) => ClipRRect(
+              borderRadius: const BorderRadius.all(radiusLarge),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: option.onTap,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 8,
                     ),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Text(
-                          option.title,
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        if (option.description != null)
-                          Text(
-                            option.description!,
-                            style: Theme.of(context).textTheme.titleSmall,
+                        Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: Icon(
+                            option.icon,
+                            size: 32,
                           ),
+                        ),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              option.title,
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            if (option.description != null)
+                              Text(
+                                option.description!,
+                                style: Theme.of(context).textTheme.titleSmall,
+                              ),
+                          ],
+                        ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
