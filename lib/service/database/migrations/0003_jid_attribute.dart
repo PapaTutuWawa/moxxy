@@ -1,7 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/service/database/constants.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
-import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
 extension MaybeGet<K, V> on Map<K, V> {
@@ -12,7 +12,9 @@ extension MaybeGet<K, V> on Map<K, V> {
   }
 }
 
-Future<void> upgradeFromV45ToV46(Database db) async {
+Future<void> upgradeFromV45ToV46(DatabaseMigrationData data) async {
+  final (db, _) = data;
+
   // Migrate everything to the tuple of (account JID, <old pk>)
   // Things we do not migrate to this scheme:
   // - Stickers: Technically, makes no sense

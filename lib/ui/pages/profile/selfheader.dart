@@ -14,12 +14,13 @@ class SelfProfileHeader extends StatelessWidget {
   final ProfileArguments arguments;
 
   Future<void> pickAndSetAvatar(BuildContext context, String avatarUrl) async {
-    final avatar = await pickAvatar(context, arguments.jid, avatarUrl);
+    final result = await pickAvatar(context, arguments.jid, avatarUrl);
+    if (result != null) {
+      final (avatarPath, avatarHash) = result;
 
-    if (avatar != null) {
       // ignore: use_build_context_synchronously
       context.read<ProfileBloc>().add(
-            AvatarSetEvent(avatar.path, avatar.hash),
+            AvatarSetEvent(avatarPath, avatarHash, true),
           );
     }
   }

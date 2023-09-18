@@ -257,14 +257,12 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
         );
         BidirectionalConversationController.currentController
             ?.handleAppStateChange(false);
-        break;
       case AppLifecycleState.resumed:
         foreground.send(
           SetCSIStateCommand(active: true),
         );
         BidirectionalConversationController.currentController
             ?.handleAppStateChange(true);
-        break;
       case AppLifecycleState.detached:
       case AppLifecycleState.inactive:
         break;

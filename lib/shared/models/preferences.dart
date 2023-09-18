@@ -12,7 +12,7 @@ class PreferencesState with _$PreferencesState {
     @Default(true) bool autoDownloadWifi,
     @Default(false) bool autoDownloadMobile,
     @Default(15) int maximumAutoDownloadSize,
-    @Default('') String backgroundPath,
+    String? backgroundPath,
     @Default(true) bool isAvatarPublic,
     @Default(false) bool debugEnabled,
     @Default('') String debugPassphrase,

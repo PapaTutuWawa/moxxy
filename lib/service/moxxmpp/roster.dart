@@ -85,8 +85,8 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
 
       final newRosterItem = await rs.addRosterItemFromData(
         accountJid,
-        '',
-        '',
+        null,
+        null,
         item.jid,
         item.name ?? item.jid.split('@').first,
         item.subscription,

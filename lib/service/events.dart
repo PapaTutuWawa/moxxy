@@ -542,14 +542,18 @@ Future<void> _maybeAchieveBothSubscription(
           // Try to move from "from"/"none" to "both", by going over "From + Pending Out"
           await pm.requestSubscription(JID.fromString(item.jid));
         }
-        break;
       case 'to':
         // Move from "to" to "both"
         await pm.acceptSubscriptionRequest(JID.fromString(item.jid));
-        break;
     }
   } else {
-    await roster.addToRosterWrapper(accountJid, '', '', jid, jid.split('@')[0]);
+    await roster.addToRosterWrapper(
+      accountJid,
+      null,
+      null,
+      jid,
+      jid.split('@')[0],
+    );
   }
 }
 
@@ -642,7 +646,7 @@ Future<void> performAddContact(
             jid.split('@')[0],
             null,
             ConversationType.chat,
-            '',
+            null,
             jid,
             0,
             DateTime.now().millisecondsSinceEpoch,
@@ -748,18 +752,8 @@ Future<void> performRequestDownload(
 }
 
 Future<void> performSetAvatar(SetAvatarCommand command, {dynamic extra}) async {
-  await GetIt.I.get<XmppStateService>().modifyXmppState(
-        (state) => state.copyWith(
-          avatarUrl: command.path,
-          avatarHash: command.hash,
-        ),
-      );
-
-  // Update our notification avatar
-  await GetIt.I.get<NotificationsService>().maybeSetAvatarFromState();
-
   // Publish our avatar
-  await GetIt.I.get<AvatarService>().publishAvatar(command.path, command.hash);
+  await GetIt.I.get<AvatarService>().setNewAvatar(command.path, command.hash);
 }
 
 Future<void> performSetShareOnlineStatus(
@@ -781,11 +775,9 @@ Future<void> performSetShareOnlineStatus(
     switch (item.subscription) {
       case 'to':
         await pm.acceptSubscriptionRequest(jid);
-        break;
       case 'none':
       case 'from':
         await pm.requestSubscription(jid);
-        break;
     }
   } else {
     switch (item.subscription) {
@@ -793,7 +785,6 @@ Future<void> performSetShareOnlineStatus(
       case 'from':
       case 'to':
         await pm.unsubscribe(jid);
-        break;
     }
   }
 }
@@ -1621,7 +1612,7 @@ Future<void> performJoinGroupchat(
           jid.split('@')[0],
           null,
           ConversationType.groupchat,
-          '',
+          null,
           jid,
           0,
           DateTime.now().millisecondsSinceEpoch,
@@ -1666,8 +1657,8 @@ Future<void> performFetchRecipientInformation(
         SendFilesRecipient(
           rosterItem.jid,
           await rosterItem.titleWithOptionalContactService,
-          rosterItem.avatarPath.isEmpty ? null : rosterItem.avatarPath,
-          rosterItem.avatarHash.isEmpty ? null : rosterItem.avatarHash,
+          rosterItem.avatarPath,
+          rosterItem.avatarHash,
           rosterItem.contactId != null,
         ),
       );
@@ -1681,7 +1672,7 @@ Future<void> performFetchRecipientInformation(
         SendFilesRecipient(
           conversation.jid,
           await conversation.titleWithOptionalContactService,
-          conversation.avatarPath.isEmpty ? null : conversation.avatarPath,
+          conversation.avatarPath,
           conversation.avatarHash,
           conversation.contactId != null,
         ),

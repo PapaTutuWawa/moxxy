@@ -82,10 +82,10 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
     BackgroundImageSetEvent event,
     Emitter<PreferencesState> emit,
   ) async {
-    if (state.backgroundPath.isNotEmpty) {
+    if (state.backgroundPath != null) {
       // Invalidate the old entry
       _log.finest('Invalidating cache entry for ${state.backgroundPath}');
-      await FileImage(File(state.backgroundPath)).evict();
+      await FileImage(File(state.backgroundPath!)).evict();
     }
 
     add(

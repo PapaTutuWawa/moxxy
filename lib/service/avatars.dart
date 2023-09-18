@@ -1,17 +1,24 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:collection/collection.dart';
+import 'package:cryptography/cryptography.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hex/hex.dart';
 import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/service/cache.dart';
 import 'package:moxxyv2/service/conversation.dart';
+import 'package:moxxyv2/service/database/constants.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
-import 'package:moxxyv2/shared/avatar.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:path/path.dart' as p;
 
 class AvatarService {
   final Logger _log = Logger('AvatarService');
@@ -19,93 +26,139 @@ class AvatarService {
   /// List of JIDs for which we have already requested the avatar in the current stream.
   final List<JID> _requestedInStream = [];
 
+  /// Cached version of the path to the avatar cache. Used to prevent constant calls
+  /// to the native side.
+  late final String _avatarCacheDir;
+
+  /// Computes the path to use for cached avatars.
+  static Future<String> getCachePath() async =>
+      computeCacheDirectoryPath('avatars');
+
+  @visibleForTesting
+  void initializeForTesting(String cacheDir) {
+    _avatarCacheDir = cacheDir;
+  }
+
+  Future<void> initialize() async {
+    _avatarCacheDir = await getCachePath();
+  }
+
   void resetCache() {
     _requestedInStream.clear();
   }
 
-  Future<bool> _fetchAvatarForJid(JID jid, String hash) async {
-    final conn = GetIt.I.get<XmppConnection>();
-    final am = conn.getManagerById<UserAvatarManager>(userAvatarManager)!;
-    final rawAvatar = await am.getUserAvatar(jid);
-    if (rawAvatar.isType<AvatarError>()) {
-      _log.warning('Failed to request avatar for $jid');
-      return false;
-    }
+  String _computeAvatarPath(String hash) =>
+      p.join(_avatarCacheDir, '$hash.png');
 
-    final avatar = rawAvatar.get<UserAvatarData>();
-    await _updateAvatarForJid(
-      jid,
-      avatar.hash,
-      avatar.data,
+  /// Returns whether we can remove the avatar file at [path] by checking if the
+  /// avatar is referenced by any other conversation. If [ignoreSelf] is true, then
+  /// our own avatar is also taken into consideration.
+  @visibleForTesting
+  Future<bool> canRemoveAvatar(String path, bool ignoreSelf) async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as usage FROM $conversationsTable WHERE avatarPath = ?',
+      [path],
     );
-    return true;
+
+    final ownModifier =
+        (await GetIt.I.get<XmppStateService>().state).avatarUrl == path &&
+                !ignoreSelf
+            ? 1
+            : 0;
+    return (result.first['usage']! as int) + ownModifier == 0;
   }
 
-  /// Requests the avatar for [jid]. [oldHash], if given, is the last SHA-1 hash of the known avatar.
-  /// If the avatar for [jid] has already been requested in this stream session, does nothing. Otherwise,
-  /// requests the XEP-0084 metadata and queries the new avatar only if the queried SHA-1 != [oldHash].
-  ///
-  /// Returns true, if everything went okay. Returns false if an error occurred.
-  Future<bool> requestAvatar(JID jid, String? oldHash) async {
-    if (_requestedInStream.contains(jid)) {
-      return true;
+  /// Remove the avatar file at [path], if [path] is non-null and [canRemoveAvatar] approves.
+  /// [ignoreSelf] is passed to [canRemoveAvatar]'s ignoreSelf parameter.
+  Future<void> _safeRemove(String? path, bool ignoreSelf) async {
+    if (path == null) {
+      return;
     }
 
-    _requestedInStream.add(jid);
-    final conn = GetIt.I.get<XmppConnection>();
-    final am = conn.getManagerById<UserAvatarManager>(userAvatarManager)!;
-    final rawId = await am.getAvatarId(jid);
-
-    if (rawId.isType<AvatarError>()) {
-      _log.finest(
-        'Failed to get avatar metadata for $jid using XEP-0084: ${rawId.get<AvatarError>()}',
-      );
-      return false;
+    if (await canRemoveAvatar(path, ignoreSelf) && File(path).existsSync()) {
+      await File(path).delete();
     }
-    final id = rawId.get<String>();
-    if (id == oldHash) {
-      _log.finest('Not fetching avatar for $jid since the hashes are equal');
-      return true;
-    }
-
-    return _fetchAvatarForJid(jid, id);
   }
 
-  Future<void> handleAvatarUpdate(UserAvatarUpdatedEvent event) async {
-    if (event.metadata.isEmpty) return;
+  /// Checks if the avatar with the specified hash already exists on disk.
+  bool _hasAvatar(String hash) => File(_computeAvatarPath(hash)).existsSync();
 
-    // TODO(Unknown): Maybe make a better decision?
-    await _fetchAvatarForJid(event.jid, event.metadata.first.id);
+  /// Save the avatar, described by the raw bytes [bytes] and its hash [hash], into
+  /// the avatar cache directory.
+  Future<void> _saveAvatarInCache(List<int> bytes, String hash) async {
+    final dir = Directory(_avatarCacheDir);
+    if (!dir.existsSync()) {
+      await dir.create(recursive: true);
+    }
+
+    // Write the avatar
+    await File(_computeAvatarPath(hash)).writeAsBytes(bytes);
   }
 
-  /// Updates the avatar path and hash for the conversation and/or roster item with jid [JID].
-  /// [hash] is the new hash of the avatar. [data] is the raw avatar data.
-  Future<void> _updateAvatarForJid(
+  /// Fetches the avatar with id [id] for [jid], if we don't already have it locally.
+  Future<String?> _maybeFetchAvatarForJid(
     JID jid,
-    String hash,
-    List<int> data,
+    String id,
   ) async {
+    if (_hasAvatar(id)) {
+      return _computeAvatarPath(id);
+    }
+
+    // Check if we even have to request it.
+    if (_hasAvatar(id)) {
+      return _computeAvatarPath(id);
+    }
+
+    // Request the avatar data and write it to disk.
+    final rawAvatar = await GetIt.I
+        .get<XmppConnection>()
+        .getManagerById<UserAvatarManager>(userAvatarManager)!
+        .getUserAvatarData(jid, id);
+    if (rawAvatar.isType<AvatarError>()) {
+      _log.warning('Failed to request avatar ($jid, $id)');
+      return null;
+    }
+
+    // Verify the hash
+    final data = rawAvatar.get<UserAvatarData>().data;
+    final hexHash = rawAvatar.get<UserAvatarData>().hash;
+    final actualHexHash = HEX.encode(
+      (await Sha1().hash(data)).bytes,
+    );
+    if (actualHexHash != hexHash) {
+      _log.warning(
+        'Avatar hash of $jid ($hexHash) is not equal to the computed hash ($actualHexHash)',
+      );
+      return null;
+    }
+
+    await _saveAvatarInCache(
+      data,
+      hexHash,
+    );
+    return _computeAvatarPath(id);
+  }
+
+  Future<void> _applyNewAvatarToJid(JID jid, String hash) async {
+    assert(_hasAvatar(hash), 'The avatar must exist');
+
     final cs = GetIt.I.get<ConversationService>();
     final rs = GetIt.I.get<RosterService>();
-    final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
-    final originalConversation =
-        await cs.getConversationByJid(jid.toString(), accountJid!);
-    final originalRoster = await rs.getRosterItemByJid(
-      jid.toString(),
-      accountJid,
-    );
+    final accountJid = (await GetIt.I.get<XmppStateService>().getAccountJid())!;
+    final conversation =
+        await cs.getConversationByJid(jid.toString(), accountJid);
+    final rosterItem = await rs.getRosterItemByJid(jid.toString(), accountJid);
 
-    if (originalConversation == null && originalRoster == null) return;
+    // Do nothing if we do not know of the JID.
+    if (conversation == null && rosterItem == null) {
+      return;
+    }
 
-    final avatarPath = await saveAvatarInCache(
-      data,
-      hash,
-      jid.toString(),
-      (originalConversation?.avatarPath ?? originalRoster?.avatarPath)!,
-    );
-
-    if (originalConversation != null) {
-      final conversation = await cs.createOrUpdateConversation(
+    // Update the conversation
+    final avatarPath = _computeAvatarPath(hash);
+    if (conversation != null) {
+      final newConversation = await cs.createOrUpdateConversation(
         jid.toString(),
         accountJid,
         update: (c) async {
@@ -117,134 +170,271 @@ class AvatarService {
           );
         },
       );
-      if (conversation != null) {
-        sendEvent(
-          ConversationUpdatedEvent(conversation: conversation),
-        );
-      }
+      sendEvent(
+        ConversationUpdatedEvent(conversation: newConversation!),
+      );
+
+      // Try to delete the old avatar
+      await _safeRemove(conversation.avatarPath, false);
     }
 
-    if (originalRoster != null) {
-      final roster = await rs.updateRosterItem(
-        originalRoster.jid,
+    // Update the roster item
+    if (rosterItem != null) {
+      final newRosterItem = await rs.updateRosterItem(
+        jid.toString(),
         accountJid,
         avatarPath: avatarPath,
         avatarHash: hash,
       );
+      sendEvent(
+        RosterDiffEvent(modified: [newRosterItem]),
+      );
 
-      sendEvent(RosterDiffEvent(modified: [roster]));
+      // Try to delete the old avatar
+      await _safeRemove(rosterItem.avatarPath, false);
     }
 
+    // Update the UI.
     sendEvent(
-      AvatarUpdatedEvent(
-        jid: jid.toString(),
-        path: avatarPath,
-      ),
+      AvatarUpdatedEvent(jid: jid.toString(), path: avatarPath),
     );
   }
 
-  /// Publishes the data at [path] as an avatar with PubSub ID
-  /// [hash]. [hash] must be the hex-encoded version of the SHA-1 hash
-  /// of the avatar data.
-  Future<bool> publishAvatar(String path, String hash) async {
+  Future<void> handleAvatarUpdate(UserAvatarUpdatedEvent event) async {
+    if (event.metadata.isEmpty) {
+      return;
+    }
+
+    // Add the JID to the pending requests list.
+    _requestedInStream.add(event.jid);
+
+    // Fetch the new avatar.
+    final metadata = event.metadata
+        .firstWhereOrNull((element) => element.type == 'image/png');
+    if (metadata == null) {
+      _log.warning(
+        'Avatar metadata from ${event.jid} does not advertise an image/png avatar, which violates XEP-0084',
+      );
+      return;
+    }
+    final newAvatarPath = await _maybeFetchAvatarForJid(
+      event.jid,
+      metadata.id,
+    );
+    if (newAvatarPath == null) {
+      _log.warning('Failed to fetch avatar ${metadata.id} for ${event.jid}');
+      _requestedInStream.remove(event.jid);
+      return;
+    }
+
+    // Update the conversation.
+    await _applyNewAvatarToJid(event.jid, metadata.id);
+
+    // Remove the JID from the pending requests list.
+    _requestedInStream.remove(event.jid);
+  }
+
+  /// Request the avatar for [jid], given its optional previous avatar hash [oldHash].
+  Future<String?> requestAvatar(JID jid, String? oldHash) async {
+    // Prevent multiple requests in a row.
+    if (_requestedInStream.contains(jid)) {
+      return null;
+    }
+    _requestedInStream.add(jid);
+
+    // Request the latest metadata.
+    final rawMetadata = await GetIt.I
+        .get<XmppConnection>()
+        .getManagerById<UserAvatarManager>(userAvatarManager)!
+        .getLatestMetadata(jid);
+    if (rawMetadata.isType<AvatarError>()) {
+      _log.warning('Failed to get metadata for $jid');
+      _requestedInStream.remove(jid);
+      return null;
+    }
+
+    // Find the first metadata item that advertises a PNG avatar.
+    final id = rawMetadata
+        .get<List<UserAvatarMetadata>>()
+        .firstWhereOrNull((element) => element.type == 'image/png')
+        ?.id;
+    if (id == null) {
+      _log.warning(
+        '$jid does not advertise an avatar of type image/png, which violates XEP-0084',
+      );
+      return null;
+    }
+
+    // Check if the id changed.
+    if (id == oldHash) {
+      _log.finest(
+        'Remote id ($id) is equal to local id ($oldHash) for $jid. Not fetching avatar.',
+      );
+      _requestedInStream.remove(jid);
+      return _computeAvatarPath(id);
+    }
+
+    // Request the new avatar.
+    final newAvatarPath = await _maybeFetchAvatarForJid(
+      jid,
+      id,
+    );
+    if (newAvatarPath == null) {
+      _log.warning('Failed to request avatar for $jid');
+      _requestedInStream.remove(jid);
+      return null;
+    }
+
+    // Update conversations.
+    await _applyNewAvatarToJid(jid, id);
+
+    // Remove the JID from the pending requests list.
+    _requestedInStream.remove(jid);
+    return _computeAvatarPath(id);
+  }
+
+  /// Request the avatar for our own avatar.
+  Future<bool> requestOwnAvatar() async {
+    final xss = GetIt.I.get<XmppStateService>();
+    final jid = JID.fromString((await xss.getAccountJid())!);
+
+    // Prevent multiple requests in a row.
+    if (_requestedInStream.contains(jid)) {
+      return true;
+    }
+    _requestedInStream.add(jid);
+
+    // Get the current id.
+    final state = await xss.state;
+    final rawMetadata = await GetIt.I
+        .get<XmppConnection>()
+        .getManagerById<UserAvatarManager>(userAvatarManager)!
+        .getLatestMetadata(jid);
+
+    // Find the first metadata item that advertises a PNG avatar.
+    final id = rawMetadata
+        .get<List<UserAvatarMetadata>>()
+        .firstWhereOrNull((element) => element.type == 'image/png')
+        ?.id;
+    if (id == null) {
+      _log.warning(
+        'We ($jid) do not advertise an avatar of type image/png, which violates XEP-0084',
+      );
+      return false;
+    }
+
+    // Check if the avatar even changed.
+    if (id == state.avatarHash) {
+      _log.finest(
+        'Not requesting our own avatar because the server-side id ($id) is equal to our current id (${state.avatarHash})',
+      );
+      _requestedInStream.remove(jid);
+      return true;
+    }
+
+    // Request the new avatar.
+    final oldAvatarPath = state.avatarUrl;
+    final newAvatarPath = await _maybeFetchAvatarForJid(
+      jid,
+      id,
+    );
+    if (newAvatarPath == null) {
+      _log.warning('Failed to request own avatar');
+      _requestedInStream.remove(jid);
+      return false;
+    }
+
+    // Update the state and the UI.
+    await xss.modifyXmppState(
+      (s) {
+        return s.copyWith(
+          avatarUrl: newAvatarPath,
+          avatarHash: id,
+        );
+      },
+    );
+    sendEvent(SelfAvatarChangedEvent(path: newAvatarPath, hash: id));
+
+    // Try to safely delete the old avatar.
+    await _safeRemove(oldAvatarPath, true);
+
+    // Update the notification UI.
+    await GetIt.I.get<NotificationsService>().maybeSetAvatarFromState();
+
+    // Remove our JID from the pending requests list.
+    _requestedInStream.remove(jid);
+    return true;
+  }
+
+  Future<bool> setNewAvatar(String path, String hash) async {
     final file = File(path);
     final bytes = await file.readAsBytes();
     final base64 = base64Encode(bytes);
-    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
-    final public = prefs.isAvatarPublic;
+    final isPublic = (await GetIt.I.get<PreferencesService>().getPreferences())
+        .isAvatarPublic;
 
-    // Read the image metadata
-    final imageSize = (await getImageSizeFromData(bytes))!;
+    // Copy the avatar into the cache, if we don't already have it.
+    final avatarPath = _computeAvatarPath(hash);
+    if (!_hasAvatar(hash)) {
+      await file.copy(avatarPath);
+    }
+
+    // Get image metadata.
+    final imageSize = (await getImageSizeFromPath(avatarPath))!;
 
     // Publish data and metadata
     final am = GetIt.I
         .get<XmppConnection>()
         .getManagerById<UserAvatarManager>(userAvatarManager)!;
-
-    _log.finest('Publishing avatar...');
-    final dataResult = await am.publishUserAvatar(
-      base64,
-      hash,
-      public,
-    );
+    _log.finest('Publishing avatar');
+    final dataResult = await am.publishUserAvatar(base64, hash, isPublic);
     if (dataResult.isType<AvatarError>()) {
-      _log.finest('Avatar data publishing failed');
+      _log.warning('Failed to publish avatar data');
       return false;
     }
 
-    // TODO(Unknown): Make sure that the image is not too large.
+    // Publish the metadata.
     final metadataResult = await am.publishUserAvatarMetadata(
       UserAvatarMetadata(
         hash,
         bytes.length,
         imageSize.width.toInt(),
         imageSize.height.toInt(),
-        // TODO(PapaTutuWawa): Maybe do a check here
+        // TODO(Unknown): Make sure
         'image/png',
         null,
       ),
-      public,
+      isPublic,
     );
     if (metadataResult.isType<AvatarError>()) {
-      _log.finest('Avatar metadata publishing failed');
+      _log.warning('Failed to publish avatar metadata');
       return false;
     }
 
-    _log.finest('Avatar publishing done');
-    return true;
-  }
-
-  /// Like [requestAvatar], but fetches and processes the avatar for our own account.
-  Future<void> requestOwnAvatar() async {
+    // Update the state
     final xss = GetIt.I.get<XmppStateService>();
-    final accountJid = await xss.getAccountJid();
     final state = await xss.state;
-    final jid = JID.fromString(accountJid!);
-
-    if (_requestedInStream.contains(jid)) {
-      return;
-    }
-    _requestedInStream.add(jid);
-
-    final am = GetIt.I
-        .get<XmppConnection>()
-        .getManagerById<UserAvatarManager>(userAvatarManager)!;
-    final rawId = await am.getAvatarId(jid);
-    if (rawId.isType<AvatarError>()) {
-      _log.finest(
-        'Failed to get avatar metadata for $jid using XEP-0084: ${rawId.get<AvatarError>()}',
-      );
-      return;
-    }
-    final id = rawId.get<String>();
-
-    if (id == state.avatarHash) {
-      _log.finest('Not fetching avatar for $jid since the hashes are equal');
-      return;
-    }
-
-    final rawAvatar = await am.getUserAvatar(jid);
-    if (rawAvatar.isType<AvatarError>()) {
-      _log.warning('Failed to request avatar for $jid');
-      return;
-    }
-    final avatarData = rawAvatar.get<UserAvatarData>();
-    final avatarPath = await saveAvatarInCache(
-      avatarData.data,
-      avatarData.hash,
-      jid.toString(),
-      state.avatarUrl,
-    );
+    final oldAvatarPath = state.avatarUrl;
     await xss.modifyXmppState(
-      (state) => state.copyWith(
-        avatarUrl: avatarPath,
-        avatarHash: avatarData.hash,
-      ),
+      (s) {
+        return s.copyWith(
+          avatarUrl: avatarPath,
+          avatarHash: hash,
+        );
+      },
     );
 
-    // Update our notification avatar
+    // Update the UI
+    sendEvent(SelfAvatarChangedEvent(path: avatarPath, hash: hash));
+
+    // Update the notifications.
     await GetIt.I.get<NotificationsService>().maybeSetAvatarFromState();
 
-    sendEvent(SelfAvatarChangedEvent(path: avatarPath, hash: avatarData.hash));
+    // Safely remove the old avatar
+    await _safeRemove(oldAvatarPath, true);
+
+    // Remove the temp file.
+    await file.delete();
+    return true;
   }
 }

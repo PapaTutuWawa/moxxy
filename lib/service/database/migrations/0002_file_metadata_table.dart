@@ -1,13 +1,15 @@
 import 'dart:convert';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/constants.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/files.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:path/path.dart' as path;
-import 'package:sqflite_sqlcipher/sqflite.dart';
 
-Future<void> upgradeFromV31ToV32(Database db) async {
+Future<void> upgradeFromV31ToV32(DatabaseMigrationData data) async {
+  final (db, _) = data;
+
   // Create the tracking table
   await db.execute('''
     CREATE TABLE $fileMetadataTable (

@@ -78,13 +78,15 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
     GetIt.I.get<ConversationsBloc>().add(AvatarChangedEvent(event.path));
 
-    await getForegroundService().send(
-      SetAvatarCommand(
-        path: event.path,
-        hash: event.hash,
-      ),
-      awaitable: false,
-    );
+    if (event.userTriggered) {
+      await getForegroundService().send(
+        SetAvatarCommand(
+          path: event.path,
+          hash: event.hash,
+        ),
+        awaitable: false,
+      );
+    }
   }
 
   Future<void> _onSetSubscriptionState(

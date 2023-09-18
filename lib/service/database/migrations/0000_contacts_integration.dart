@@ -1,8 +1,10 @@
 import 'package:moxxyv2/service/database/constants.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/shared/models/preference.dart';
-import 'package:sqflite_sqlcipher/sqflite.dart';
 
-Future<void> upgradeFromV13ToV14(Database db) async {
+Future<void> upgradeFromV13ToV14(DatabaseMigrationData data) async {
+  final (db, _) = data;
+
   // Create the new table
   await db.execute('''
     CREATE TABLE $contactsTable (

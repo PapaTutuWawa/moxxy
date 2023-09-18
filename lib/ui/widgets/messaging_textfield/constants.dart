@@ -32,9 +32,11 @@ const EdgeInsets textFieldInnerPadding = EdgeInsets.symmetric(
 /// The padding of the send button.
 const double _sendButtonPaddingLeft = 16;
 const double _sendButtonPaddingRight = 8;
+const double _sendButtonBottomPadding = (noTextBarHeight - sendButtonSize) / 2;
 const EdgeInsets sendButtonPadding = EdgeInsets.only(
   left: _sendButtonPaddingLeft,
   right: _sendButtonPaddingRight,
+  bottom: _sendButtonBottomPadding,
 );
 
 /// The height of the [MobileMessagingTextField] without any text or quoted messages.

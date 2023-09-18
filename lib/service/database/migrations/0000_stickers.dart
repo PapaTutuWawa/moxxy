@@ -1,8 +1,10 @@
 import 'package:moxxyv2/service/database/constants.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/shared/models/preference.dart';
-import 'package:sqflite_sqlcipher/sqflite.dart';
 
-Future<void> upgradeFromV16ToV17(Database db) async {
+Future<void> upgradeFromV16ToV17(DatabaseMigrationData data) async {
+  final (db, _) = data;
+
   await db.execute(
     '''
     CREATE TABLE $stickersTable (

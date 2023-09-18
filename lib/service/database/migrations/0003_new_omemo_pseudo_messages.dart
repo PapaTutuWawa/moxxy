@@ -1,9 +1,12 @@
 import 'dart:convert';
 
 import 'package:moxxyv2/service/database/constants.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
-Future<void> upgradeFromV40ToV41(Database db) async {
+Future<void> upgradeFromV40ToV41(DatabaseMigrationData data) async {
+  final (db, _) = data;
+
   final messages = await db.query(
     messagesTable,
     where: 'pseudoMessageType IS NOT NULL',

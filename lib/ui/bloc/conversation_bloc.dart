@@ -153,10 +153,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
               SendFilesRecipient(
                 state.conversation!.jid,
                 state.conversation!.titleWithOptionalContact,
-                // TODO(Unknown): Fix
-                state.conversation!.avatarPath.isEmpty
-                    ? null
-                    : state.conversation!.avatarPath,
+                state.conversation!.avatarPath,
                 state.conversation!.avatarHash,
                 state.conversation!.contactId != null,
               ),
@@ -176,10 +173,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
               SendFilesRecipient(
                 state.conversation!.jid,
                 state.conversation!.titleWithOptionalContact,
-                // TODO(Unknown): Fix
-                state.conversation!.avatarPath.isEmpty
-                    ? null
-                    : state.conversation!.avatarPath,
+                state.conversation!.avatarPath,
                 state.conversation!.avatarHash,
                 state.conversation!.contactId != null,
               ),

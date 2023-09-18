@@ -48,7 +48,7 @@ class ShareService {
     await _api.recordSentMessage(
       conversationName,
       conversationJid,
-      conversationImageFilePath.isEmpty ? null : conversationImageFilePath,
+      conversationImageFilePath,
       conversation.isSelfChat
           ? FallbackIconType.notes
           : FallbackIconType.person,

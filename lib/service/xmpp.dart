@@ -640,7 +640,7 @@ class XmppService {
             rosterItem?.title ?? recipient.split('@').first,
             lastMessages[recipient],
             ConversationType.chat,
-            rosterItem?.avatarPath ?? '',
+            rosterItem?.avatarPath,
             recipient,
             0,
             DateTime.now().millisecondsSinceEpoch,
@@ -777,22 +777,18 @@ class XmppService {
         GetIt.I.get<BackgroundService>().setNotificationBody(
               t.notifications.permanent.ready,
             );
-        break;
       case XmppConnectionState.connecting:
         GetIt.I.get<BackgroundService>().setNotificationBody(
               t.notifications.permanent.connecting,
             );
-        break;
       case XmppConnectionState.notConnected:
         GetIt.I.get<BackgroundService>().setNotificationBody(
               t.notifications.permanent.disconnect,
             );
-        break;
       case XmppConnectionState.error:
         GetIt.I.get<BackgroundService>().setNotificationBody(
               t.notifications.permanent.error,
             );
-        break;
     }
   }
 
@@ -854,8 +850,8 @@ class XmppService {
             (state) => state.copyWith(
               jid: connection.connectionSettings.jid.toString(),
               displayName: connection.connectionSettings.jid.local,
-              avatarUrl: '',
-              avatarHash: '',
+              avatarUrl: null,
+              avatarHash: null,
             ),
           );
     }
@@ -908,7 +904,6 @@ class XmppService {
       switch (rosterItem.subscription) {
         case 'from':
           await pm.acceptSubscriptionRequest(jid);
-          break;
       }
 
       return;
@@ -1531,7 +1526,7 @@ class XmppService {
           rosterItem?.title ?? conversationJid.split('@')[0],
           message,
           ConversationType.chat,
-          rosterItem?.avatarPath ?? '',
+          rosterItem?.avatarPath,
           conversationJid,
           sent ? 0 : 1,
           messageTimestamp,

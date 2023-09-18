@@ -188,7 +188,7 @@ Future<void> entrypoint(String initialLocale) async {
   // Initialize the account state
   await GetIt.I.get<XmppStateService>().initializeXmppState();
 
-  // Initialize services
+  // Register services
   GetIt.I.registerSingleton<ConnectivityWatcherService>(
     ConnectivityWatcherService(),
   );
@@ -214,6 +214,9 @@ Future<void> entrypoint(String initialLocale) async {
   GetIt.I.registerSingleton<LifecycleService>(LifecycleService());
   final xmpp = XmppService();
   GetIt.I.registerSingleton<XmppService>(xmpp);
+
+  // Initialize services
+  await GetIt.I.get<AvatarService>().initialize();
 
   // Set the locale before we initialize the notigications service to ensure
   // the correct locale is used for the notification channels.

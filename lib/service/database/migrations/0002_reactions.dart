@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:moxxyv2/service/database/constants.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
-import 'package:sqflite_sqlcipher/sqflite.dart';
 
-Future<void> upgradeFromV34ToV35(Database db) async {
+Future<void> upgradeFromV34ToV35(DatabaseMigrationData data) async {
+  final (db, _) = data;
+
   // Create the table
   await db.execute('''
     CREATE TABLE $reactionsTable (

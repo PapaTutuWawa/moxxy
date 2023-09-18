@@ -257,7 +257,7 @@ class ConversationService {
     String title,
     Message? lastMessage,
     ConversationType type,
-    String avatarPath,
+    String? avatarPath,
     String jid,
     int unreadCounter,
     int lastChangeTimestamp,
