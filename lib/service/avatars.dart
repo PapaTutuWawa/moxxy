@@ -266,7 +266,13 @@ class AvatarService {
     }
 
     // Check if the id changed.
-    if (id == oldHash) {
+    var bypassIdCheck = false;
+    if (oldHash != null && !File(_computeAvatarPath(oldHash)).existsSync()) {
+      bypassIdCheck = true;
+      _log.finest('Avatar hash $oldHash does not exist. Bypass id check');
+      bypassIdCheck = true;
+    }
+    if (id == oldHash && !bypassIdCheck) {
       _log.finest(
         'Remote id ($id) is equal to local id ($oldHash) for $jid. Not fetching avatar.',
       );
@@ -324,7 +330,15 @@ class AvatarService {
     }
 
     // Check if the avatar even changed.
-    if (id == state.avatarHash) {
+    var bypassIdCheck = false;
+    if (state.avatarUrl != null && !File(state.avatarUrl!).existsSync()) {
+      bypassIdCheck = true;
+      _log.finest(
+        'Avatar path ${state.avatarUrl} does not exist. Bypass id check',
+      );
+      bypassIdCheck = true;
+    }
+    if (id == state.avatarHash && !bypassIdCheck) {
       _log.finest(
         'Not requesting our own avatar because the server-side id ($id) is equal to our current id (${state.avatarHash})',
       );

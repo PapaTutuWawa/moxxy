@@ -7,10 +7,12 @@ import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/conversation.dart';
+import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
+import 'package:moxxyv2/shared/models/xmpp_state.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
@@ -56,6 +58,24 @@ class StubRosterService extends RosterService {
 class StubXmppStateService extends XmppStateService {
   @override
   Future<String?> getAccountJid() async => 'user@example';
+
+  @override
+  Future<XmppState> get state async => XmppState(
+        avatarHash: '9f26dcd75b630308df29214880a4e26fe5ef3a43',
+        avatarUrl:
+            './cache/avatars/9f26dcd75b630308df29214880a4e26fe5ef3a43.png',
+      );
+
+  @override
+  Future<void> modifyXmppState(
+    XmppState Function(XmppState) func, {
+    bool commit = true,
+  }) async {}
+}
+
+class StubNotificationsService extends NotificationsService {
+  @override
+  Future<void> maybeSetAvatarFromState() async {}
 }
 
 class StubSocketWrapper extends BaseSocketWrapper {
@@ -195,11 +215,14 @@ Future<void> main() async {
   GetIt.I.registerSingleton<ConversationService>(scs);
   GetIt.I.registerSingleton<RosterService>(StubRosterService());
   GetIt.I.registerSingleton<XmppStateService>(StubXmppStateService());
+  GetIt.I.registerSingleton<NotificationsService>(StubNotificationsService());
   GetIt.I.registerSingleton<Logger>(Logger('root'));
   GetIt.I.registerSingleton<BackgroundService>(StubBackgroundService());
 
   setUp(() async {
-    stubUserAvatarManager.currentAvatarHash = '';
+    stubUserAvatarManager
+      ..currentAvatarHash = ''
+      ..getUserAvatarCalled = 0;
     scs.conversation = null;
 
     // Remove artifacts, if they exist
@@ -338,6 +361,56 @@ Future<void> main() async {
     );
 
     // The first avatar should still exist.
+    expect(
+      File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43.png'))
+          .existsSync(),
+      true,
+    );
+  });
+
+  test('Test fetching a matching id avatar if the file does not exist',
+      () async {
+    // The avatar must not exist already.
+    assert(
+      !File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43.png'))
+          .existsSync(),
+      'The avatar must not already exist',
+    );
+
+    // Get avatar 1.
+    stubUserAvatarManager.currentAvatarHash =
+        '9f26dcd75b630308df29214880a4e26fe5ef3a43';
+    await srv.requestAvatar(
+      JID.fromString('user@example.org'),
+      '9f26dcd75b630308df29214880a4e26fe5ef3a43',
+    );
+
+    // The first avatar should now exist.
+    expect(stubUserAvatarManager.getUserAvatarCalled, 1);
+    expect(
+      File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43.png'))
+          .existsSync(),
+      true,
+    );
+  });
+
+  test(
+      'Test fetching a matching id avatar for ourselves if the file does not exist',
+      () async {
+    // The avatar must not exist already.
+    assert(
+      !File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43.png'))
+          .existsSync(),
+      'The avatar must not already exist',
+    );
+
+    // Get avatar 1.
+    stubUserAvatarManager.currentAvatarHash =
+        '9f26dcd75b630308df29214880a4e26fe5ef3a43';
+    await srv.requestOwnAvatar();
+
+    // The first avatar should now exist.
+    expect(stubUserAvatarManager.getUserAvatarCalled, 1);
     expect(
       File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43.png'))
           .existsSync(),
