@@ -2,13 +2,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:moxxyv2/ui/widgets/chat/downloadbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/message/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/message/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/progress.dart';
+import 'package:moxxyv2/ui/widgets/chat/viewers/image.dart';
 
 class ImageChatWidget extends StatelessWidget {
   const ImageChatWidget(
@@ -64,7 +64,7 @@ class ImageChatWidget extends StatelessWidget {
   }
 
   /// The image exists locally
-  Widget _buildImage() {
+  Widget _buildImage(BuildContext context) {
     final size = getMediaSize(message, maxWidth);
 
     Widget image;
@@ -95,7 +95,14 @@ class ImageChatWidget extends StatelessWidget {
         sent,
       ),
       radius,
-      onTap: () => openFile(message.fileMetadata!.path!),
+      onTap: () {
+        showImageViewer(
+          context,
+          message.timestamp,
+          message.fileMetadata!.path!,
+          message.fileMetadata!.mimeType!,
+        );
+      },
     );
   }
 
@@ -146,7 +153,7 @@ class ImageChatWidget extends StatelessWidget {
     // TODO(PapaTutuWawa): Maybe use an async builder
     if (message.fileMetadata!.path != null &&
         File(message.fileMetadata!.path!).existsSync()) {
-      return _buildImage();
+      return _buildImage(context);
     }
 
     return _buildDownloadable();
