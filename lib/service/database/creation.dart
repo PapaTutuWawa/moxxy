@@ -307,7 +307,7 @@ Future<void> createDatabase(Database db, int version) async {
     CREATE TABLE $preferenceTable (
       key TEXT NOT NULL PRIMARY KEY,
       type INTEGER NOT NULL,
-      value TEXT NOT NULL
+      value TEXT NULL
     )''',
   );
 
@@ -379,7 +379,7 @@ Future<void> createDatabase(Database db, int version) async {
     Preference(
       'backgroundPath',
       typeString,
-      '',
+      null,
     ).toDatabaseJson(),
   );
   await db.insert(

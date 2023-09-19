@@ -7,7 +7,7 @@ import 'package:path/path.dart' as p;
 Future<void> upgradeFromV47ToV48(DatabaseMigrationData data) async {
   final (db, logger) = data;
 
-  // Make avatarPath and avatarHash nullable
+  // Make avatarPath, avatarHash, and backgroundPath nullable
   // 1) Roster items
   await db.execute(
     '''
@@ -69,6 +69,31 @@ Future<void> upgradeFromV47ToV48(DatabaseMigrationData data) async {
   await db.execute('DROP TABLE $conversationsTable');
   await db.execute(
     'ALTER TABLE ${conversationsTable}_new RENAME TO $conversationsTable',
+  );
+  // 3) Preferences
+  await db.execute(
+    '''
+    CREATE TABLE ${preferenceTable}_new (
+      key TEXT NOT NULL PRIMARY KEY,
+      type INTEGER NOT NULL,
+      value TEXT NULL
+    )''',
+  );
+  await db.execute(
+    'INSERT INTO ${preferenceTable}_new SELECT * FROM $preferenceTable',
+  );
+  await db.execute('DROP TABLE $preferenceTable');
+  await db
+      .execute('ALTER TABLE ${preferenceTable}_new RENAME TO $preferenceTable');
+
+  // In case the backgroundPath is set to "", migrate it to null
+  await db.update(
+    preferenceTable,
+    {
+      'value': null,
+    },
+    where: 'key = ?',
+    whereArgs: ['backgroundPath'],
   );
 
   // Find all conversations and roster items that have an avatar.
