@@ -100,7 +100,8 @@ Future<void> upgradeFromV47ToV48(DatabaseMigrationData data) async {
     final oldPath = avatar['value']! as String;
     final newPath = p.join(
       cachePath,
-      p.basename(oldPath),
+      // Remove the ".png" at the end
+      p.basename(oldPath).split('.').first,
     );
 
     logger.finest('Migrating account avatar $oldPath');
@@ -150,7 +151,7 @@ Future<void> upgradeFromV47ToV48(DatabaseMigrationData data) async {
     }
 
     try {
-      final newPath = p.join(cachePath, '$hash.png');
+      final newPath = p.join(cachePath, hash);
 
       logger.finest(
         'Migrating conversation avatar $path',
@@ -213,7 +214,7 @@ Future<void> upgradeFromV47ToV48(DatabaseMigrationData data) async {
     }
 
     try {
-      final newPath = p.join(cachePath, '$hash.png');
+      final newPath = p.join(cachePath, hash);
 
       logger.finest(
         'Migrating roster avatar $path',

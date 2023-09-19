@@ -62,8 +62,7 @@ class StubXmppStateService extends XmppStateService {
   @override
   Future<XmppState> get state async => XmppState(
         avatarHash: '9f26dcd75b630308df29214880a4e26fe5ef3a43',
-        avatarUrl:
-            './cache/avatars/9f26dcd75b630308df29214880a4e26fe5ef3a43.png',
+        avatarUrl: './cache/avatars/9f26dcd75b630308df29214880a4e26fe5ef3a43',
       );
 
   @override
@@ -133,21 +132,26 @@ class StubUserAvatarManager extends UserAvatarManager {
 
   String currentAvatarHash = '';
 
+  String currentAvatarType = 'image/png';
+
+  List<UserAvatarMetadata>? metadataList;
+
   @override
   Future<Result<AvatarError, List<UserAvatarMetadata>>> getLatestMetadata(
     JID jid,
   ) async {
     return Result<AvatarError, List<UserAvatarMetadata>>(
-      [
-        UserAvatarMetadata(
-          currentAvatarHash,
-          42,
-          null,
-          null,
-          'image/png',
-          null,
-        ),
-      ],
+      metadataList ??
+          [
+            UserAvatarMetadata(
+              currentAvatarHash,
+              42,
+              null,
+              null,
+              currentAvatarType,
+              null,
+            ),
+          ],
     );
   }
 
@@ -159,8 +163,8 @@ class StubUserAvatarManager extends UserAvatarManager {
     getUserAvatarCalled++;
     return Result<AvatarError, UserAvatarData>(
       UserAvatarData(
-        _avatars[currentAvatarHash]!,
-        currentAvatarHash,
+        _avatars[id]!,
+        id,
       ),
     );
   }
@@ -222,6 +226,8 @@ Future<void> main() async {
   setUp(() async {
     stubUserAvatarManager
       ..currentAvatarHash = ''
+      ..currentAvatarType = 'image/png'
+      ..metadataList = null
       ..getUserAvatarCalled = 0;
     scs.conversation = null;
 
@@ -273,7 +279,7 @@ Future<void> main() async {
       '',
       '',
       null,
-      p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43.png'),
+      p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43'),
       '9f26dcd75b630308df29214880a4e26fe5ef3a43',
       'user@example.org',
       null,
@@ -308,7 +314,7 @@ Future<void> main() async {
 
     // The first avatar should not exist anymore.
     expect(
-      File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43.png'))
+      File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43'))
           .existsSync(),
       false,
     );
@@ -327,7 +333,7 @@ Future<void> main() async {
       '',
       '',
       null,
-      p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43.png'),
+      p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43'),
       '9f26dcd75b630308df29214880a4e26fe5ef3a43',
       'user@example.org',
       null,
@@ -362,7 +368,7 @@ Future<void> main() async {
 
     // The first avatar should still exist.
     expect(
-      File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43.png'))
+      File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43'))
           .existsSync(),
       true,
     );
@@ -372,7 +378,7 @@ Future<void> main() async {
       () async {
     // The avatar must not exist already.
     assert(
-      !File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43.png'))
+      !File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43'))
           .existsSync(),
       'The avatar must not already exist',
     );
@@ -388,7 +394,7 @@ Future<void> main() async {
     // The first avatar should now exist.
     expect(stubUserAvatarManager.getUserAvatarCalled, 1);
     expect(
-      File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43.png'))
+      File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43'))
           .existsSync(),
       true,
     );
@@ -399,7 +405,7 @@ Future<void> main() async {
       () async {
     // The avatar must not exist already.
     assert(
-      !File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43.png'))
+      !File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43'))
           .existsSync(),
       'The avatar must not already exist',
     );
@@ -412,9 +418,55 @@ Future<void> main() async {
     // The first avatar should now exist.
     expect(stubUserAvatarManager.getUserAvatarCalled, 1);
     expect(
-      File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43.png'))
+      File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43'))
           .existsSync(),
       true,
     );
+  });
+
+  test('Test fetching avatars with no advertised PNG avatar', () async {
+    // The avatar must not exist already.
+    assert(
+      !File(p.join(cacheDir, '9f26dcd75b630308df29214880a4e26fe5ef3a43'))
+          .existsSync(),
+      'The avatar must not already exist',
+    );
+
+    // Get the avatar.
+    stubUserAvatarManager.metadataList = const [
+      UserAvatarMetadata(
+        '9f26dcd75b630308df29214880a4e26fe5ef3a43',
+        42,
+        null,
+        null,
+        'image/tiff',
+        null,
+      ),
+      UserAvatarMetadata(
+        'd6d556595ff55705010e44c9aab1079dbf5b4fb9',
+        42,
+        null,
+        null,
+        'image/jpeg',
+        null,
+      ),
+    ];
+    await srv.requestAvatar(JID.fromString('user@example.org'), null);
+
+    // The avatar jpeg avatar should now exist.
+    expect(stubUserAvatarManager.getUserAvatarCalled, 1);
+    expect(
+      File(p.join(cacheDir, 'd6d556595ff55705010e44c9aab1079dbf5b4fb9'))
+          .existsSync(),
+      true,
+    );
+
+    // Request the avatar again.
+    await srv.requestAvatar(
+      JID.fromString('user@example.org'),
+      'd6d556595ff55705010e44c9aab1079dbf5b4fb9',
+    );
+    // If the sorting is stable, then getUserAvatar should only be called once.
+    expect(stubUserAvatarManager.getUserAvatarCalled, 1);
   });
 }
