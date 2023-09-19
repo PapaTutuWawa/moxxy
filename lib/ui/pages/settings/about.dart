@@ -125,7 +125,7 @@ class SettingsAboutPageState extends State<SettingsAboutPage> {
               child: ElevatedButton(
                 child: Text(t.pages.settings.about.viewSourceCode),
                 onPressed: () =>
-                    _openUrl('https://github.com/PapaTutuWawa/moxxyv2'),
+                    _openUrl('https://codeberg.org/moxxy/moxxy'),
               ),
             ),
           ],
