@@ -286,6 +286,12 @@ class NotificationsService {
         // Workaround for Android to show the thumbnail in the notification
         filePath = thumbnailPath;
         fileMime = 'image/jpeg';
+      } else {
+        _log.warning(
+          'Thumbnail $thumbnailPath for video $filePath does not exist.',
+        );
+        filePath = null;
+        fileMime = null;
       }
     }
 
@@ -313,6 +319,33 @@ class NotificationsService {
   /// Indicates whether we're allowed to show notifications on devices >= Android 13.
   Future<bool> _canDoNotifications() async {
     return Permission.notification.isGranted;
+  }
+
+  /// Checks if the notification [notification] already appears inside [notifications].
+  /// If yes, then that occurence is replaced by [notification]. If not, then [notification]
+  /// is simply appended to [notifications].
+  List<native.NotificationMessage> _replaceOrAppendNotification(
+    List<modeln.Notification> notifications,
+    modeln.Notification notification,
+  ) {
+    final index = notifications.indexWhere(
+      (n) =>
+          n.id == notification.id &&
+          n.conversationJid == notification.conversationJid &&
+          n.senderJid == notification.senderJid &&
+          n.timestamp == notification.timestamp,
+    );
+    final notificationsList =
+        notifications.map((n) => n.toNotificationMessage()).toList();
+    if (index == -1) {
+      return [
+        ...notificationsList,
+        notification.toNotificationMessage(),
+      ];
+    } else {
+      notificationsList[index] = notification.toNotificationMessage();
+      return notificationsList.toList();
+    }
   }
 
   /// When a notification is already visible, then build a new notification based on [c] and [m],
@@ -350,17 +383,10 @@ class NotificationsService {
         id: id,
         channelId: messageNotificationChannelId,
         jid: c.jid,
-        messages: notifications.map((n) {
-          // Based on the table's composite primary key
-          if (n.id == notification.id &&
-              n.conversationJid == notification.conversationJid &&
-              n.senderJid == notification.senderJid &&
-              n.timestamp == notification.timestamp) {
-            return notification.toNotificationMessage();
-          }
-
-          return n.toNotificationMessage();
-        }).toList(),
+        messages: _replaceOrAppendNotification(
+          notifications,
+          notification,
+        ),
         isGroupchat: c.isGroupchat,
         groupId: messageNotificationGroupId,
         extra: {
