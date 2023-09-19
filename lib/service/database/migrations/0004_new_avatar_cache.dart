@@ -92,8 +92,8 @@ Future<void> upgradeFromV47ToV48(DatabaseMigrationData data) async {
     {
       'value': null,
     },
-    where: 'key = ?',
-    whereArgs: ['backgroundPath'],
+    where: 'key = ? AND value = ?',
+    whereArgs: ['backgroundPath', ''],
   );
 
   // Find all conversations and roster items that have an avatar.
