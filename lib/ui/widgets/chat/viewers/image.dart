@@ -12,13 +12,17 @@ Future<void> showImageViewer(
 ) async {
   return showMediaViewer(
     context,
-    (context) {
+    (context, controller) {
       return BaseMediaViewer(
         path: path,
         mime: mime,
         timestamp: timestamp,
-        child: InteractiveViewer(
-          child: Image.file(File(path)),
+        controller: controller,
+        child: GestureDetector(
+          onTap: controller.handleTap,
+          child: InteractiveViewer(
+            child: Image.file(File(path)),
+          ),
         ),
       );
     },

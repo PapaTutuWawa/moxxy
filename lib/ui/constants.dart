@@ -137,6 +137,9 @@ const Color highlightSkimColor = Color(0xff000000);
 /// The width of the bar used to indicate a legacy quote.
 const double textMessageQuoteBarWidth = 3;
 
+/// The duration of the animations in the media viewers.
+const Duration mediaViewerAnimationDuration = Duration(milliseconds: 150);
+
 /// Navigation constants
 const String cropRoute = '/crop';
 const String introRoute = '/intro';

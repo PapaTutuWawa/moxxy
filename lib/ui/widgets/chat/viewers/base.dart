@@ -1,7 +1,52 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/ui/constants.dart';
+
+/// This controller deals with showing/hiding the UI elements and handling the timeouts
+/// for hiding the elements when they are visible.
+class ViewerUIVisibilityController {
+  final ValueNotifier<bool> visible = ValueNotifier(true);
+
+  Timer? _hideTimer;
+
+  void _disposeHideTimer() {
+    _hideTimer?.cancel();
+    _hideTimer = null;
+  }
+
+  void dispose() {
+    _disposeHideTimer();
+  }
+
+  /// Start the hide timer.
+  void startHideTimer() {
+    _disposeHideTimer();
+
+    _hideTimer = Timer.periodic(
+      const Duration(seconds: 2),
+      (__) {
+        _hideTimer?.cancel();
+        _hideTimer = null;
+
+        visible.value = !visible.value;
+      },
+    );
+  }
+
+  /// Start or stop the hide timer, depending on the current visibility state.
+  void handleTap() {
+    if (!visible.value) {
+      startHideTimer();
+    } else {
+      _disposeHideTimer();
+    }
+
+    visible.value = !visible.value;
+  }
+}
 
 class BaseMediaViewer extends StatelessWidget {
   const BaseMediaViewer({
@@ -9,6 +54,7 @@ class BaseMediaViewer extends StatelessWidget {
     required this.path,
     required this.mime,
     required this.timestamp,
+    required this.controller,
     super.key,
   });
 
@@ -23,6 +69,8 @@ class BaseMediaViewer extends StatelessWidget {
 
   /// The timestamp of the message containing the media item.
   final int timestamp;
+
+  final ViewerUIVisibilityController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -42,10 +90,17 @@ class BaseMediaViewer extends StatelessWidget {
           Positioned.fill(
             child: child,
           ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
+          ValueListenableBuilder(
+            valueListenable: controller.visible,
+            builder: (context, value, child) {
+              return AnimatedPositioned(
+                top: value ? 0 : -kToolbarHeight,
+                left: 0,
+                right: 0,
+                duration: mediaViewerAnimationDuration,
+                child: child!,
+              );
+            },
             child: SizedBox(
               height: kToolbarHeight,
               child: ColoredBox(
@@ -91,13 +146,23 @@ class BaseMediaViewer extends StatelessWidget {
   }
 }
 
+typedef MediaViewerBuilder = Widget Function(
+  BuildContext,
+  ViewerUIVisibilityController,
+);
+
+/// A wrapper function that shows a dialog to be used as a media viewer. This function
+/// handles creation of the UI visibility controller, showing the dialog, and disposing
+/// of the controller.
 Future<void> showMediaViewer(
   BuildContext context,
-  WidgetBuilder builder,
+  MediaViewerBuilder builder,
 ) async {
-  return showDialog<void>(
+  final controller = ViewerUIVisibilityController();
+  await showDialog<void>(
     barrierColor: Colors.black87,
     context: context,
-    builder: builder,
+    builder: (context) => builder(context, controller),
   );
+  controller.dispose();
 }

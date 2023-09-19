@@ -1,51 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/viewers/base.dart';
 import 'package:video_player/video_player.dart';
-
-/// This controller deals with showing/hiding the UI elements and handling the timeouts
-/// for hiding the elements when they are visible.
-class VideoViewerUIVisibilityController {
-  final ValueNotifier<bool> visible = ValueNotifier(true);
-
-  Timer? _hideTimer;
-
-  void _disposeHideTimer() {
-    _hideTimer?.cancel();
-    _hideTimer = null;
-  }
-
-  void dispose() {
-    _disposeHideTimer();
-  }
-
-  /// Start the hide timer.
-  void startHideTimer() {
-    _disposeHideTimer();
-
-    _hideTimer = Timer.periodic(
-      const Duration(seconds: 2),
-      (__) {
-        _hideTimer?.cancel();
-        _hideTimer = null;
-
-        visible.value = !visible.value;
-      },
-    );
-  }
-
-  /// Start or stop the hide timer, depending on the current visibility state.
-  void handleTap() {
-    if (!visible.value) {
-      startHideTimer();
-    } else {
-      _disposeHideTimer();
-    }
-
-    visible.value = !visible.value;
-  }
-}
 
 /// A UI element that allows the user to play/pause the video.
 class VideoViewerPlayButton extends StatefulWidget {
@@ -59,7 +17,7 @@ class VideoViewerPlayButton extends StatefulWidget {
   final VideoPlayerController videoController;
 
   /// The controller controlling the visibility of UI elements.
-  final VideoViewerUIVisibilityController uiController;
+  final ViewerUIVisibilityController uiController;
 
   @override
   VideoViewerPlayButtonState createState() => VideoViewerPlayButtonState();
@@ -96,7 +54,7 @@ class VideoViewerPlayButtonState extends State<VideoViewerPlayButton> {
       builder: (context, value, _) {
         return AnimatedOpacity(
           opacity: _showPlayButton ? 1 : 0,
-          duration: const Duration(milliseconds: 150),
+          duration: mediaViewerAnimationDuration,
           child: IgnorePointer(
             ignoring: !_showPlayButton,
             child: Center(
@@ -148,7 +106,7 @@ class VideoViewerScrubber extends StatefulWidget {
   final VideoPlayerController videoController;
 
   /// The controller controlling the visibility of UI elements.
-  final VideoViewerUIVisibilityController uiController;
+  final ViewerUIVisibilityController uiController;
 
   @override
   VideoViewerScrubberState createState() => VideoViewerScrubberState();
@@ -184,7 +142,7 @@ class VideoViewerScrubberState extends State<VideoViewerScrubber> {
       ignoring: !_showScrubBar,
       child: AnimatedOpacity(
         opacity: _showScrubBar ? 1 : 0,
-        duration: const Duration(milliseconds: 150),
+        duration: mediaViewerAnimationDuration,
         child: Material(
           color: Colors.black54,
           child: Padding(
@@ -228,9 +186,14 @@ class VideoViewerScrubberState extends State<VideoViewerScrubber> {
 class VideoViewer extends StatefulWidget {
   const VideoViewer({
     required this.path,
+    required this.controller,
     super.key,
   });
 
+  /// The controller controlling UI element visibility.
+  final ViewerUIVisibilityController controller;
+
+  /// The path to the video we're showing.
   final String path;
 
   @override
@@ -239,9 +202,6 @@ class VideoViewer extends StatefulWidget {
 
 class VideoViewerState extends State<VideoViewer> {
   late final VideoPlayerController _controller;
-
-  final VideoViewerUIVisibilityController _uiController =
-      VideoViewerUIVisibilityController();
 
   @override
   void initState() {
@@ -256,7 +216,6 @@ class VideoViewerState extends State<VideoViewer> {
   @override
   void dispose() {
     _controller.dispose();
-    _uiController.dispose();
 
     super.dispose();
   }
@@ -277,7 +236,7 @@ class VideoViewerState extends State<VideoViewer> {
       child: AspectRatio(
         aspectRatio: _controller.value.aspectRatio,
         child: GestureDetector(
-          onTap: _uiController.handleTap,
+          onTap: widget.controller.handleTap,
           child: Stack(
             children: [
               Positioned.fill(
@@ -285,7 +244,7 @@ class VideoViewerState extends State<VideoViewer> {
               ),
               VideoViewerPlayButton(
                 videoController: _controller,
-                uiController: _uiController,
+                uiController: widget.controller,
               ),
               Positioned(
                 left: 0,
@@ -293,7 +252,7 @@ class VideoViewerState extends State<VideoViewer> {
                 right: 0,
                 child: VideoViewerScrubber(
                   videoController: _controller,
-                  uiController: _uiController,
+                  uiController: widget.controller,
                 ),
               ),
             ],
@@ -312,15 +271,17 @@ Future<void> showVideoViewer(
   String path,
   String mime,
 ) async {
-  return showMediaViewer(
+  await showMediaViewer(
     context,
-    (context) {
+    (context, controller) {
       return BaseMediaViewer(
         path: path,
         mime: mime,
         timestamp: timestamp,
+        controller: controller,
         child: VideoViewer(
           path: path,
+          controller: controller,
         ),
       );
     },
