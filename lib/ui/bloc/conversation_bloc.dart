@@ -158,7 +158,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
                 state.conversation!.contactId != null,
               ),
             ],
-            SendFilesType.image,
+            SendFilesType.media,
           ),
         );
   }

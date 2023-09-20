@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:mime/mime.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/service/cache.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/cryptography/cryptography.dart';
@@ -121,12 +122,18 @@ class HttpFileTransferService {
     });
   }
 
-  Future<void> _copyFile(
+  Future<void> _copyUploadedFile(
     FileUploadJob job,
     String to,
   ) async {
     if (!File(to).existsSync()) {
       await File(job.path).copy(to);
+
+      // Remove the original file
+      await safelyRemovePickedFile(
+        job.path,
+        await computePickedFileCachePath(),
+      );
     } else {
       _log.finest(
         'Skipping file copy on upload as file is already at media location',
@@ -311,7 +318,7 @@ class HttpFileTransferService {
           _log.fine(
             'Uploaded file $filename is already tracked but has no path. Copying...',
           );
-          await _copyFile(job, filePath);
+          await _copyUploadedFile(job, filePath);
           metadata = await GetIt.I.get<FilesService>().updateFileMetadata(
                 metadata.id,
                 path: filePath,
@@ -319,7 +326,7 @@ class HttpFileTransferService {
         }
       } else {
         _log.fine('Uploaded file $filename not tracked. Copying...');
-        await _copyFile(job, metadataWrapper.fileMetadata.path!);
+        await _copyUploadedFile(job, metadataWrapper.fileMetadata.path!);
       }
 
       const uuid = Uuid();

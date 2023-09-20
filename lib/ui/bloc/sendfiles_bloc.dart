@@ -1,9 +1,11 @@
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
 import 'package:move_to_background/move_to_background.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -20,14 +22,21 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
     on<AddFilesRequestedEvent>(_onAddFilesRequested);
     on<FileSendingRequestedEvent>(_onFileSendingRequested);
     on<ItemRemovedEvent>(_onItemRemoved);
+    on<RemovedCacheFilesEvent>(_onCacheFilesRemoved);
   }
+
+  /// Whether a single [RemovedCacheFilesEvent] event should be ignored.
+  bool _shouldIgnoreDeletionRequest = false;
+
+  /// Logger.
+  final Logger _log = Logger('SendFilesBloc');
 
   /// Pick files. Returns either a list of paths to attach or null if the process has
   /// been cancelled.
   Future<List<String>?> _pickFiles(SendFilesType type) async {
     final result = await safePickFiles(
-      type == SendFilesType.image
-          ? FilePickerType.image
+      type == SendFilesType.media
+          ? FilePickerType.imageAndVideo
           : FilePickerType.generic,
     );
 
@@ -50,6 +59,7 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
       files = pickedFiles;
     }
 
+    _shouldIgnoreDeletionRequest = false;
     emit(
       state.copyWith(
         files: files,
@@ -108,6 +118,7 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
       ),
       awaitable: false,
     );
+    _shouldIgnoreDeletionRequest = true;
 
     // Return to the last page
     final bloc = GetIt.I.get<NavigationBloc>();
@@ -151,5 +162,18 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
         index: index,
       ),
     );
+  }
+
+  Future<void> _onCacheFilesRemoved(
+    RemovedCacheFilesEvent event,
+    Emitter<SendFilesState> _,
+  ) async {
+    if (_shouldIgnoreDeletionRequest) {
+      _log.finest('Ignoring RemovedCacheFilesEvent.');
+      _shouldIgnoreDeletionRequest = false;
+      return;
+    }
+
+    await safelyRemovePickedFiles(state.files, null);
   }
 }

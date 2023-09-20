@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:decorated_icon/decorated_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:mime/mime.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
@@ -11,6 +12,9 @@ import 'package:moxxyv2/ui/widgets/cancel_button.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
+import 'package:moxxyv2/ui/widgets/chat/viewers/base.dart';
+import 'package:moxxyv2/ui/widgets/chat/viewers/image.dart';
+import 'package:moxxyv2/ui/widgets/chat/viewers/video.dart';
 import 'package:path/path.dart' as pathlib;
 
 Widget _deleteIconWithShadow() {
@@ -133,19 +137,17 @@ class SendFilesPage extends StatelessWidget {
 
     if (mime.startsWith('image/')) {
       // Render the image
-      return Image.file(
-        File(path),
-        fit: BoxFit.contain,
+      return ImageViewer(
+        path: path,
+        controller: ViewerUIVisibilityController(),
       );
-    } /*else if (mime.startsWith('video/')) {
-      // Render the video thumbnail
-      // TODO(PapaTutuWawa): Maybe allow playing the video back inline
-      return VideoThumbnailWidget(
-        path,
-        Image.memory,
+    } else if (mime.startsWith('video/')) {
+      return VideoViewer(
+        path: path,
+        controller: ViewerUIVisibilityController(),
+        showScrubBar: false,
       );
-    }*/
-    else {
+    } else {
       // Generic file
       final width = MediaQuery.of(context).size.width;
       return Center(
@@ -163,119 +165,134 @@ class SendFilesPage extends StatelessWidget {
     }
   }
 
+  void _maybeRemoveTemporaryFiles() {
+    if (Platform.isAndroid) {
+      // Remove temporary files.
+      GetIt.I.get<SendFilesBloc>().add(RemovedCacheFilesEvent());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     const barPadding = 8.0;
 
     // TODO(Unknown): Fix the typography
-    return SafeArea(
-      child: Scaffold(
-        body: BlocBuilder<SendFilesBloc, SendFilesState>(
-          builder: (context, state) => Stack(
-            children: [
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Center(
-                  child: _renderBackground(context, state.files[state.index]),
+    return WillPopScope(
+      onWillPop: () async {
+        _maybeRemoveTemporaryFiles();
+        return true;
+      },
+      child: SafeArea(
+        child: Scaffold(
+          body: BlocBuilder<SendFilesBloc, SendFilesState>(
+            builder: (context, state) => Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: _renderBackground(context, state.files[state.index]),
+                  ),
                 ),
-              ),
-              // TODO(Unknown): Add a TextField for entering a message
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 72,
-                child: SizedBox(
-                  height: sharedMediaContainerDimension + 2 * barPadding,
-                  child: ColoredBox(
-                    color: const Color.fromRGBO(0, 0, 0, 0.7),
-                    child: Padding(
-                      padding: const EdgeInsets.all(barPadding),
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        itemCount: state.files.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index < state.files.length) {
-                            final item = state.files[index];
+                // TODO(Unknown): Add a TextField for entering a message
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 72,
+                  child: SizedBox(
+                    height: sharedMediaContainerDimension + 2 * barPadding,
+                    child: ColoredBox(
+                      color: const Color.fromRGBO(0, 0, 0, 0.7),
+                      child: Padding(
+                        padding: const EdgeInsets.all(barPadding),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          scrollDirection: Axis.horizontal,
+                          itemCount: state.files.length + 1,
+                          itemBuilder: (context, index) {
+                            if (index < state.files.length) {
+                              final item = state.files[index];
 
-                            return _renderPreview(
-                              context,
-                              item,
-                              index == state.index,
-                              index,
-                            );
-                          } else {
-                            return SharedMediaContainer(
-                              const Icon(Icons.attach_file),
-                              color: sharedMediaItemBackgroundColor,
-                              onTap: () => context.read<SendFilesBloc>().add(
-                                    AddFilesRequestedEvent(),
-                                  ),
-                            );
-                          }
+                              return _renderPreview(
+                                context,
+                                item,
+                                index == state.index,
+                                index,
+                              );
+                            } else {
+                              return SharedMediaContainer(
+                                const Icon(Icons.attach_file),
+                                color: sharedMediaItemBackgroundColor,
+                                onTap: () => context.read<SendFilesBloc>().add(
+                                      AddFilesRequestedEvent(),
+                                    ),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 8,
+                  bottom: 8,
+                  child: SizedBox(
+                    height: 48,
+                    width: 48,
+                    child: FittedBox(
+                      // Without wrapping the button in a Material, the image will be drawn
+                      // over the button, partly or entirely hiding it.
+                      child: Material(
+                        color: const Color.fromRGBO(0, 0, 0, 0),
+                        child: Ink(
+                          decoration: const ShapeDecoration(
+                            color: primaryColor,
+                            shape: CircleBorder(),
+                          ),
+                          child: IconButton(
+                            color: Colors.white,
+                            icon: const Icon(Icons.send),
+                            onPressed: () => context
+                                .read<SendFilesBloc>()
+                                .add(FileSendingRequestedEvent()),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Row(
+                    children: [
+                      CancelButton(
+                        onPressed: () {
+                          _maybeRemoveTemporaryFiles();
+
+                          // If we do a direct share and the user presses the "x" button, then it
+                          // happens that just popping the stack results in just a gray screen.
+                          // By using `SystemNavigator.pop`, we can tell the Flutter to "pop the
+                          // entire app".
+                          context.read<NavigationBloc>().add(
+                                PoppedRouteWithOptionalSystemNavigatorEvent(),
+                              );
                         },
                       ),
-                    ),
+                      if (state.hasRecipientData)
+                        ConversationIndicator(state.recipients)
+                      else
+                        FetchingConversationIndicator(
+                          state.recipients.map((r) => r.jid).toList(),
+                        ),
+                    ],
                   ),
                 ),
-              ),
-              Positioned(
-                right: 8,
-                bottom: 8,
-                child: SizedBox(
-                  height: 48,
-                  width: 48,
-                  child: FittedBox(
-                    // Without wrapping the button in a Material, the image will be drawn
-                    // over the button, partly or entirely hiding it.
-                    child: Material(
-                      color: const Color.fromRGBO(0, 0, 0, 0),
-                      child: Ink(
-                        decoration: const ShapeDecoration(
-                          color: primaryColor,
-                          shape: CircleBorder(),
-                        ),
-                        child: IconButton(
-                          color: Colors.white,
-                          icon: const Icon(Icons.send),
-                          onPressed: () => context
-                              .read<SendFilesBloc>()
-                              .add(FileSendingRequestedEvent()),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 8,
-                left: 8,
-                child: Row(
-                  children: [
-                    CancelButton(
-                      onPressed: () {
-                        // If we do a direct share and the user presses the "x" button, then it
-                        // happens that just popping the stack results in just a gray screen.
-                        // By using `SystemNavigator.pop`, we can tell the Flutter to "pop the
-                        // entire app".
-                        context
-                            .read<NavigationBloc>()
-                            .add(PoppedRouteWithOptionalSystemNavigatorEvent());
-                      },
-                    ),
-                    if (state.hasRecipientData)
-                      ConversationIndicator(state.recipients)
-                    else
-                      FetchingConversationIndicator(
-                        state.recipients.map((r) => r.jid).toList(),
-                      ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -47,8 +47,7 @@ class AvatarService {
     _requestedInStream.clear();
   }
 
-  String _computeAvatarPath(String hash) =>
-      p.join(_avatarCacheDir, '$hash.png');
+  String _computeAvatarPath(String hash) => p.join(_avatarCacheDir, hash);
 
   /// Returns whether we can remove the avatar file at [path] by checking if the
   /// avatar is referenced by any other conversation. If [ignoreSelf] is true, then
@@ -254,15 +253,31 @@ class AvatarService {
     }
 
     // Find the first metadata item that advertises a PNG avatar.
-    final id = rawMetadata
-        .get<List<UserAvatarMetadata>>()
-        .firstWhereOrNull((element) => element.type == 'image/png')
-        ?.id;
+    final metadata = rawMetadata.get<List<UserAvatarMetadata>>();
+    var id =
+        metadata.firstWhereOrNull((element) => element.type == 'image/png')?.id;
     if (id == null) {
       _log.warning(
         '$jid does not advertise an avatar of type image/png, which violates XEP-0084',
       );
-      return null;
+
+      if (metadata.isEmpty) {
+        _log.warning(
+          '$jid does not advertise any metadata.',
+        );
+        _requestedInStream.remove(jid);
+        return null;
+      }
+
+      // If other avatar types are present, sort the list to make the selection stable
+      // and then just pick the first one.
+      final typeSortedMetadata = List.of(metadata)
+        ..sort((a, b) => a.type.compareTo(b.type));
+      final firstMetadata = typeSortedMetadata.first;
+      _log.warning(
+        'Falling back to ${firstMetadata.id} (${firstMetadata.type})',
+      );
+      id = firstMetadata.id;
     }
 
     // Check if the id changed.

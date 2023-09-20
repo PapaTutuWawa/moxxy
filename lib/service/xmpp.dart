@@ -1356,11 +1356,6 @@ class XmppService {
     // Indicates if we should auto-download the file, if a file is specified in the message
     final shouldDownload = isFileEmbedded &&
         await _shouldDownloadFile(conversationJid, accountJid);
-    // Indicates if a notification should be created for the message.
-    // The way this variable works is that if we can download the file, then the
-    // notification will be created later by the [DownloadService]. If we don't want the
-    // download to happen automatically, then the notification should happen immediately.
-    var shouldNotify = !(isInRoster && shouldDownload);
     // A guess for the Mime type of the embedded file.
     var mimeGuess = _getMimeGuess(event);
 
@@ -1486,9 +1481,6 @@ class XmppService {
             mimeGuess,
           ),
         );
-      } else {
-        // Make sure we create the notification
-        shouldNotify = true;
       }
     } else {
       if (fileMetadata?.retrieved ?? false) {
@@ -1567,22 +1559,26 @@ class XmppService {
       preRun: (c) async {
         isMuted = c != null ? c.muted : prefs.defaultMuteState;
         sendNotification = !sent &&
-            shouldNotify &&
             (!isConversationOpened ||
-                !GetIt.I.get<LifecycleService>().isActive) &&
+                isConversationOpened &&
+                    !GetIt.I.get<LifecycleService>().isActive) &&
             !isMuted;
       },
     );
 
     // Update the share handler
-    await GetIt.I.get<ShareService>().recordSentMessage(
-          conversation!,
-        );
+    try {
+      await GetIt.I.get<ShareService>().recordSentMessage(
+            conversation!,
+          );
+    } catch (ex) {
+      _log.warning('Error while creating direct share shortcut: $ex');
+    }
 
     // Create the notification if we the user does not already know about the message
     if (sendNotification) {
       await ns.showNotification(
-        conversation,
+        conversation!,
         message,
         accountJid,
         isInRoster ? conversation.title : conversationJid,
@@ -1684,7 +1680,6 @@ class XmppService {
                 // using hashes and thus have to create hash pointers.
                 fileMetadata == null,
                 _getMimeGuess(event),
-                shouldShowNotification: false,
               ),
             );
       } else {

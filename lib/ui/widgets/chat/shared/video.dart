@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/video_thumbnail.dart';
 
@@ -28,15 +29,40 @@ class SharedVideoWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SharedMediaContainer(
-      VideoThumbnail(
-        path: path,
-        conversationJid: conversationJid,
-        mime: mime,
-        size: Size(
-          size,
-          size,
-        ),
-        borderRadius: BorderRadius.circular(borderRadius),
+      Stack(
+        children: [
+          Positioned.fill(
+            child: VideoThumbnail(
+              path: path,
+              conversationJid: conversationJid,
+              mime: mime,
+              size: Size(
+                size,
+                size,
+              ),
+              borderRadius: BorderRadius.circular(borderRadius),
+            ),
+          ),
+          Positioned(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                assert(
+                  constraints.maxWidth == constraints.maxHeight,
+                  'The widget must be square',
+                );
+
+                return PlayButton(
+                  // Ensure that the button always fits but never gets bigger than
+                  // its default size.
+                  size: (constraints.maxHeight * 0.8).clamp(
+                    -double.infinity,
+                    66,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
       borderRadius: borderRadius,
       color: Colors.transparent,

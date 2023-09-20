@@ -196,6 +196,7 @@
             "retract": "Retract message",
             "retractBody": "Are you sure you want to retract the message? Keep in mind that this is only a request that the client does not have to honour.",
             "forward": "Forward",
+            "share": "Share",
             "edit": "Edit",
             "quote": "Quote",
             "copy": "Copy content",
@@ -219,7 +220,7 @@
                 "other": "Multiple devices have been added"
             },
             "messageHint": "Send a message…",
-            "sendImages": "Send images",
+            "sendMedia": "Send media",
             "sendFiles": "Send files",
             "takePhotos": "Take photos",
             "voiceRecording": {

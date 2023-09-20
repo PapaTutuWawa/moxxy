@@ -282,15 +282,12 @@ class SelectedMessageContextMenu extends StatelessWidget {
                         );
                       },
                     ),
-                  if (message.isQuotable && message.conversationJid != '')
+                  if (message.isQuotable)
                     ContextMenuItem(
-                      icon: Icons.forward,
-                      text: t.pages.conversation.forward,
+                      icon: Icons.share,
+                      text: t.pages.conversation.share,
                       onPressed: () {
-                        showNotImplementedDialog(
-                          'sharing',
-                          context,
-                        );
+                        shareMessage(message);
                         selectionController.dismiss();
                       },
                     ),

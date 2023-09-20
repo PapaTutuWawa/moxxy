@@ -124,8 +124,7 @@ class SettingsAboutPageState extends State<SettingsAboutPage> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: ElevatedButton(
                 child: Text(t.pages.settings.about.viewSourceCode),
-                onPressed: () =>
-                    _openUrl('https://github.com/PapaTutuWawa/moxxyv2'),
+                onPressed: () => _openUrl('https://codeberg.org/moxxy/moxxy'),
               ),
             ),
           ],

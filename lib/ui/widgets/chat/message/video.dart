@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:moxxyv2/ui/widgets/chat/downloadbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/helpers.dart';
@@ -11,6 +10,7 @@ import 'package:moxxyv2/ui/widgets/chat/message/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/progress.dart';
 import 'package:moxxyv2/ui/widgets/chat/video_thumbnail.dart';
+import 'package:moxxyv2/ui/widgets/chat/viewers/video.dart';
 
 class VideoChatWidget extends StatelessWidget {
   const VideoChatWidget(
@@ -75,7 +75,7 @@ class VideoChatWidget extends StatelessWidget {
   }
 
   /// The video exists locally
-  Widget _buildVideo() {
+  Widget _buildVideo(BuildContext context) {
     return MediaBaseChatWidget(
       VideoThumbnail(
         path: message.fileMetadata!.path!,
@@ -92,7 +92,15 @@ class VideoChatWidget extends StatelessWidget {
         sent,
       ),
       radius,
-      onTap: () => openFile(message.fileMetadata!.path!),
+      //onTap: () => openFile(message.fileMetadata!.path!),
+      onTap: () {
+        showVideoViewer(
+          context,
+          message.timestamp,
+          message.fileMetadata!.path!,
+          message.fileMetadata!.mimeType!,
+        );
+      },
       extra: const PlayButton(),
     );
   }
@@ -144,7 +152,7 @@ class VideoChatWidget extends StatelessWidget {
     // TODO(PapaTutuWawa): Maybe use an async builder
     if (message.fileMetadata!.path != null &&
         File(message.fileMetadata!.path!).existsSync()) {
-      return _buildVideo();
+      return _buildVideo(context);
     }
 
     return _buildDownloadable();

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:isolate';
 import 'dart:typed_data';
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -15,44 +14,6 @@ import 'package:path/path.dart' as path;
 part 'cropbackground_bloc.freezed.dart';
 part 'cropbackground_event.dart';
 part 'cropbackground_state.dart';
-
-// This function in an isolate allows to perform the cropping without blocking the UI
-// at all. Sending the image data to the isolate would result in UI blocking.
-// TODO(Unknown): Maybe make use of image's executeThread method to replace our own
-//                isolate code.
-Future<void> _cropImage(List<dynamic> data) async {
-  final port = data[0] as SendPort;
-  final originalPath = data[1] as String;
-  final destination = data[2] as String;
-  final q = data[3] as double;
-  final x = data[4] as double;
-  final y = data[5] as double;
-  final vw = data[6] as double;
-  final vh = data[7] as double;
-  final blur = data[8] as bool;
-
-  final inverse = 1 / q;
-  final xp = (x.abs() * inverse).toInt();
-  final yp = (y.abs() * inverse).toInt();
-
-  final cmd = Command()
-    ..decodeImageFile(originalPath)
-    ..copyCrop(
-      x: xp,
-      y: yp,
-      width: (vw * inverse).toInt(),
-      height: (vh * inverse).toInt(),
-    );
-
-  if (blur) {
-    cmd.gaussianBlur(radius: 10);
-  }
-
-  cmd.writeToFile(destination);
-
-  await cmd.execute();
-  port.send(true);
-}
 
 class CropBackgroundBloc
     extends Bloc<CropBackgroundEvent, CropBackgroundState> {
@@ -124,22 +85,25 @@ class CropBackgroundBloc
     final appDir = await MoxxyPlatformApi().getPersistentDataPath();
     final backgroundPath = path.join(appDir, 'background_image.png');
 
-    final port = ReceivePort();
-    await Isolate.spawn(
-      _cropImage,
-      [
-        port.sendPort,
-        state.imagePath,
-        backgroundPath,
-        event.q,
-        event.x,
-        event.y,
-        event.viewportWidth,
-        event.viewportHeight,
-        state.blurEnabled,
-      ],
-    );
-    await port.first;
+    // Compute values for cropping the image.
+    final inverse = 1 / event.q;
+    final xp = (event.x.abs() * inverse).toInt();
+    final yp = (event.y.abs() * inverse).toInt();
+
+    // Compute the crop and optional blur.
+    final cmd = Command()
+      ..decodeImageFile(state.imagePath!)
+      ..copyCrop(
+        x: xp,
+        y: yp,
+        width: (event.viewportWidth * inverse).toInt(),
+        height: (event.viewportHeight * inverse).toInt(),
+      );
+    if (state.blurEnabled) {
+      cmd.gaussianBlur(radius: 10);
+    }
+    cmd.writeToFile(backgroundPath);
+    await cmd.executeThread();
 
     _resetState(emit);
 

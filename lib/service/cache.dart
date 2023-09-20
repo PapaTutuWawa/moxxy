@@ -10,3 +10,8 @@ Future<String> computeCacheDirectoryPath(String subdirectory) async {
     subdirectory,
   );
 }
+
+/// Wrapper around [computeCacheDirectoryPath] for the cache directory that contains
+/// copies of picked files.
+Future<String> computePickedFileCachePath() async =>
+    computeCacheDirectoryPath('cache');

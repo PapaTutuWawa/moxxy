@@ -12,7 +12,7 @@ typedef SharedMediaWidgetCallback = void Function(FileMetadata);
 Widget buildSharedMediaWidget(
   FileMetadata metadata,
   String conversationJid,
-  SharedMediaWidgetCallback onTap, {
+  VoidCallback onTap, {
   SharedMediaWidgetCallback? onLongPress,
 }) {
   // Prevent having the phone vibrate if no onLongPress is passed
@@ -22,7 +22,7 @@ Widget buildSharedMediaWidget(
   if (metadata.mimeType!.startsWith('image/')) {
     return SharedImageWidget(
       metadata.path!,
-      onTap: () => onTap(metadata),
+      onTap: onTap,
       onLongPress: longPressCallback,
     );
   } else if (metadata.mimeType!.startsWith('video/')) {
@@ -30,21 +30,21 @@ Widget buildSharedMediaWidget(
       metadata.path!,
       conversationJid,
       metadata.mimeType!,
-      onTap: () => onTap(metadata),
+      onTap: onTap,
       onLongPress: () => onLongPress?.call(metadata),
       child: const PlayButton(size: 32),
     );
   } else if (metadata.mimeType!.startsWith('audio/')) {
     return SharedAudioWidget(
       metadata.path!,
-      onTap: () => onTap(metadata),
+      onTap: onTap,
       onLongPress: longPressCallback,
     );
   }
 
   return SharedFileWidget(
     metadata.path!,
-    onTap: () => onTap(metadata),
+    onTap: onTap,
     onLongPress: longPressCallback,
   );
 }

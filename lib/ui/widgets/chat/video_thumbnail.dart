@@ -52,11 +52,7 @@ class VideoThumbnail extends StatelessWidget {
             child: const ShimmerWidget(),
           );
         }
-
-        return ClipRRect(
-          borderRadius: borderRadius,
-          child: widget,
-        );
+        return widget;
       },
     );
   }

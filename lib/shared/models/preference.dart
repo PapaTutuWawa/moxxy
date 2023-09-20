@@ -8,7 +8,7 @@ class Preference with _$Preference {
   factory Preference(
     String key,
     int type,
-    String value,
+    String? value,
   ) = _Preference;
 
   const Preference._();

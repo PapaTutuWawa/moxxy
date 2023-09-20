@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
-import 'package:keyboard_height_plugin/keyboard_height_plugin.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 
 /// A triple of data for the child widget wrapper widget.
@@ -47,19 +47,25 @@ class KeyboardReplacerController {
       );
     });
 
-    _keyboardHeightPlugin.onKeyboardHeightChanged((height) {
-      // Only update when the height actually changed
-      if (height == 0 || height == _keyboardHeight) return;
+    _keyboardHeightSubscription =
+        const EventChannel('org.moxxy.moxxyv2/keyboard_stream')
+            .receiveBroadcastStream()
+            .cast<double>()
+            .listen(
+      (height) {
+        // Only update when the height actually changed
+        if (height == 0 || height == _keyboardHeight) return;
 
-      _keyboardHeight = height;
-      _streamController.add(
-        KeyboardReplacerData(
-          _keyboardVisible,
-          height,
-          _widgetVisible,
-        ),
-      );
-    });
+        _keyboardHeight = height;
+        _streamController.add(
+          KeyboardReplacerData(
+            _keyboardVisible,
+            height,
+            _widgetVisible,
+          ),
+        );
+      },
+    );
   }
 
   /// State of the child widget's visibility.
@@ -74,7 +80,7 @@ class KeyboardReplacerController {
   late bool _keyboardVisible;
 
   /// Data for keeping track of the keyboard height.
-  final KeyboardHeightPlugin _keyboardHeightPlugin = KeyboardHeightPlugin();
+  late final StreamSubscription<double> _keyboardHeightSubscription;
 
   /// The currently tracked keyboard height.
   /// NOTE: The value is a random keyboard height I got on my test device.
@@ -95,7 +101,7 @@ class KeyboardReplacerController {
 
   void dispose() {
     _keyboardVisibilitySubscription.cancel();
-    _keyboardHeightPlugin.dispose();
+    _keyboardHeightSubscription.cancel();
   }
 
   /// Show the child widget in the child wrapper. If the soft-keyboard is currently

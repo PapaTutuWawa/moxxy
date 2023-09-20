@@ -7,7 +7,7 @@ import 'package:path/path.dart' as p;
 Future<void> upgradeFromV47ToV48(DatabaseMigrationData data) async {
   final (db, logger) = data;
 
-  // Make avatarPath and avatarHash nullable
+  // Make avatarPath, avatarHash, and backgroundPath nullable
   // 1) Roster items
   await db.execute(
     '''
@@ -70,6 +70,31 @@ Future<void> upgradeFromV47ToV48(DatabaseMigrationData data) async {
   await db.execute(
     'ALTER TABLE ${conversationsTable}_new RENAME TO $conversationsTable',
   );
+  // 3) Preferences
+  await db.execute(
+    '''
+    CREATE TABLE ${preferenceTable}_new (
+      key TEXT NOT NULL PRIMARY KEY,
+      type INTEGER NOT NULL,
+      value TEXT NULL
+    )''',
+  );
+  await db.execute(
+    'INSERT INTO ${preferenceTable}_new SELECT * FROM $preferenceTable',
+  );
+  await db.execute('DROP TABLE $preferenceTable');
+  await db
+      .execute('ALTER TABLE ${preferenceTable}_new RENAME TO $preferenceTable');
+
+  // In case the backgroundPath is set to "", migrate it to null
+  await db.update(
+    preferenceTable,
+    {
+      'value': null,
+    },
+    where: 'key = ? AND value = ?',
+    whereArgs: ['backgroundPath', ''],
+  );
 
   // Find all conversations and roster items that have an avatar.
   final conversations = await db.query(
@@ -100,7 +125,8 @@ Future<void> upgradeFromV47ToV48(DatabaseMigrationData data) async {
     final oldPath = avatar['value']! as String;
     final newPath = p.join(
       cachePath,
-      p.basename(oldPath),
+      // Remove the ".png" at the end
+      p.basename(oldPath).split('.').first,
     );
 
     logger.finest('Migrating account avatar $oldPath');
@@ -150,7 +176,7 @@ Future<void> upgradeFromV47ToV48(DatabaseMigrationData data) async {
     }
 
     try {
-      final newPath = p.join(cachePath, '$hash.png');
+      final newPath = p.join(cachePath, hash);
 
       logger.finest(
         'Migrating conversation avatar $path',
@@ -213,7 +239,7 @@ Future<void> upgradeFromV47ToV48(DatabaseMigrationData data) async {
     }
 
     try {
-      final newPath = p.join(cachePath, '$hash.png');
+      final newPath = p.join(cachePath, hash);
 
       logger.finest(
         'Migrating roster avatar $path',
