@@ -37,3 +37,8 @@ class ItemRemovedEvent extends SendFilesEvent {
   ItemRemovedEvent(this.index);
   final int index;
 }
+
+/// Triggered by the UI when the temporary files should be removed, i.e. all
+/// files that are currently selected for sending. This is only useful on systems like
+/// Android that only give us access using content URIs.
+class RemovedCacheFilesEvent extends SendFilesEvent {}

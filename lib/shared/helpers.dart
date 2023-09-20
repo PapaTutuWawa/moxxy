@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/service/cache.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -385,6 +387,32 @@ Future<String> getContactProfilePicturePath(String id) async {
   if (!dir.existsSync()) await dir.create(recursive: true);
 
   return p.join(avatarDir, id);
+}
+
+/// Removes the path [path] only if it's within [cachePath] and the current platform
+/// is Android.
+Future<void> safelyRemovePickedFile(String path, String cachePath) async {
+  // Only do this on Android.
+  if (!Platform.isAndroid) {
+    return;
+  }
+
+  if (path.startsWith(cachePath)) {
+    unawaited(File(path).delete());
+  }
+}
+
+/// Removes the file paths [paths] if they are within [cacheDir]. Wrapper around
+/// [safelyRemovePickedFile].
+Future<void> safelyRemovePickedFiles(
+  List<String> paths,
+  String? cacheDir,
+) async {
+  final cachePath = cacheDir ?? await computePickedFileCachePath();
+
+  for (final path in paths) {
+    await safelyRemovePickedFile(path, cachePath);
+  }
 }
 
 /// Prepend [item] to [list], but ensure that the resulting list's size is
