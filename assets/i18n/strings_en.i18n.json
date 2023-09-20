@@ -220,7 +220,7 @@
                 "other": "Multiple devices have been added"
             },
             "messageHint": "Send a message…",
-            "sendImages": "Send images",
+            "sendMedia": "Send media",
             "sendFiles": "Send files",
             "takePhotos": "Take photos",
             "voiceRecording": {

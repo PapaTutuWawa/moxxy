@@ -65,7 +65,7 @@ class UISharingService {
                     false,
                   ),
                 ],
-                isMedia ? SendFilesType.image : SendFilesType.generic,
+                isMedia ? SendFilesType.media : SendFilesType.generic,
                 paths:
                     attachments.map((attachment) => attachment!.path).toList(),
                 hasRecipientData: false,

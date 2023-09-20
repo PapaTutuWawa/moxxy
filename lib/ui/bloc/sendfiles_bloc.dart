@@ -26,8 +26,8 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
   /// been cancelled.
   Future<List<String>?> _pickFiles(SendFilesType type) async {
     final result = await safePickFiles(
-      type == SendFilesType.image
-          ? FilePickerType.image
+      type == SendFilesType.media
+          ? FilePickerType.imageAndVideo
           : FilePickerType.generic,
     );
 

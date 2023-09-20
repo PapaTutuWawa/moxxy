@@ -1,7 +1,7 @@
 part of 'sendfiles_bloc.dart';
 
 enum SendFilesType {
-  image,
+  media,
   generic,
 }
 

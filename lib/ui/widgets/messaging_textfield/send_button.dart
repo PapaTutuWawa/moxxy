@@ -90,7 +90,7 @@ class SendButtonWidgetState extends State<SendButton> {
                   },
                   backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
-                  label: t.pages.conversation.sendImages,
+                  label: t.pages.conversation.sendMedia,
                 ),
                 SpeedDialChild(
                   child: const Icon(Icons.file_present),

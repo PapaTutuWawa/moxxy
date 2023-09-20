@@ -236,7 +236,7 @@ class ShareSelectionBloc
                 );
               }).toList(),
               // TODO(PapaTutuWawa): Fix
-              SendFilesType.image,
+              SendFilesType.media,
               paths: state.paths,
               popEntireStack: true,
             ),

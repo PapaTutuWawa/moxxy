@@ -11,6 +11,8 @@ import 'package:moxxyv2/ui/widgets/cancel_button.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
+import 'package:moxxyv2/ui/widgets/chat/viewers/base.dart';
+import 'package:moxxyv2/ui/widgets/chat/viewers/video.dart';
 import 'package:path/path.dart' as pathlib;
 
 Widget _deleteIconWithShadow() {
@@ -137,15 +139,13 @@ class SendFilesPage extends StatelessWidget {
         File(path),
         fit: BoxFit.contain,
       );
-    } /*else if (mime.startsWith('video/')) {
-      // Render the video thumbnail
-      // TODO(PapaTutuWawa): Maybe allow playing the video back inline
-      return VideoThumbnailWidget(
-        path,
-        Image.memory,
+    } else if (mime.startsWith('video/')) {
+      return VideoViewer(
+        path: path,
+        controller: ViewerUIVisibilityController(),
+        showScrubBar: false,
       );
-    }*/
-    else {
+    } else {
       // Generic file
       final width = MediaQuery.of(context).size.width;
       return Center(

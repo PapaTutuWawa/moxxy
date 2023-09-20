@@ -187,6 +187,7 @@ class VideoViewer extends StatefulWidget {
   const VideoViewer({
     required this.path,
     required this.controller,
+    this.showScrubBar = true,
     super.key,
   });
 
@@ -195,6 +196,9 @@ class VideoViewer extends StatefulWidget {
 
   /// The path to the video we're showing.
   final String path;
+
+  /// Flag whether to show the scrub bar or not.
+  final bool showScrubBar;
 
   @override
   VideoViewerState createState() => VideoViewerState();
@@ -246,15 +250,16 @@ class VideoViewerState extends State<VideoViewer> {
                 videoController: _controller,
                 uiController: widget.controller,
               ),
-              Positioned(
-                left: 0,
-                bottom: 0,
-                right: 0,
-                child: VideoViewerScrubber(
-                  videoController: _controller,
-                  uiController: widget.controller,
+              if (widget.showScrubBar)
+                Positioned(
+                  left: 0,
+                  bottom: 0,
+                  right: 0,
+                  child: VideoViewerScrubber(
+                    videoController: _controller,
+                    uiController: widget.controller,
+                  ),
                 ),
-              ),
             ],
           ),
         ),
