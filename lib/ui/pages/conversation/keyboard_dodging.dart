@@ -48,7 +48,7 @@ class KeyboardReplacerController {
     });
 
     _keyboardHeightSubscription =
-        const EventChannel('org.moxxy.moxxyv2/notification_stream')
+        const EventChannel('org.moxxy.moxxyv2/keyboard_stream')
             .receiveBroadcastStream()
             .cast<double>()
             .listen(
