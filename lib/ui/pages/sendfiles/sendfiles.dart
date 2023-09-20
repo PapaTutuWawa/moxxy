@@ -13,6 +13,7 @@ import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/viewers/base.dart';
+import 'package:moxxyv2/ui/widgets/chat/viewers/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/viewers/video.dart';
 import 'package:path/path.dart' as pathlib;
 
@@ -136,9 +137,9 @@ class SendFilesPage extends StatelessWidget {
 
     if (mime.startsWith('image/')) {
       // Render the image
-      return Image.file(
-        File(path),
-        fit: BoxFit.contain,
+      return ImageViewer(
+        path: path,
+        controller: ViewerUIVisibilityController(),
       );
     } else if (mime.startsWith('video/')) {
       return VideoViewer(
