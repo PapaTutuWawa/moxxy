@@ -998,10 +998,10 @@ packages:
     dependency: "direct main"
     description:
       name: moxxy_native
-      sha256: "820d19c94f4767bac7bdc5de5241a72f3f44c693cb301539a1b66bb60f0f48e9"
+      sha256: "4ded09f7abfb4b14b5b0d21b13e77afc64bd00133d572717796238532d4781fd"
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.3.1"
+    version: "0.3.2"
   moxxyv2_builders:
     dependency: "direct main"
     description:
