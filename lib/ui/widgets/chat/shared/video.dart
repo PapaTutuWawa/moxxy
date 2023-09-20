@@ -43,8 +43,24 @@ class SharedVideoWidget extends StatelessWidget {
               borderRadius: BorderRadius.circular(borderRadius),
             ),
           ),
-          const Positioned(
-            child: PlayButton(),
+          Positioned(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                assert(
+                  constraints.maxWidth == constraints.maxHeight,
+                  'The widget must be square',
+                );
+
+                return PlayButton(
+                  // Ensure that the button always fits but never gets bigger than
+                  // its default size.
+                  size: (constraints.maxHeight * 0.8).clamp(
+                    -double.infinity,
+                    66,
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
