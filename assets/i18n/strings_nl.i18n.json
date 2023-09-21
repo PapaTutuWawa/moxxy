@@ -140,7 +140,8 @@
             "integrityCheckFailed": "De bestandsintegriteit kan niet worden vastgesteld"
         },
         "conversation": {
-            "holdForLonger": "Houd langer ingedrukt om een spraakbericht op te nemen"
+            "holdForLonger": "Houd langer ingedrukt om een spraakbericht op te nemen",
+            "microphoneDenied": "Microfoontoegang geweigerd"
         }
     },
     "pages": {
@@ -154,7 +155,8 @@
             "xmppAddress": "Xmpp-adres",
             "password": "Wachtwoord",
             "advancedOptions": "Geavanceerde opties",
-            "createAccount": "Account aanmaken op server"
+            "createAccount": "Account aanmaken op server",
+            "login": "Inloggen"
         },
         "conversations": {
             "speeddialNewChat": "Nieuw gesprek",
@@ -204,7 +206,19 @@
             "stickerPickerNoStickersLine2": "Installeer pakketten via de stickerinstellingen.",
             "takePhotos": "Foto's maken",
             "warning": "Waarschuwing",
-            "messageCopied": "De berichtinhoud is gekopieerd naar het klembord"
+            "messageCopied": "De berichtinhoud is gekopieerd naar het klembord",
+            "voiceRecording": {
+                "dragToCancel": "Versleep om te annuleren",
+                "leaveConfirmation": {
+                    "negative": "Annuleren",
+                    "title": "Opname stoppen",
+                    "body": "Je bent momenteel een spraakbericht aan het opnemen. Wil je de opname stoppen en wissen?",
+                    "affirmative": "Stoppen en wissen"
+                },
+                "cancel": "Annuleren"
+            },
+            "sendMedia": "Media versturen",
+            "share": "Delen"
         },
         "newconversation": {
             "title": "Nieuw gesprek",
@@ -255,6 +269,9 @@
                 "recreateSessionsConfirmTitle": "Wil je je sessies heraanmaken?",
                 "recreateSessionsConfirmBody": "Hierdoor worden alle versleutelde sessies opnieuw aangemaakt op je apparaten. Let op: doe dit alléén als je apparaten ontsleutelfoutmeldingen tonen.",
                 "noSessions": "Er zijn geen versleutelde sessies die worden gebruikt voor eind-tot-eindversleuteling."
+            },
+            "serverInfo": {
+                "title": "Serverinformatie"
             }
         },
         "blocklist": {
@@ -439,5 +456,8 @@
                 "reason": "Sluit Moxxy uit van Androids accubesparing om berichten op de achtergrond te ontvangen."
             }
         }
+    },
+    "emojiPicker": {
+        "noRecents": "Geen onlangs gebruikte emojis"
     }
 }

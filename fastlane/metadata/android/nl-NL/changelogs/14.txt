@@ -1,0 +1,2 @@
+- Migratie naar Flutter Material 3 voltooid;
+- Spraakopnamescherm opnieuw ontworpen.
