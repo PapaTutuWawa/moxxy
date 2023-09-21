@@ -11,7 +11,7 @@
         "permanent": {
             "idle": "Idle",
             "ready": "Готов к приему сообщений",
-            "connecting": "Подключение…",
+            "connecting": "Соединение…",
             "disconnect": "Отключен",
             "error": "Ошибка"
         },
@@ -23,7 +23,8 @@
             "messagesChannelName": "Сообщения",
             "warningChannelName": "Предупреждения",
             "warningChannelDescription": "Предупреждения, связанные с Moxxy",
-            "messagesChannelDescription": "Канал уведомлений о полученных сообщениях"
+            "messagesChannelDescription": "Канал уведомлений о полученных сообщениях",
+            "serviceChannelName": "Фоновая служба"
         },
         "titles": {
             "error": "Ошибка"
@@ -32,6 +33,12 @@
             "messageError": {
                 "body": "Не удалось доставить сообщение для ${conversationTitle}",
                 "title": "Сообщение не доставлено"
+            }
+        },
+        "warnings": {
+            "blockingError": {
+                "body": "Не удалось заблокировать пользователя ${jid}, потому что ваш сервер не поддерживает блокировки.",
+                "title": "Ошибка блокировки пользователя"
             }
         }
     },
@@ -184,7 +191,7 @@
                 "one": "Устройство было изменено",
                 "other": "Добавлено несколько устройств"
             },
-            "messageHint": "Сообщение...",
+            "messageHint": "Сообщение…",
             "sendImages": "Отправить изображение",
             "messageCopied": "Сообщение скопировано в буфер",
             "warning": "Предупреждение"
@@ -198,7 +205,8 @@
         "newconversation": {
             "title": "Новый чат",
             "startChat": "Добавить контакт",
-            "createGroupchat": "Создать новый групповой чат"
+            "createGroupchat": "Создать новый групповой чат",
+            "joinGroupChat": "Присоединиться к групповому чату"
         },
         "shareselection": {
             "shareWith": "Поделиться с...",
@@ -393,7 +401,7 @@
                     "stickers": "Стикеры"
                 },
                 "storageUsed": "Использование хранилища: ${size}",
-                "manageStickers": "Управлять наборами стикеров"
+                "manageStickers": "Управление наборами стикеров"
             },
             "stickerPacks": {
                 "title": "Наборы стикеров"
@@ -417,6 +425,14 @@
     },
     "permissions": {
         "allow": "Разрешить",
-        "skip": "Пропустить"
+        "skip": "Пропустить",
+        "requests": {
+            "batterySaving": {
+                "reason": "Чтобы получать сообщения в фоне, Moxxy должен быть исключён из экономии заряда батареи Android."
+            },
+            "notification": {
+                "reason": "Чтобы оповещать о входящих сообщениях, Moxxy требуется право на показ уведомлений."
+            }
+        }
     }
 }
