@@ -70,13 +70,14 @@ class ImageChatWidget extends StatelessWidget {
     Widget image;
     if (message.fileMetadata!.width != null &&
         message.fileMetadata!.height != null) {
+      final density = MediaQuery.of(context).devicePixelRatio;
       image = SizedBox(
         width: size.width,
         height: size.height,
         child: Image.file(
           File(message.fileMetadata!.path!),
-          cacheWidth: size.width.toInt(),
-          cacheHeight: size.height.toInt(),
+          cacheWidth: (size.width * density).toInt(),
+          cacheHeight: (size.height * density).toInt(),
         ),
       );
     } else {

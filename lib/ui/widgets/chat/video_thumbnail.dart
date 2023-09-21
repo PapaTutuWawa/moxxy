@@ -32,9 +32,11 @@ class VideoThumbnail extends StatelessWidget {
       builder: (context, snapshot) {
         Widget widget;
         if (snapshot.hasData && snapshot.data != null) {
+          final density = MediaQuery.of(context).devicePixelRatio;
           widget = Image.file(
             File(snapshot.data!),
             fit: BoxFit.cover,
+            cacheWidth: (size.width * density).toInt(),
           );
         } else if (snapshot.hasError ||
             snapshot.hasData && snapshot.data == null) {

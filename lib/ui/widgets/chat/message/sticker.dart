@@ -61,6 +61,7 @@ class StickerChatWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final density = MediaQuery.of(context).devicePixelRatio;
     return IntrinsicHeight(
       child: Column(
         children: [
@@ -79,9 +80,8 @@ class StickerChatWidget extends StatelessWidget {
                   },
                   child: Image.file(
                     File(message.fileMetadata!.path!),
-                    // TODO(Unknown): Maybe set the cache size based on display dimensions
-                    cacheWidth: 300,
-                    cacheHeight: 300,
+                    cacheWidth: (300 * density).toInt(),
+                    cacheHeight: (300 * density).toInt(),
                   ),
                 )
               : InkWell(
