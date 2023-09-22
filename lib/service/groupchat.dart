@@ -3,6 +3,8 @@ import 'package:moxlib/moxlib.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/models/groupchat.dart';
 
@@ -100,5 +102,35 @@ class GroupchatService {
     );
     if (groupchatDetailsRaw.isEmpty) return null;
     return GroupchatDetails.fromDatabaseJson(groupchatDetailsRaw[0]);
+  }
+
+  /// Query the database for conversations that are open AND have attached groupchat
+  /// details.
+  Future<List<MUCRoomJoin>> getRoomsToJoin() async {
+    final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
+    final results = await GetIt.I.get<DatabaseService>().database.rawQuery('''
+      SELECT
+        c.jid as roomJid,
+        d.nick as nick
+      FROM
+        $conversationsTable as c,
+        $groupchatTable as d
+      WHERE
+        c.jid = d.jid AND
+        c.open = ? AND
+        c.accountJid = ? AND
+        d.accountJid = ?
+      ''', [
+      boolToInt(true),
+      accountJid,
+      accountJid,
+    ]);
+
+    return results.map((result) {
+      return (
+        JID.fromString(result['roomJid']! as String),
+        result['nick']! as String,
+      );
+    }).toList();
   }
 }

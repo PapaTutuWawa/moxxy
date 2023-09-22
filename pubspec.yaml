@@ -128,7 +128,7 @@ dependency_overrides:
   moxxmpp:
     git:
       url: https://codeberg.org/moxxy/moxxmpp.git
-      rev: d4416c8a47fa7ab3e436e5b6af9bdd9e43f1b2ed
+      rev: 76a9f7be7aa4af29bd37d963dfa1ce6b4a7d371a
       path: packages/moxxmpp
 
   # NOTE: Leave here for development purposes 

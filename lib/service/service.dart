@@ -318,6 +318,14 @@ Future<void> entrypoint(String initialLocale) async {
   GetIt.I.registerSingleton<XmppConnection>(connection);
   GetIt.I.get<Logger>().finest('Done with xmpp');
 
+  // "Pre-join" the joined groupchats
+  final mucJoins = await GetIt.I.get<GroupchatService>().getRoomsToJoin();
+  if (mucJoins.isNotEmpty) {
+    await connection
+        .getManagerById<MUCManager>(mucManager)!
+        .prepareRoomList(mucJoins);
+  }
+
   // Ensure our data directory exists
   final dir = Directory(
     await MoxxyPlatformApi().getPersistentDataPath(),
