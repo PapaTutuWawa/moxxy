@@ -29,6 +29,8 @@ class ConversationIndicator extends StatelessWidget {
                 jid: recipients.first.jid,
                 radius: 20,
                 hasContactId: recipients.first.hasContactId,
+                // TODO(Unknown): This is not always correct.
+                isGroupchat: false,
                 path: recipients.first.avatar,
                 hash: recipients.first.avatarHash,
                 altIcon: recipients.first.jid == '' ? Icons.notes : null,

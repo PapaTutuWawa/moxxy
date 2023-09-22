@@ -115,6 +115,8 @@ class ConversationTopbar extends StatelessWidget
                                 radius: 25,
                                 hasContactId:
                                     state.conversation?.contactId != null,
+                                isGroupchat:
+                                    state.conversation?.isGroupchat ?? false,
                                 hash: state.conversation?.avatarHash,
                                 path: state.conversation?.avatarPath,
                                 shouldRequest: state.conversation != null,

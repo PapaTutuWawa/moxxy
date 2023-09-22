@@ -83,6 +83,7 @@ class ReactionList extends StatelessWidget {
                   : CachingXMPPAvatar(
                       radius: 35,
                       jid: reaction.jid,
+                      isGroupchat: false,
                       // TODO(Unknown): This will break with groupchats
                       hasContactId: conversation?.contactId != null,
                       path: conversation?.avatarPath,

@@ -13,6 +13,7 @@ class CachingXMPPAvatar extends StatefulWidget {
     required this.jid,
     required this.radius,
     required this.hasContactId,
+    required this.isGroupchat,
     this.altIcon,
     this.shouldRequest = true,
     this.ownAvatar = false,
@@ -34,6 +35,7 @@ class CachingXMPPAvatar extends StatefulWidget {
           path: state.avatarPath,
           altIcon: Icons.person,
           hasContactId: false,
+          isGroupchat: false,
           jid: state.jid,
           ownAvatar: true,
           onTap: onTap,
@@ -53,6 +55,9 @@ class CachingXMPPAvatar extends StatefulWidget {
 
   /// The radius of the avatar widget.
   final double radius;
+
+  /// Flag indicating that the avatar is a groupchat avatar.
+  final bool isGroupchat;
 
   /// Flag indicating whether the conversation has a contactId != null.
   final bool hasContactId;
@@ -99,6 +104,11 @@ class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
   void didUpdateWidget(CachingXMPPAvatar oldWidget) {
     super.didUpdateWidget(oldWidget);
 
+    // TODO(Unknown): Remove once we can query groupchat avatars.
+    if (widget.isGroupchat) {
+      return;
+    }
+
     if (widget.shouldRequest && !oldWidget.shouldRequest) {
       _performRequest();
     }
@@ -138,14 +148,17 @@ class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
                 .where((event) => event.jid == widget.jid),
             builder: (context, snapshot) {
               final path = snapshot.data?.path ?? widget.path;
-              if (path == null) {
+              // TODO(Unknown): Remove once we can handle groupchat avatars
+              if (path == null || widget.isGroupchat) {
                 return Ink(
                   color: Theme.of(context)
                       .extension<MoxxyThemeData>()!
                       .profileFallbackBackgroundColor,
                   child: InkWell(
                     onTap: widget.onTap,
-                    child: _buildChild(),
+                    child: Center(
+                      child: _buildChild(),
+                    ),
                   ),
                 );
               } else {

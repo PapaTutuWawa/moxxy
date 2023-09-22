@@ -33,6 +33,7 @@ class ConversationProfileHeader extends StatelessWidget {
           jid: conversation.jid,
           hasContactId: conversation.contactId != null,
           path: path,
+          isGroupchat: conversation.isGroupchat,
           hash: conversation.avatarHash,
           altIcon:
               conversation.type == ConversationType.note ? Icons.notes : null,
