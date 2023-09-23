@@ -71,8 +71,12 @@ class ConversationTopbar extends StatelessWidget
     }
   }
 
-  bool _isChatStateVisible(ChatState state) {
-    return state != ChatState.inactive && state != ChatState.gone;
+  bool _isChatStateVisible(ConversationState state, ChatState chatState) {
+    if (state.conversation?.isGroupchat ?? false) {
+      return false;
+    }
+
+    return chatState != ChatState.inactive && chatState != ChatState.gone;
   }
 
   /// Summon the profile page of the currently open conversation
@@ -129,7 +133,7 @@ class ConversationTopbar extends StatelessWidget
                         ),
                         AnimatedPositioned(
                           duration: const Duration(milliseconds: 200),
-                          top: _isChatStateVisible(chatState) ? 0 : 10,
+                          top: _isChatStateVisible(state, chatState) ? 0 : 10,
                           left: 60,
                           right: 0,
                           curve: Curves.easeInOutCubic,
@@ -149,7 +153,9 @@ class ConversationTopbar extends StatelessWidget
                           right: 0,
                           bottom: 0,
                           child: AnimatedOpacity(
-                            opacity: _isChatStateVisible(chatState) ? 1.0 : 0.0,
+                            opacity: _isChatStateVisible(state, chatState)
+                                ? 1.0
+                                : 0.0,
                             curve: Curves.easeInOutCubic,
                             duration: const Duration(milliseconds: 100),
                             child: Row(
