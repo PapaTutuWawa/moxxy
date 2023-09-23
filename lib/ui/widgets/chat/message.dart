@@ -51,6 +51,7 @@ MessageType getMessageType(Message message) {
 /// Build an inlinable message widget
 Widget buildMessageWidget(
   Message message,
+  bool isGroupchat,
   double maxWidth,
   BorderRadius radius,
   bool sent,
@@ -62,6 +63,7 @@ Widget buildMessageWidget(
     return TextChatWidget(
       message,
       sent,
+      isGroupchat,
       topWidget: message.quotes != null
           ? buildQuoteMessageWidget(
               message.quotes!,
@@ -79,6 +81,7 @@ Widget buildMessageWidget(
         return TextChatWidget(
           message,
           sent,
+          isGroupchat,
           topWidget: message.quotes != null
               ? buildQuoteMessageWidget(
                   message.quotes!,

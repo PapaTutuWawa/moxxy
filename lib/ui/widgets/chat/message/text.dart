@@ -12,12 +12,14 @@ import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 class TextChatWidget extends StatelessWidget {
   const TextChatWidget(
     this.message,
-    this.sent, {
+    this.sent,
+    this.isGroupchat, {
     this.topWidget,
     super.key,
   });
   final Message message;
   final bool sent;
+  final bool isGroupchat;
   final Widget? topWidget;
 
   String getMessageText() {
@@ -47,6 +49,23 @@ class TextChatWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (isGroupchat)
+            Padding(
+              padding: const EdgeInsets.only(
+                left: 8,
+                right: 8,
+                bottom: 8,
+              ),
+              child: Text(
+                // TODO(Unknown): Maybe be a bit smarter about this?
+                sent ? t.messages.you : message.senderJid.resource,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           if (topWidget != null) topWidget!,
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),

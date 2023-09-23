@@ -292,6 +292,7 @@ class ConversationPageState extends State<ConversationPage>
       start,
       between,
       end,
+      state.conversation!.isGroupchat,
       key: key,
     );
 
@@ -325,6 +326,7 @@ class ConversationPageState extends State<ConversationPage>
         _selectionController.selectMessage(
           SelectedMessageData(
             item,
+            state.conversation?.isGroupchat ?? false,
             state.conversation?.encrypted ?? false,
             sentBySelf,
             Offset(

@@ -15,6 +15,7 @@ import 'package:moxxyv2/ui/widgets/context_menu.dart';
 class SelectedMessageData {
   const SelectedMessageData(
     this.message,
+    this.isGroupchat,
     this.isChatEncrypted,
     this.sentBySelf,
     this.originalPosition,
@@ -26,6 +27,10 @@ class SelectedMessageData {
 
   /// The message content.
   final Message? message;
+
+  /// Flag indicating whether the message was sent/received in a groupchat
+  /// context (true) or not (false).
+  final bool isGroupchat;
 
   /// Flag indicating whether the current chat is encrypted or not.
   final bool isChatEncrypted;
@@ -70,6 +75,7 @@ class SelectedMessageController {
     null,
     false,
     false,
+    false,
     Offset.zero,
     0,
     false,
@@ -83,6 +89,7 @@ class SelectedMessageController {
       _streamController.add(
         const SelectedMessageData(
           null,
+          false,
           false,
           false,
           Offset.zero,
@@ -147,6 +154,7 @@ class SelectedMessage extends StatelessWidget {
             snapshot.data!.start,
             snapshot.data!.between,
             snapshot.data!.end,
+            snapshot.data!.isGroupchat,
           ),
         );
       },

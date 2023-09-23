@@ -17,7 +17,8 @@ class RawChatBubble extends StatelessWidget {
     this.chatEncrypted,
     this.start,
     this.between,
-    this.end, {
+    this.end,
+    this.isGroupchat, {
     super.key,
   });
   final Message message;
@@ -27,6 +28,7 @@ class RawChatBubble extends StatelessWidget {
   final bool between;
   final bool end;
   final bool start;
+  final bool isGroupchat;
 
   static BorderRadius getBorderRadius(
     bool sentBySelf,
@@ -123,6 +125,7 @@ class RawChatBubble extends StatelessWidget {
               : const EdgeInsets.all(8),
           child: buildMessageWidget(
             message,
+            isGroupchat,
             maxWidth,
             borderRadius,
             sentBySelf,
