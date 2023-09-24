@@ -63,6 +63,7 @@ class MediaBaseChatWidget extends StatelessWidget {
             child: SenderName(
               senderJid,
               sent,
+              isGroupchat,
               showShadow: true,
             ),
           ),

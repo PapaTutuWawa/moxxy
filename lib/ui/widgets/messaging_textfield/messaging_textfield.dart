@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/pages/conversation/keyboard_dodging.dart';
@@ -170,6 +171,9 @@ class MobileMessagingTextFieldState extends State<MobileMessagingTextField>
                                     snapshot.data!.quotedMessage!,
                                     GetIt.I.get<UIDataService>().ownJid!,
                                   ),
+                                  widget.conversationController
+                                          .conversationType ==
+                                      ConversationType.groupchat,
                                   textfieldQuotedMessageRadius,
                                   textfieldQuotedMessageRadius,
                                   resetQuote:

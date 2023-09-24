@@ -8,6 +8,7 @@ class QuotedAudioWidget extends StatelessWidget {
   const QuotedAudioWidget(
     this.message,
     this.sent,
+    this.isGroupchat,
     this.topLeftRadius,
     this.topRightRadius, {
     this.resetQuote,
@@ -15,6 +16,9 @@ class QuotedAudioWidget extends StatelessWidget {
   });
   final Message message;
   final bool sent;
+
+  /// Whether the message was sent/received in a groupchat context (true) or not (false).
+  final bool isGroupchat;
 
   /// Top corner roundings.
   final double topLeftRadius;
@@ -34,6 +38,7 @@ class QuotedAudioWidget extends StatelessWidget {
       // TODO(Unknown): Include the audio messages duration here
       t.messages.audio,
       sent,
+      isGroupchat,
       topLeftRadius,
       topRightRadius,
       resetQuote: resetQuote,

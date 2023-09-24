@@ -68,6 +68,7 @@ Widget buildMessageWidget(
           ? buildQuoteMessageWidget(
               message.quotes!,
               sent,
+              isGroupchat,
               topLeftRadius,
               topRightRadius,
             )
@@ -86,6 +87,7 @@ Widget buildMessageWidget(
               ? buildQuoteMessageWidget(
                   message.quotes!,
                   sent,
+                  isGroupchat,
                   topLeftRadius,
                   topRightRadius,
                 )
@@ -117,6 +119,7 @@ Widget buildMessageWidget(
             ? buildQuoteMessageWidget(
                 message.quotes!,
                 sent,
+                isGroupchat,
                 radiusLargeSize,
                 radiusLargeSize,
               )
@@ -145,6 +148,7 @@ Widget buildMessageWidget(
 Widget buildQuoteMessageWidget(
   Message message,
   bool sent,
+  bool isGroupchat,
   double topLeftRadius,
   double topRightRadius, {
   void Function()? resetQuote,
@@ -154,6 +158,7 @@ Widget buildQuoteMessageWidget(
       return QuotedStickerWidget(
         message,
         sent,
+        isGroupchat,
         topLeftRadius,
         topRightRadius,
         resetQuote: resetQuote,
@@ -162,6 +167,7 @@ Widget buildQuoteMessageWidget(
       return QuotedTextWidget(
         message,
         sent,
+        isGroupchat,
         topLeftRadius,
         topRightRadius,
         resetQuote: resetQuote,
@@ -170,6 +176,7 @@ Widget buildQuoteMessageWidget(
       return QuotedImageWidget(
         message,
         sent,
+        isGroupchat,
         topLeftRadius,
         topRightRadius,
         resetQuote: resetQuote,
@@ -178,6 +185,7 @@ Widget buildQuoteMessageWidget(
       return QuotedVideoWidget(
         message,
         sent,
+        isGroupchat,
         topLeftRadius,
         topRightRadius,
         resetQuote: resetQuote,
@@ -186,6 +194,7 @@ Widget buildQuoteMessageWidget(
       return QuotedAudioWidget(
         message,
         sent,
+        isGroupchat,
         topLeftRadius,
         topRightRadius,
         resetQuote: resetQuote,
@@ -194,6 +203,7 @@ Widget buildQuoteMessageWidget(
       return QuotedFileWidget(
         message,
         sent,
+        isGroupchat,
         topLeftRadius,
         topRightRadius,
         resetQuote: resetQuote,

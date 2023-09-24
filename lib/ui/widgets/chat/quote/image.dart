@@ -8,6 +8,7 @@ class QuotedImageWidget extends StatelessWidget {
   const QuotedImageWidget(
     this.message,
     this.sent,
+    this.isGroupchat,
     this.topLeftRadius,
     this.topRightRadius, {
     this.resetQuote,
@@ -19,6 +20,9 @@ class QuotedImageWidget extends StatelessWidget {
   /// Top corner roundings.
   final double topLeftRadius;
   final double topRightRadius;
+
+  /// Whether the message was sent/received in a groupchat context (true) or not (false).
+  final bool isGroupchat;
 
   final void Function()? resetQuote;
 
@@ -33,6 +37,7 @@ class QuotedImageWidget extends StatelessWidget {
       ),
       t.messages.image,
       sent,
+      isGroupchat,
       topLeftRadius,
       topRightRadius,
       resetQuote: resetQuote,

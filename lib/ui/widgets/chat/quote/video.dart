@@ -8,6 +8,7 @@ class QuotedVideoWidget extends StatelessWidget {
   const QuotedVideoWidget(
     this.message,
     this.sent,
+    this.isGroupchat,
     this.topLeftRadius,
     this.topRightRadius, {
     this.resetQuote,
@@ -19,6 +20,9 @@ class QuotedVideoWidget extends StatelessWidget {
   /// Top corner roundings.
   final double topLeftRadius;
   final double topRightRadius;
+
+  /// Whether the message was sent/received in a groupchat context (true) or not (false).
+  final bool isGroupchat;
 
   final void Function()? resetQuote;
 
@@ -35,6 +39,7 @@ class QuotedVideoWidget extends StatelessWidget {
       ),
       t.messages.video,
       sent,
+      isGroupchat,
       topLeftRadius,
       topRightRadius,
       resetQuote: resetQuote,

@@ -60,6 +60,7 @@ class TextChatWidget extends StatelessWidget {
               child: SenderName(
                 message.senderJid,
                 sent,
+                isGroupchat,
               ),
             ),
           if (topWidget != null) topWidget!,

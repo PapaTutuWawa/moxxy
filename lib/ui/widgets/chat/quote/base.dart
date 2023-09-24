@@ -3,6 +3,7 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/helpers.dart';
+import 'package:moxxyv2/ui/widgets/chat/sender_name.dart';
 
 /// This Widget is used to show that a message has been quoted.
 class QuoteBaseWidget extends StatelessWidget {
@@ -108,6 +109,7 @@ class QuotedMediaBaseWidget extends StatelessWidget {
     this.child,
     this.text,
     this.sent,
+    this.isGroupchat,
     this.topLeftRadius,
     this.topRightRadius, {
     this.resetQuote,
@@ -118,6 +120,9 @@ class QuotedMediaBaseWidget extends StatelessWidget {
   final String text;
   final bool sent;
   final void Function()? resetQuote;
+
+  /// Whether the message was sent/received in a groupchat context (true) or not (false).
+  final bool isGroupchat;
 
   /// Top corner roundings.
   final double topLeftRadius;
@@ -137,10 +142,10 @@ class QuotedMediaBaseWidget extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  QuoteSenderText(
-                    sender: message.sender,
-                    resetQuoteNotNull: resetQuote != null,
-                    sent: sent,
+                  SenderName(
+                    message.senderJid,
+                    sent,
+                    isGroupchat,
                   ),
                   Text(
                     text,

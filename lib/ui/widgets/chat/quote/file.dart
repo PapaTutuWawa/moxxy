@@ -7,6 +7,7 @@ class QuotedFileWidget extends StatelessWidget {
   const QuotedFileWidget(
     this.message,
     this.sent,
+    this.isGroupchat,
     this.topLeftRadius,
     this.topRightRadius, {
     this.resetQuote,
@@ -18,6 +19,9 @@ class QuotedFileWidget extends StatelessWidget {
   /// Top corner roundings.
   final double topLeftRadius;
   final double topRightRadius;
+
+  /// Whether the message was sent/received in a groupchat context (true) or not (false).
+  final bool isGroupchat;
 
   final void Function()? resetQuote;
 
@@ -32,6 +36,7 @@ class QuotedFileWidget extends StatelessWidget {
       ),
       message.fileMetadata!.filename,
       sent,
+      isGroupchat,
       topLeftRadius,
       topRightRadius,
       resetQuote: resetQuote,

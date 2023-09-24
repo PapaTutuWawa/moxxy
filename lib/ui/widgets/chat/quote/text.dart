@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/helpers.dart';
+import 'package:moxxyv2/ui/widgets/chat/sender_name.dart';
 
 /// A widget that renders a quoted text message.
 class QuotedTextWidget extends StatelessWidget {
   const QuotedTextWidget(
     this.message,
     this.sent,
+    this.isGroupchat,
     this.topLeftRadius,
     this.topRightRadius, {
     this.resetQuote,
@@ -27,6 +29,9 @@ class QuotedTextWidget extends StatelessWidget {
   /// Optional function to reset the quote display.
   final void Function()? resetQuote;
 
+  /// Whether the message was received inside a groupchat context (true) or not (false).
+  final bool isGroupchat;
+
   @override
   Widget build(BuildContext context) {
     return QuoteBaseWidget(
@@ -35,10 +40,10 @@ class QuotedTextWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          QuoteSenderText(
-            sender: message.sender,
-            resetQuoteNotNull: resetQuote != null,
-            sent: sent,
+          SenderName(
+            message.senderJid,
+            sent,
+            isGroupchat,
           ),
           Text(
             message.body,

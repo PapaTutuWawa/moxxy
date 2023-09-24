@@ -9,6 +9,7 @@ class QuotedStickerWidget extends StatelessWidget {
   const QuotedStickerWidget(
     this.message,
     this.sent,
+    this.isGroupchat,
     this.topLeftRadius,
     this.topRightRadius, {
     this.resetQuote,
@@ -17,6 +18,9 @@ class QuotedStickerWidget extends StatelessWidget {
   final Message message;
   final bool sent;
   final void Function()? resetQuote;
+
+  /// Whether the message was sent/received in a groupchat context (true) or not (false).
+  final bool isGroupchat;
 
   /// The Radii of upper corners
   final double topLeftRadius;
@@ -34,6 +38,7 @@ class QuotedStickerWidget extends StatelessWidget {
         ),
         t.messages.sticker,
         sent,
+        isGroupchat,
         topLeftRadius,
         topRightRadius,
         resetQuote: resetQuote,
