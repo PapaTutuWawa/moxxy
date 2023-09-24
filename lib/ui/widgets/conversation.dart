@@ -336,6 +336,25 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     return const SizedBox();
   }
 
+  /// Figure out the display name of the last message's sender.
+  /// [sentBySelf] indicates that the last message was sent by us.
+  /// Requires that [widget.conversation.lastMessage] is non-null.
+  String _getSenderName(bool sentBySelf) {
+    if (sentBySelf) {
+      return t.messages.you;
+    }
+
+    assert(
+      widget.conversation.lastMessage != null,
+      'The conversation must have a last message',
+    );
+    assert(
+      widget.conversation.isGroupchat,
+      'The sender name should not be displayed for non-groupchat conversations',
+    );
+    return widget.conversation.lastMessage!.senderJid.resource;
+  }
+
   @override
   Widget build(BuildContext context) {
     final badgeText = widget.conversation.unreadCounter > 99
@@ -398,13 +417,16 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              if (sentBySelf && !widget.conversation.isTyping)
+                              if (!widget.conversation.isTyping &&
+                                  widget.conversation.lastMessage != null &&
+                                  (sentBySelf ||
+                                      widget.conversation.isGroupchat))
                                 Padding(
                                   padding: const EdgeInsets.only(
                                     right: 8,
                                   ),
                                   child: Text(
-                                    '${t.messages.you}:',
+                                    '${_getSenderName(sentBySelf)}:',
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),
