@@ -20,10 +20,10 @@ class RequestedConversationEvent extends ConversationEvent {
   RequestedConversationEvent(
     this.jid,
     this.title,
-    this.avatarUrl, {
+    this.avatarUrl,
+    this.type, {
     this.removeUntilConversations = false,
     this.initialText,
-    this.type = 'chat',
   });
 
   /// These are placeholders in case we have to wait a bit longer
@@ -36,7 +36,7 @@ class RequestedConversationEvent extends ConversationEvent {
   final String? initialText;
 
   /// Type of the conversation
-  final String type;
+  final ConversationType type;
 }
 
 /// Triggered by the UI when a user should be blocked

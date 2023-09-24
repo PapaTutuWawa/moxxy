@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/shared/constants.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
@@ -43,6 +44,8 @@ class UISharingService {
                 conversationJid!,
                 '',
                 null,
+                // TODO: Pull this from somewhere
+                ConversationType.chat,
                 removeUntilConversations: true,
                 initialText: media.content,
               ),

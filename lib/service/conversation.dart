@@ -333,6 +333,11 @@ class ConversationService {
     String jid,
     ChatState state,
   ) async {
+    if (type != ConversationType.chat) {
+      _log.finest('Not sending chat state because chat type is $type');
+      return;
+    }
+
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
 
     // Only send chat states if the users wants to send them
@@ -344,14 +349,12 @@ class ConversationService {
 
     final conn = GetIt.I.get<XmppConnection>();
 
-    if (jid != '') {
-      await conn
-          .getManagerById<ChatStateManager>(chatStateManager)!
-          .sendChatState(
-            state,
-            jid,
-            messageType: type.toMessageType(),
-          );
-    }
+    await conn
+        .getManagerById<ChatStateManager>(chatStateManager)!
+        .sendChatState(
+          state,
+          jid,
+          messageType: type.toMessageType(),
+        );
   }
 }

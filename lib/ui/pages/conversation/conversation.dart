@@ -41,7 +41,7 @@ class ConversationPageArguments {
 
   final String? initialText;
 
-  final String type;
+  final ConversationType type;
 }
 
 int getMessageMenuOptionCount(
@@ -77,7 +77,7 @@ class ConversationPage extends StatefulWidget {
   final String? initialText;
 
   /// The type of the conversation.
-  final String conversationType;
+  final ConversationType conversationType;
 
   @override
   ConversationPageState createState() => ConversationPageState();
@@ -398,7 +398,7 @@ class ConversationPageState extends State<ConversationPage>
         // Tell the backend that the chat is no longer open
         GetIt.I.get<ConversationsBloc>().add(
               ConversationExitedEvent(
-                ConversationType.fromString(widget.conversationType),
+                widget.conversationType,
               ),
             );
         return true;

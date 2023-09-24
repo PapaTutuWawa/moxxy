@@ -1692,7 +1692,6 @@ Future<void> performConversationExited(
   dynamic extra,
 }) async {
   // Send a gone marker according to the specified rules
-  GetIt.I.get<Logger>().finest('Converstion type: ${command.conversationType}');
   final cs = GetIt.I.get<ConversationService>();
   await cs.sendChatState(
     ConversationType.fromString(command.conversationType),

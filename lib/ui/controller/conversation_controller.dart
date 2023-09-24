@@ -6,6 +6,7 @@ import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
@@ -96,7 +97,7 @@ class BidirectionalConversationController
   final String conversationJid;
 
   /// The type of the current conversation
-  final String conversationType;
+  final ConversationType conversationType;
 
   /// Data about a message we're editing
   MessageEditingState? _messageEditingState;
@@ -135,11 +136,15 @@ class BidirectionalConversationController
   }
 
   void _updateChatState(ChatState state) {
+    if (conversationType != ConversationType.chat) {
+      return;
+    }
+
     getForegroundService().send(
       SendChatStateCommand(
         state: state.toString().split('.').last,
         jid: conversationJid,
-        conversationType: conversationType,
+        conversationType: conversationType.value,
       ),
       awaitable: false,
     );

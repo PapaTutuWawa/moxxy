@@ -52,6 +52,7 @@ class NewConversationBloc
               event.jid,
               event.title,
               event.avatarUrl,
+              event.type,
               removeUntilConversations: true,
             ),
           );
@@ -81,8 +82,8 @@ class NewConversationBloc
             event.jid,
             event.title,
             event.avatarUrl,
+            event.type,
             removeUntilConversations: true,
-            type: event.type.value,
           ),
         );
   }

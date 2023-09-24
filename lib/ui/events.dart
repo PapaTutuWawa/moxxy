@@ -7,6 +7,7 @@ import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
 import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart' as blocklist;
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
@@ -170,6 +171,8 @@ Future<void> onNotificationTappend(
           event.conversationJid,
           event.title,
           event.avatarPath,
+          // TODO: Pull this from somewhere
+          ConversationType.chat,
         ),
       );
 }

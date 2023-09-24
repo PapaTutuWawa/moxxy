@@ -107,6 +107,7 @@ class StartChatBloc extends Bloc<StartChatEvent, StartChatState> {
             addResult.conversation!.jid,
             addResult.conversation!.title,
             addResult.conversation!.avatarPath,
+            addResult.conversation!.type,
             removeUntilConversations: true,
           ),
         );

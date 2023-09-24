@@ -156,13 +156,16 @@ class ConversationsPageState extends State<ConversationsPage>
             true,
             enableAvatarOnTap: true,
             isSelected: _selectedConversation?.jid == item.jid,
-            onPressed: () => GetIt.I.get<ConversationBloc>().add(
-                  RequestedConversationEvent(
-                    item.jid,
-                    item.title,
-                    item.avatarPath,
-                  ),
-                ),
+            onPressed: () {
+              GetIt.I.get<ConversationBloc>().add(
+                    RequestedConversationEvent(
+                      item.jid,
+                      item.title,
+                      item.avatarPath,
+                      item.type,
+                    ),
+                  );
+            },
             key: key,
           );
 
