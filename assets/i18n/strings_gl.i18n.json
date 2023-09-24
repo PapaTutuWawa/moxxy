@@ -95,7 +95,8 @@
             "integrityCheckFailed": "Non se puido verificar a integridade do ficheiro"
         },
         "conversation": {
-            "holdForLonger": "Mantén premido o botón para gravar a mensaxe de voz"
+            "holdForLonger": "Mantén premido o botón para gravar a mensaxe de voz",
+            "microphoneDenied": "Denegado acceso ao micrófono"
         }
     },
     "pages": {
@@ -109,7 +110,8 @@
             "xmppAddress": "Enderezo-XMPP",
             "password": "Contrasinal",
             "advancedOptions": "Opcións avanzadas",
-            "createAccount": "Crear conta no servidor"
+            "createAccount": "Crear conta no servidor",
+            "login": "Acceder"
         },
         "conversations": {
             "speeddialNewChat": "Nova conversa",
@@ -159,7 +161,19 @@
             "copy": "Copiar contido",
             "messageCopied": "Copiouse o contido da mensaxe no portapapeis",
             "addReaction": "Engadir reacción",
-            "showError": "Mostar erro"
+            "showError": "Mostar erro",
+            "voiceRecording": {
+                "dragToCancel": "Arrastra para cancelar",
+                "leaveConfirmation": {
+                    "negative": "Cancelar",
+                    "title": "Desbotar a gravación",
+                    "body": "Estás a gravar unha mensaxe de voz. Queres desbotar a gravación?",
+                    "affirmative": "Desbotar"
+                },
+                "cancel": "Cancelar"
+            },
+            "sendMedia": "Enviar multimedia",
+            "share": "Compartir"
         },
         "startchat": {
             "title": "Nova Conversa",
@@ -216,6 +230,9 @@
                 "recreateSessionsConfirmTitle": "Reconstruír sesións?",
                 "recreateSessionsConfirmBody": "Isto volverá a crear as sesións criptográficas dos teus dispositivos. Usa isto só se os teus dispositivos mostran erros ao descifrar.",
                 "noSessions": "Non hai sesións criptográficas en uso para a cifraxe de extremo-a-extremo."
+            },
+            "serverInfo": {
+                "title": "Información do servidor"
             }
         },
         "sharedMedia": {
@@ -439,5 +456,8 @@
         },
         "allow": "Permitir",
         "skip": "Evitar"
+    },
+    "emojiPicker": {
+        "noRecents": "Sen recentes"
     }
 }

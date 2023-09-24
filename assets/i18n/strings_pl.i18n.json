@@ -32,6 +32,113 @@
         "thursdayAbbrev": "Czw",
         "fridayAbbrev": "Pt",
         "saturdayAbbrev": "Sob",
-        "sundayAbbrev": "Nd"
+        "sundayAbbrev": "Nd",
+        "november": "Listopad",
+        "june": "Czerwiec",
+        "september": "Wrzesień",
+        "today": "Dzisiaj",
+        "february": "Luty",
+        "december": "Grudzień",
+        "yesterday": "Wczoraj",
+        "march": "Marzec",
+        "august": "Sierpień",
+        "october": "Październik",
+        "may": "Maj",
+        "january": "Styczeń",
+        "april": "Kwiecień",
+        "july": "Lipiec"
+    },
+    "pages": {
+        "conversation": {
+            "unencrypted": "Nieszyfrowane",
+            "blockShort": "Zablokuj",
+            "online": "Online",
+            "warning": "Ostrzeżenie",
+            "encrypted": "Szyfrowane",
+            "forward": "Przekaż dalej",
+            "quote": "Cytat",
+            "edit": "Edytuj"
+        },
+        "conversations": {
+            "overlaySettings": "Ustawienia"
+        },
+        "settings": {
+            "privacy": {
+                "conversationsSection": "Konwersacja",
+                "title": "Prywatność",
+                "generalSection": "Ogólne"
+            },
+            "settings": {
+                "miscellaneousSection": "Róźne",
+                "conversationsSection": "Konwersacje",
+                "accountSection": "Konto",
+                "general": "Ogólne",
+                "title": "Ustawienia",
+                "debuggingSection": "Debugowanie"
+            },
+            "stickers": {
+                "stickerSection": "Naklejka",
+                "title": "Naklejki",
+                "stickerPackSize": "(${size})"
+            },
+            "network": {
+                "title": "Sieć",
+                "wifi": "Wi-Fi",
+                "automaticDownloadAlways": "Zawsze"
+            },
+            "conversation": {
+                "appearance": "Wygląd",
+                "title": "Czat",
+                "behaviourSection": "Zachowanie"
+            },
+            "appearance": {
+                "languageSection": "Język",
+                "title": "Wygląd"
+            },
+            "about": {
+                "title": "O programie"
+            },
+            "debugging": {
+                "generalSection": "Ogólne"
+            }
+        },
+        "login": {
+            "xmppAddress": "Adres XMPP",
+            "title": "Logowanie",
+            "password": "Hasło"
+        },
+        "profile": {
+            "general": {
+                "omemo": "Bezpieczeństwo",
+                "profile": "Profil"
+            },
+            "devices": {
+                "title": "Bezpieczeństwo"
+            },
+            "conversation": {
+                "notificationsMuted": "Wyciszono",
+                "notifications": "Powiadomienia"
+            }
+        },
+        "intro": {
+            "registerButton": "Zarejestruj się",
+            "loginButton": "Zaloguj się"
+        },
+        "blocklist": {
+            "title": "Lista zablokowanych"
+        }
+    },
+    "errors": {
+        "conversation": {
+            "messageErrorDialogTitle": "Błąd"
+        }
+    },
+    "messages": {
+        "sticker": "Naklejka",
+        "audio": "Dźwięk",
+        "file": "Plik",
+        "image": "Obraz",
+        "video": "Film",
+        "you": "Ty"
     }
 }
