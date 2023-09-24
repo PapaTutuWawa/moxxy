@@ -1581,7 +1581,9 @@ class XmppService {
         conversation!,
         message,
         accountJid,
-        isInRoster ? conversation.title : conversationJid,
+        isInRoster || conversation.isGroupchat
+            ? await conversation.titleWithOptionalContactService
+            : conversationJid,
         body: conversationBody,
       );
     }
