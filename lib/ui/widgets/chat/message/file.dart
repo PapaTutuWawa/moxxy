@@ -55,8 +55,60 @@ class FileChatBaseWidget extends StatelessWidget {
       width: maxWidth,
       child: MediaBaseChatWidget(
         Padding(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.only(
+            top: isGroupchat ? 24 /* 8 + fontSize of the sender (16) + 8 */ : 8,
+            left: 8,
+            right: 8,
+            bottom: 8,
+          ),
           child: Row(
+            children: [
+              if (downloadButton != null)
+                downloadButton!
+              else
+                Icon(
+                  _mimeTypeToIcon(),
+                  size: 80,
+                ),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      filename,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 18,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Icon(
+                                _mimeTypeToIcon(),
+                                size: 16,
+                              ),
+                              Text(
+                                mimeTypeToName(mimeType),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          /*child: Row(
             children: [
               if (downloadButton != null) downloadButton!,
               Expanded(
@@ -91,7 +143,7 @@ class FileChatBaseWidget extends StatelessWidget {
                 ),
               ),
             ],
-          ),
+          ),*/
         ),
         MessageBubbleBottom(
           message,
