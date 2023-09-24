@@ -18,6 +18,7 @@ class MediaBaseChatWidget extends StatelessWidget {
     this.onTap,
     this.extra,
     this.gradient = true,
+    this.showShadow = true,
     super.key,
   });
   final Widget background;
@@ -35,6 +36,9 @@ class MediaBaseChatWidget extends StatelessWidget {
 
   /// Whether the message was sent in a groupchat context (true) or not (false).
   final bool isGroupchat;
+
+  /// Whether to use a shadow below the sender name, if visible.
+  final bool showShadow;
 
   @override
   Widget build(BuildContext context) {

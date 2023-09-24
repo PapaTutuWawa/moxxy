@@ -62,6 +62,9 @@ dependencies:
   moxxmpp:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.4.0
+  moxxmpp_color:
+    hosted: https://git.polynom.me/api/packages/Moxxy/pub
+    version: 0.1.0
   moxxmpp_socket_tcp:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.3.1

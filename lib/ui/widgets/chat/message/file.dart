@@ -108,42 +108,6 @@ class FileChatBaseWidget extends StatelessWidget {
               ),
             ],
           ),
-          /*child: Row(
-            children: [
-              if (downloadButton != null) downloadButton!,
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      filename,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _mimeTypeToIcon(),
-                            size: 48,
-                          ),
-                          Text(
-                            mimeTypeToName(mimeType),
-                            style: const TextStyle(
-                              fontSize: 24,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),*/
         ),
         MessageBubbleBottom(
           message,
@@ -154,7 +118,7 @@ class FileChatBaseWidget extends StatelessWidget {
         message.senderJid,
         isGroupchat,
         gradient: false,
-        //extra: extra,
+        showShadow: false,
         onTap: onTap,
       ),
     );

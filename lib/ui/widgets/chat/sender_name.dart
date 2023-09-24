@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxmpp_color/moxxmpp_color.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -40,14 +41,25 @@ class SenderName extends StatelessWidget {
               .titleWithOptionalContact,
     };
 
+    final colorInput = switch (isGroupchat) {
+      // TODO(Unknown): Follow Modern XMPP's guidelines on consistent color generation here.
+      true => senderJid.resource,
+      false => senderJid.toBare().toString(),
+    };
+    final textColor =
+        sent ? bubbleTextQuoteSenderColor : consistentColorSync(colorInput);
     return Text(
       sender,
       style: TextStyle(
         fontWeight: FontWeight.w600,
-        color: sent ? bubbleTextQuoteSenderColor : null,
+        color: textColor,
         fontSize: 16,
         shadows: [
-          if (showShadow) const BoxShadow(blurRadius: 12),
+          if (showShadow)
+            BoxShadow(
+              blurRadius: 12,
+              color: textColor,
+            ),
         ],
       ),
       overflow: TextOverflow.ellipsis,
