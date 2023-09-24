@@ -17,13 +17,17 @@ class VideoChatWidget extends StatelessWidget {
     this.message,
     this.radius,
     this.maxWidth,
-    this.sent, {
+    this.sent,
+    this.isGroupchat, {
     super.key,
   });
   final Message message;
   final double maxWidth;
   final BorderRadius radius;
   final bool sent;
+
+  /// Whether the message was sent in a groupchat context or not.
+  final bool isGroupchat;
 
   Widget _buildUploading() {
     return MediaBaseChatWidget(
@@ -39,6 +43,9 @@ class VideoChatWidget extends StatelessWidget {
       ),
       MessageBubbleBottom(message, sent),
       radius,
+      sent,
+      message.senderJid,
+      isGroupchat,
       extra: ProgressWidget(message.id),
     );
   }
@@ -59,6 +66,9 @@ class VideoChatWidget extends StatelessWidget {
         ),
         MessageBubbleBottom(message, sent),
         radius,
+        sent,
+        message.senderJid,
+        isGroupchat,
         extra: ProgressWidget(message.id),
       );
     } else {
@@ -68,6 +78,7 @@ class VideoChatWidget extends StatelessWidget {
         radius,
         maxWidth,
         sent,
+        isGroupchat,
         mimeType: message.fileMetadata!.mimeType,
         downloadButton: ProgressWidget(message.id),
       );
@@ -92,7 +103,9 @@ class VideoChatWidget extends StatelessWidget {
         sent,
       ),
       radius,
-      //onTap: () => openFile(message.fileMetadata!.path!),
+      sent,
+      message.senderJid,
+      isGroupchat,
       onTap: () {
         showVideoViewer(
           context,
@@ -121,6 +134,9 @@ class VideoChatWidget extends StatelessWidget {
         ),
         MessageBubbleBottom(message, sent),
         radius,
+        sent,
+        message.senderJid,
+        isGroupchat,
         extra: DownloadButton(
           onPressed: () => requestMediaDownload(message),
         ),
@@ -132,6 +148,7 @@ class VideoChatWidget extends StatelessWidget {
         radius,
         maxWidth,
         sent,
+        isGroupchat,
         mimeType: message.fileMetadata!.mimeType,
         downloadButton: DownloadButton(
           onPressed: () => requestMediaDownload(message),

@@ -105,13 +105,17 @@ class AudioChatWidget extends StatefulWidget {
     this.message,
     this.radius,
     this.maxWidth,
-    this.sent, {
+    this.sent,
+    this.isGroupchat, {
     super.key,
   });
   final Message message;
   final BorderRadius radius;
   final double maxWidth;
   final bool sent;
+
+  /// Whether the message was sent in a groupchat context or not.
+  final bool isGroupchat;
 
   @override
   AudioChatState createState() => AudioChatState();
@@ -177,6 +181,9 @@ class AudioChatState extends State<AudioChatWidget> {
       ),
       MessageBubbleBottom(widget.message, widget.sent),
       widget.radius,
+      widget.sent,
+      widget.message.senderJid,
+      widget.isGroupchat,
       gradient: false,
     );
   }
@@ -195,6 +202,9 @@ class AudioChatState extends State<AudioChatWidget> {
       ),
       MessageBubbleBottom(widget.message, widget.sent),
       widget.radius,
+      widget.sent,
+      widget.message.senderJid,
+      widget.isGroupchat,
       gradient: false,
     );
   }
@@ -243,6 +253,9 @@ class AudioChatState extends State<AudioChatWidget> {
         widget.sent,
       ),
       widget.radius,
+      widget.sent,
+      widget.message.senderJid,
+      widget.isGroupchat,
       gradient: false,
     );
   }
@@ -254,6 +267,7 @@ class AudioChatState extends State<AudioChatWidget> {
       widget.radius,
       widget.maxWidth,
       widget.sent,
+      widget.isGroupchat,
       mimeType: widget.message.fileMetadata!.mimeType,
       downloadButton: DownloadButton(
         onPressed: () => requestMediaDownload(widget.message),

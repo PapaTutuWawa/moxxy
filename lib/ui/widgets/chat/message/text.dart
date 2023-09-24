@@ -6,6 +6,7 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
+import 'package:moxxyv2/ui/widgets/chat/sender_name.dart';
 
 /// Used whenever the mime type either doesn't match any specific chat widget or we just
 /// cannot determine the mime type.
@@ -56,14 +57,9 @@ class TextChatWidget extends StatelessWidget {
                 right: 8,
                 bottom: 8,
               ),
-              child: Text(
-                // TODO(Unknown): Maybe be a bit smarter about this?
-                sent ? t.messages.you : message.senderJid.resource,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                ),
-                overflow: TextOverflow.ellipsis,
+              child: SenderName(
+                message.senderJid,
+                sent,
               ),
             ),
           if (topWidget != null) topWidget!,

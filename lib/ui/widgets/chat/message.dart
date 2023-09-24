@@ -93,9 +93,21 @@ Widget buildMessageWidget(
         );
       }
     case MessageType.image:
-      return ImageChatWidget(message, radius, maxWidth, sent);
+      return ImageChatWidget(
+        message,
+        radius,
+        maxWidth,
+        sent,
+        isGroupchat,
+      );
     case MessageType.video:
-      return VideoChatWidget(message, radius, maxWidth, sent);
+      return VideoChatWidget(
+        message,
+        radius,
+        maxWidth,
+        sent,
+        isGroupchat,
+      );
     case MessageType.sticker:
       return StickerChatWidget(
         message,
@@ -111,9 +123,21 @@ Widget buildMessageWidget(
             : null,
       );
     case MessageType.audio:
-      return AudioChatWidget(message, radius, maxWidth, sent);
+      return AudioChatWidget(
+        message,
+        radius,
+        maxWidth,
+        sent,
+        isGroupchat,
+      );
     case MessageType.file:
-      return FileChatWidget(message, radius, maxWidth, sent);
+      return FileChatWidget(
+        message,
+        radius,
+        maxWidth,
+        sent,
+        isGroupchat,
+      );
   }
 }
 

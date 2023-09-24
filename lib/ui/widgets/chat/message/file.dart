@@ -16,7 +16,8 @@ class FileChatBaseWidget extends StatelessWidget {
     this.filename,
     this.radius,
     this.maxWidth,
-    this.sent, {
+    this.sent,
+    this.isGroupchat, {
     this.downloadButton,
     this.onTap,
     this.mimeType,
@@ -30,6 +31,9 @@ class FileChatBaseWidget extends StatelessWidget {
   final bool sent;
   final void Function()? onTap;
   final String? mimeType;
+
+  /// Whether the message was sent in a groupchat context or not.
+  final bool isGroupchat;
 
   IconData _mimeTypeToIcon() {
     if (mimeType == null) return Icons.file_present;
@@ -94,6 +98,9 @@ class FileChatBaseWidget extends StatelessWidget {
           sent,
         ),
         radius,
+        sent,
+        message.senderJid,
+        isGroupchat,
         gradient: false,
         //extra: extra,
         onTap: onTap,
@@ -109,7 +116,8 @@ class FileChatWidget extends StatelessWidget {
     this.message,
     this.radius,
     this.maxWidth,
-    this.sent, {
+    this.sent,
+    this.isGroupchat, {
     this.extra,
     super.key,
   });
@@ -119,6 +127,9 @@ class FileChatWidget extends StatelessWidget {
   final double maxWidth;
   final Widget? extra;
 
+  /// Whether the message was sent in a groupchat context or not.
+  final bool isGroupchat;
+
   Widget _buildNonDownloaded() {
     return FileChatBaseWidget(
       message,
@@ -126,6 +137,7 @@ class FileChatWidget extends StatelessWidget {
       radius,
       maxWidth,
       sent,
+      isGroupchat,
       mimeType: message.fileMetadata!.mimeType,
       downloadButton: DownloadButton(
         onPressed: () => requestMediaDownload(message),
@@ -140,6 +152,7 @@ class FileChatWidget extends StatelessWidget {
       radius,
       maxWidth,
       sent,
+      isGroupchat,
       mimeType: message.fileMetadata!.filename,
       downloadButton: ProgressWidget(message.id),
     );
@@ -152,6 +165,7 @@ class FileChatWidget extends StatelessWidget {
       radius,
       maxWidth,
       sent,
+      isGroupchat,
       mimeType: message.fileMetadata!.mimeType,
       onTap: () {
         openFile(message.fileMetadata!.path!);

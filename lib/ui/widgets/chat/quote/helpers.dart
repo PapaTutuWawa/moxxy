@@ -6,6 +6,7 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/theme.dart';
 
+// TODO: Somehow merge with SenderName
 class QuoteSenderText extends StatelessWidget {
   const QuoteSenderText({
     required this.sender,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:moxxyv2/ui/widgets/chat/gradient.dart';
+import 'package:moxxyv2/ui/widgets/chat/sender_name.dart';
 
 /// A base container allowing to embed a child in a borderless ChatBubble. If onTap is
 /// set, then it will be called as soon as the bubble is tapped. If extra is set, then
@@ -9,7 +11,10 @@ class MediaBaseChatWidget extends StatelessWidget {
   const MediaBaseChatWidget(
     this.background,
     this.bottom,
-    this.radius, {
+    this.radius,
+    this.sent,
+    this.senderJid,
+    this.isGroupchat, {
     this.onTap,
     this.extra,
     this.gradient = true,
@@ -21,6 +26,15 @@ class MediaBaseChatWidget extends StatelessWidget {
   final BorderRadius radius;
   final void Function()? onTap;
   final bool gradient;
+
+  /// The JID of the message sender.
+  final JID senderJid;
+
+  /// Whether the message was sent by us (true) or someone else (false).
+  final bool sent;
+
+  /// Whether the message was sent in a groupchat context (true) or not (false).
+  final bool isGroupchat;
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +56,16 @@ class MediaBaseChatWidget extends StatelessWidget {
             child: bottom,
           ),
         ),
+        if (isGroupchat)
+          Positioned(
+            left: 16,
+            top: 8,
+            child: SenderName(
+              senderJid,
+              sent,
+              showShadow: true,
+            ),
+          ),
       ],
     );
 

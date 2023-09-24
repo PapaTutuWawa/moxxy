@@ -15,19 +15,24 @@ class ImageChatWidget extends StatelessWidget {
     this.message,
     this.radius,
     this.maxWidth,
-    this.sent, {
+    this.sent,
+    this.isGroupchat, {
     super.key,
   });
   final Message message;
   final BorderRadius radius;
   final double maxWidth;
   final bool sent;
+  final bool isGroupchat;
 
   Widget _buildUploading() {
     return MediaBaseChatWidget(
       Image.file(File(message.fileMetadata!.path!)),
       MessageBubbleBottom(message, sent),
       radius,
+      sent,
+      message.senderJid,
+      isGroupchat,
       extra: ProgressWidget(message.id),
     );
   }
@@ -48,6 +53,9 @@ class ImageChatWidget extends StatelessWidget {
         ),
         MessageBubbleBottom(message, sent),
         radius,
+        sent,
+        message.senderJid,
+        isGroupchat,
         extra: ProgressWidget(message.id),
       );
     } else {
@@ -57,6 +65,7 @@ class ImageChatWidget extends StatelessWidget {
         radius,
         maxWidth,
         sent,
+        isGroupchat,
         mimeType: message.fileMetadata!.mimeType,
         downloadButton: ProgressWidget(message.id),
       );
@@ -96,6 +105,9 @@ class ImageChatWidget extends StatelessWidget {
         sent,
       ),
       radius,
+      sent,
+      message.senderJid,
+      isGroupchat,
       onTap: () {
         showImageViewer(
           context,
@@ -123,6 +135,9 @@ class ImageChatWidget extends StatelessWidget {
         ),
         MessageBubbleBottom(message, sent),
         radius,
+        sent,
+        message.senderJid,
+        isGroupchat,
         extra: DownloadButton(
           onPressed: () => requestMediaDownload(message),
         ),
@@ -134,6 +149,7 @@ class ImageChatWidget extends StatelessWidget {
         radius,
         maxWidth,
         sent,
+        isGroupchat,
         mimeType: message.fileMetadata!.mimeType,
         downloadButton: DownloadButton(
           onPressed: () => requestMediaDownload(message),
