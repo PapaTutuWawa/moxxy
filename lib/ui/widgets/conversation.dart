@@ -424,11 +424,16 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                                 child: _buildLastMessageBody(),
                               ),
                               _getLastMessageIcon(sentBySelf),
-                              badges.Badge(
-                                badgeContent: Text(badgeText),
-                                showBadge: showBadge,
-                                badgeStyle: const badges.BadgeStyle(
-                                  badgeColor: bubbleColorSent,
+                              // Off-stage the badge if not visible to prevent the invisible
+                              // badge taking up space.
+                              Offstage(
+                                offstage: !showBadge,
+                                child: badges.Badge(
+                                  badgeContent: Text(badgeText),
+                                  showBadge: showBadge,
+                                  badgeStyle: const badges.BadgeStyle(
+                                    badgeColor: bubbleColorSent,
+                                  ),
                                 ),
                               ),
                             ],
