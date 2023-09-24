@@ -402,8 +402,7 @@ class ConversationsPageState extends State<ConversationsPage>
             curve: Curves.bounceInOut,
             backgroundColor:
                 Theme.of(context).floatingActionButtonTheme.backgroundColor,
-            foregroundColor:
-                Theme.of(context).floatingActionButtonTheme.foregroundColor,
+            foregroundColor: Theme.of(context).iconTheme.color,
 
             // Adjust to Material3's specifications
             // (Thanks https://github.com/darioielardi/flutter_speed_dial/issues/279#issuecomment-1373002572)
