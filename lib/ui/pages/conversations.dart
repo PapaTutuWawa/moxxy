@@ -162,7 +162,6 @@ class ConversationsPageState extends State<ConversationsPage>
                       item.jid,
                       item.title,
                       item.avatarPath,
-                      item.type,
                     ),
                   );
             },

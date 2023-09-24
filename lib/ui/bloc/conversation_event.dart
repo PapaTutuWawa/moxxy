@@ -20,8 +20,7 @@ class RequestedConversationEvent extends ConversationEvent {
   RequestedConversationEvent(
     this.jid,
     this.title,
-    this.avatarUrl,
-    this.type, {
+    this.avatarUrl, {
     this.removeUntilConversations = false,
     this.initialText,
   });
@@ -34,9 +33,6 @@ class RequestedConversationEvent extends ConversationEvent {
 
   /// Initial value to put in the input field.
   final String? initialText;
-
-  /// Type of the conversation
-  final ConversationType type;
 }
 
 /// Triggered by the UI when a user should be blocked
