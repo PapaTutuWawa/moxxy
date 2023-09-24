@@ -115,6 +115,7 @@ Widget buildMessageWidget(
         message,
         maxWidth,
         sent,
+        isGroupchat,
         quotedMessage: message.quotes != null
             ? buildQuoteMessageWidget(
                 message.quotes!,

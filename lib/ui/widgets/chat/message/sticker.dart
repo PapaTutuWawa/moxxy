@@ -7,13 +7,15 @@ import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
+import 'package:moxxyv2/ui/widgets/chat/sender_name.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class StickerChatWidget extends StatelessWidget {
   const StickerChatWidget(
     this.message,
     this.maxWidth,
-    this.sent, {
+    this.sent,
+    this.isGroupchat, {
     this.quotedMessage,
     super.key,
   });
@@ -26,6 +28,9 @@ class StickerChatWidget extends StatelessWidget {
 
   /// True, if the sticker was sent by us. False, if not.
   final bool sent;
+
+  /// Whether the message was sent/received in a groupchat context (true) or not (false).
+  final bool isGroupchat;
 
   /// A built message quote, if [message] quotes another message.
   final Widget? quotedMessage;
@@ -65,6 +70,20 @@ class StickerChatWidget extends StatelessWidget {
     return IntrinsicHeight(
       child: Column(
         children: [
+          if (isGroupchat)
+            Padding(
+              padding: const EdgeInsets.only(
+                left: 8,
+                top: 8,
+                bottom: 8,
+              ),
+              child: SenderName(
+                message.senderJid,
+                sent,
+                isGroupchat,
+              ),
+            ),
+
           if (quotedMessage != null) quotedMessage!,
 
           // ignore: prefer_if_elements_to_conditional_expressions
