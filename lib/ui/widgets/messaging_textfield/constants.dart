@@ -93,3 +93,16 @@ const double lockButtonHorizontalCenteringOffset = _sendButtonPaddingRight +
     _textFieldInnerHorizontalPadding +
     _iconPadding -
     (lockButtonWidth - iconSize) / 2;
+
+/// Computes the width of the actual [TextField].
+double getTextFieldWidth(BuildContext context) =>
+    MediaQuery.of(context).size.width -
+    bottomBarPadding.left -
+    bottomBarPadding.right -
+    sendButtonSize -
+    sendButtonPadding.left -
+    sendButtonPadding.right;
+
+/// The height of the actual [TextField] within the messaging textfield.
+const double noTextTextFieldHeight =
+    noTextBarHeight - _bottomBarPadding - _bottomBarPadding;

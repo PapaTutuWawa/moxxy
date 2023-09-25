@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/theme.dart';
+import 'package:moxxyv2/ui/widgets/messaging_textfield/constants.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/controller.dart';
 import 'package:moxxyv2/ui/widgets/timer/timer.dart';
 
@@ -70,53 +71,59 @@ class TextFieldSliderState extends State<TextFieldSlider> {
               color: Theme.of(context)
                   .extension<MoxxyThemeData>()!
                   .conversationTextFieldColor,
-              child: Row(
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 16),
-                      child: TimerWidget(
-                        controller: widget.controller.timerController,
-                      ),
-                    ),
-                  ),
-                  if (widget.controller.draggingNotifier.value)
-                    const Padding(
-                      padding: EdgeInsets.only(left: 8),
-                      child: Icon(
-                        Icons.chevron_left,
-                        color: Colors.white,
-                      ),
-                    ),
-                  if (widget.controller.draggingNotifier.value)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 4),
-                      child: Text(
-                        t.pages.conversation.voiceRecording.dragToCancel,
-                        style: const TextStyle(
-                          color: Colors.white,
+              child: UnconstrainedBox(
+                child: SizedBox(
+                  width: getTextFieldWidth(context),
+                  height: noTextTextFieldHeight,
+                  child: Row(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 16),
+                          child: TimerWidget(
+                            controller: widget.controller.timerController,
+                          ),
                         ),
                       ),
-                    ),
-                  Expanded(
-                    child: AnimatedOpacity(
-                      opacity: _showCancelButton ? 1 : 0,
-                      duration: const Duration(milliseconds: 200),
-                      child: Align(
-                        child: TextButton(
-                          onPressed: widget.controller.cancelRecording,
+                      if (widget.controller.draggingNotifier.value)
+                        const Padding(
+                          padding: EdgeInsets.only(left: 8),
+                          child: Icon(
+                            Icons.chevron_left,
+                            color: Colors.white,
+                          ),
+                        ),
+                      if (widget.controller.draggingNotifier.value)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4),
                           child: Text(
-                            t.pages.conversation.voiceRecording.cancel,
+                            t.pages.conversation.voiceRecording.dragToCancel,
                             style: const TextStyle(
-                              color: Colors.red,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      Expanded(
+                        child: AnimatedOpacity(
+                          opacity: _showCancelButton ? 1 : 0,
+                          duration: const Duration(milliseconds: 200),
+                          child: Align(
+                            child: TextButton(
+                              onPressed: widget.controller.cancelRecording,
+                              child: Text(
+                                t.pages.conversation.voiceRecording.cancel,
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
