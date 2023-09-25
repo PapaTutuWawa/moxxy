@@ -43,7 +43,11 @@ class GroupchatService {
       if (roomPasswordProtected) {
         return const Result(GroupchatErrorType.roomPasswordProtected);
       }
-      final result = await mm.joinRoom(muc, nick);
+      final result = await mm.joinRoom(
+        muc,
+        nick,
+        maxHistoryStanzas: 0,
+      );
       if (result.isType<MUCError>()) {
         return Result(
           GroupchatErrorType.fromException(

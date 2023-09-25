@@ -234,7 +234,7 @@ class ConversationService {
       result,
       rosterItem?.showAddToRosterButton ?? true,
       lastMessage,
-      groupchatDetails,
+      groupchatDetails ?? conversation.groupchatDetails,
     );
 
     // Copy over the old lastMessage if a new one was not set

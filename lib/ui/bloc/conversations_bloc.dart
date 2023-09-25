@@ -142,7 +142,9 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     Emitter<ConversationsState> emit,
   ) async {
     await getForegroundService().send(
-      CloseConversationCommand(jid: event.jid),
+      CloseConversationCommand(
+        jid: event.jid,
+      ),
     );
 
     emit(

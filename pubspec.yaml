@@ -122,7 +122,7 @@ dev_dependencies:
 dependency_overrides:
   # NOTE: Leave here for development purposes
   # moxxmpp:
-  #  path: ../moxxmpp/packages/moxxmpp
+  #   path: ../moxxmpp/packages/moxxmpp
   # moxxmpp_socket_tcp:
   #   path: ../moxxmpp/packages/moxxmpp_socket_tcp
   # omemo_dart:
@@ -131,7 +131,7 @@ dependency_overrides:
   moxxmpp:
     git:
       url: https://codeberg.org/moxxy/moxxmpp.git
-      rev: 4a681b9483265fbfddabce6695815e98098b9c0f
+      rev: c3088f9046d0b6b97b640c7c6fc9ec354523eb27
       path: packages/moxxmpp
 
   # NOTE: Leave here for development purposes 

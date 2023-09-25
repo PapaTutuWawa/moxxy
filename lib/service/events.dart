@@ -275,7 +275,7 @@ Future<void> performAddConversation(
   final css = GetIt.I.get<ContactsService>();
   final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
-  await cs.createOrUpdateConversation(
+  final conversation = await cs.createOrUpdateConversation(
     command.jid,
     accountJid!,
     create: () async {
@@ -334,6 +334,17 @@ Future<void> performAddConversation(
       return c;
     },
   );
+
+  if (conversation!.type == ConversationType.groupchat) {
+    await GetIt.I
+        .get<XmppConnection>()
+        .getManagerById<MUCManager>(mucManager)!
+        .joinRoom(
+          JID.fromString(conversation.jid),
+          conversation.groupchatDetails!.nick,
+          maxHistoryStanzas: 0,
+        );
+  }
 }
 
 Future<void> performSetOpenConversation(
@@ -593,8 +604,20 @@ Future<void> performAddContact(
       },
     );
 
-    // Add to roster, if needed
-    await _maybeAchieveBothSubscription(jid, accountJid);
+    switch (conversation.type) {
+      case ConversationType.chat:
+        // Add to roster, if needed
+        await _maybeAchieveBothSubscription(jid, accountJid);
+      case ConversationType.groupchat:
+        // The conversation was closed (we left the groupchat), so join it again.
+        await GetIt.I.get<GroupchatService>().joinRoom(
+              JID.fromString(conversation.jid),
+              accountJid,
+              conversation.groupchatDetails!.nick,
+            );
+      case ConversationType.note:
+        break;
+    }
   } else {
     // We did not have a conversation with that JID.
     final info = await GetIt.I
@@ -796,7 +819,7 @@ Future<void> performCloseConversation(
   final cs = GetIt.I.get<ConversationService>();
   final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
 
-  await cs.createOrUpdateConversation(
+  final conversation = await cs.createOrUpdateConversation(
     command.jid,
     accountJid!,
     update: (c) async {
@@ -807,6 +830,13 @@ Future<void> performCloseConversation(
       );
     },
   );
+
+  if (conversation?.type == ConversationType.groupchat) {
+    await GetIt.I
+        .get<XmppConnection>()
+        .getManagerById<MUCManager>(mucManager)!
+        .leaveRoom(JID.fromString(conversation!.jid));
+  }
 
   sendEvent(
     CloseConversationEvent(),
@@ -1587,11 +1617,20 @@ Future<void> performJoinGroupchat(
         return newConversation;
       },
     );
+
+    // The conversation was closed (we left the groupchat), so join it again.
+    await GetIt.I.get<GroupchatService>().joinRoom(
+          JID.fromString(conversation.jid),
+          accountJid,
+          conversation.groupchatDetails!.nick,
+        );
   } else {
     // We did not have a conversation with that JID.
-    final joinRoomResult = await GetIt.I
-        .get<GroupchatService>()
-        .joinRoom(JID.fromString(jid), accountJid, nick);
+    final joinRoomResult = await GetIt.I.get<GroupchatService>().joinRoom(
+          JID.fromString(jid),
+          accountJid,
+          nick,
+        );
     if (joinRoomResult.isType<GroupchatErrorType>()) {
       sendEvent(
         ErrorEvent(errorId: joinRoomResult.get<GroupchatErrorType>().value),
