@@ -668,6 +668,7 @@ files:
           jid: String
           hash: String?
           ownAvatar: bool
+          isGroupchat: bool
       - name: GetStorageUsageCommand
         extends: BackgroundCommand
         implements:

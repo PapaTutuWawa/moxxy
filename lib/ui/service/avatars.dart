@@ -16,7 +16,12 @@ class UIAvatarsService {
       StreamController.broadcast();
   Stream<AvatarUpdatedEvent> get stream => _updatedController.stream;
 
-  void requestAvatarIfRequired(String jid, String? hash, bool ownAvatar) {
+  void requestAvatarIfRequired(
+    String jid,
+    String? hash,
+    bool ownAvatar,
+    bool isGroupchat,
+  ) {
     if (_avatarRequested[jid] ?? false) return;
 
     _log.finest('Requesting avatar for $jid');
@@ -26,6 +31,7 @@ class UIAvatarsService {
         jid: jid,
         hash: hash,
         ownAvatar: ownAvatar,
+        isGroupchat: isGroupchat,
       ),
     );
   }

@@ -1470,10 +1470,15 @@ Future<void> performRequestAvatarForJid(
   if (command.ownAvatar) {
     future = as.requestOwnAvatar();
   } else {
-    future = as.requestAvatar(
-      JID.fromString(command.jid),
-      command.hash,
-    );
+    future = command.isGroupchat
+        ? as.requestGroupchatAvatar(
+            JID.fromString(command.jid),
+            command.hash,
+          )
+        : as.requestAvatar(
+            JID.fromString(command.jid),
+            command.hash,
+          );
   }
 
   unawaited(future);

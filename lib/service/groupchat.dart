@@ -8,6 +8,10 @@ import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/models/groupchat.dart';
 
+/// The value of the "var" attribute of the field containing the avatar hash (for Prosody).
+const _prosodyAvatarHashFieldVar =
+    '{http://modules.prosody.im/mod_vcard_muc}avatar#sha1';
+
 class GroupchatService {
   /// Retrieves the information about a group chat room specified by the given
   /// JID.
@@ -136,5 +140,21 @@ class GroupchatService {
         result['nick']! as String,
       );
     }).toList();
+  }
+
+  /// Requests the latest SHA-1 hash of the avatar of the groupchat at [jid].
+  Future<String?> getGroupchatAvatarHash(JID jid) async {
+    final infoResult = await getRoomInformation(jid);
+    if (infoResult.isType<MUCError>()) {
+      return null;
+    }
+    final info = infoResult.get<RoomInformation>();
+
+    // Check if an avatar is advertised.
+    final hashField = info.roomInfo?.getFieldByVar(_prosodyAvatarHashFieldVar);
+    if (hashField == null || hashField.values.isEmpty) {
+      return null;
+    }
+    return hashField.values.first;
   }
 }

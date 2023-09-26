@@ -11,6 +11,7 @@ import 'package:moxxyv2/service/cache.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/groupchat.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
@@ -99,37 +100,60 @@ class AvatarService {
   Future<String?> _maybeFetchAvatarForJid(
     JID jid,
     String id,
+    bool useVCard,
   ) async {
-    if (_hasAvatar(id)) {
-      return _computeAvatarPath(id);
-    }
-
     // Check if we even have to request it.
     if (_hasAvatar(id)) {
       return _computeAvatarPath(id);
     }
 
-    // Request the avatar data and write it to disk.
-    final rawAvatar = await GetIt.I
-        .get<XmppConnection>()
-        .getManagerById<UserAvatarManager>(userAvatarManager)!
-        .getUserAvatarData(jid, id);
-    if (rawAvatar.isType<AvatarError>()) {
-      _log.warning('Failed to request avatar ($jid, $id)');
-      return null;
-    }
+    List<int> data;
+    String hexHash;
+    if (useVCard) {
+      // Use XEP-0153/XEP-0054.
+      // Get the VCard.
+      final vm = GetIt.I
+          .get<XmppConnection>()
+          .getManagerById<VCardManager>(vcardManager)!;
+      final vcardResult = await vm.requestVCard(jid);
+      if (vcardResult.isType<VCardError>()) {
+        _log.warning('Failed to request vcard of $jid');
+        return null;
+      }
+      final vcard = vcardResult.get<VCard>();
 
-    // Verify the hash
-    final data = rawAvatar.get<UserAvatarData>().data;
-    final hexHash = rawAvatar.get<UserAvatarData>().hash;
-    final actualHexHash = HEX.encode(
-      (await Sha1().hash(data)).bytes,
-    );
-    if (actualHexHash != hexHash) {
-      _log.warning(
-        'Avatar hash of $jid ($hexHash) is not equal to the computed hash ($actualHexHash)',
+      // Check if we have a photo
+      if (vcard.photo?.binval == null) {
+        _log.warning('VCard of $jid does not contain a photo.');
+        return null;
+      }
+
+      data = base64Decode(vcard.photo!.binval!);
+      hexHash = id;
+    } else {
+      // Use XEP-0084.
+      // Request the avatar data and write it to disk.
+      final rawAvatar = await GetIt.I
+          .get<XmppConnection>()
+          .getManagerById<UserAvatarManager>(userAvatarManager)!
+          .getUserAvatarData(jid, id);
+      if (rawAvatar.isType<AvatarError>()) {
+        _log.warning('Failed to request avatar ($jid, $id)');
+        return null;
+      }
+
+      // Verify the hash
+      data = rawAvatar.get<UserAvatarData>().data;
+      hexHash = rawAvatar.get<UserAvatarData>().hash;
+      final actualHexHash = HEX.encode(
+        (await Sha1().hash(data)).bytes,
       );
-      return null;
+      if (actualHexHash != hexHash) {
+        _log.warning(
+          'Avatar hash of $jid ($hexHash) is not equal to the computed hash ($actualHexHash)',
+        );
+        return null;
+      }
     }
 
     await _saveAvatarInCache(
@@ -151,6 +175,7 @@ class AvatarService {
 
     // Do nothing if we do not know of the JID.
     if (conversation == null && rosterItem == null) {
+      _log.info('Found no conversation or roster item with jid $jid');
       return;
     }
 
@@ -219,6 +244,7 @@ class AvatarService {
     final newAvatarPath = await _maybeFetchAvatarForJid(
       event.jid,
       metadata.id,
+      false,
     );
     if (newAvatarPath == null) {
       _log.warning('Failed to fetch avatar ${metadata.id} for ${event.jid}');
@@ -231,6 +257,55 @@ class AvatarService {
 
     // Remove the JID from the pending requests list.
     _requestedInStream.remove(event.jid);
+  }
+
+  Future<String?> requestGroupchatAvatar(JID roomJid, String? oldHash) async {
+    // Prevent multiple requests in a row.
+    if (_requestedInStream.contains(roomJid)) {
+      return null;
+    }
+    _requestedInStream.add(roomJid);
+
+    // Perform a disco request.
+    final id =
+        await GetIt.I.get<GroupchatService>().getGroupchatAvatarHash(roomJid);
+    if (id == null) {
+      return null;
+    }
+
+    // Check if the id changed.
+    var bypassIdCheck = false;
+    if (oldHash != null && !File(_computeAvatarPath(oldHash)).existsSync()) {
+      bypassIdCheck = true;
+      _log.finest('Avatar hash $oldHash does not exist. Bypass id check');
+      bypassIdCheck = true;
+    }
+    if (id == oldHash && !bypassIdCheck) {
+      _log.finest(
+        'Remote id ($id) is equal to local id ($oldHash) for $roomJid. Not fetching avatar.',
+      );
+      _requestedInStream.remove(roomJid);
+      return _computeAvatarPath(id);
+    }
+
+    // Fetch the avatar.
+    final newAvatarPath = await _maybeFetchAvatarForJid(
+      roomJid,
+      id,
+      true,
+    );
+    if (newAvatarPath == null) {
+      _log.finest('Failed to request MUC avatar for $roomJid');
+      _requestedInStream.remove(roomJid);
+      return null;
+    }
+
+    // Update conversation.
+    await _applyNewAvatarToJid(roomJid, id);
+
+    // Remove the JID from the pending requests list.
+    _requestedInStream.remove(roomJid);
+    return _computeAvatarPath(id);
   }
 
   /// Request the avatar for [jid], given its optional previous avatar hash [oldHash].
@@ -299,6 +374,7 @@ class AvatarService {
     final newAvatarPath = await _maybeFetchAvatarForJid(
       jid,
       id,
+      false,
     );
     if (newAvatarPath == null) {
       _log.warning('Failed to request avatar for $jid');
@@ -366,6 +442,7 @@ class AvatarService {
     final newAvatarPath = await _maybeFetchAvatarForJid(
       jid,
       id,
+      false,
     );
     if (newAvatarPath == null) {
       _log.warning('Failed to request own avatar');

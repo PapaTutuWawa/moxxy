@@ -87,6 +87,7 @@ class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
             widget.jid,
             widget.hash,
             widget.ownAvatar,
+            widget.isGroupchat,
           );
     }
   }
@@ -103,11 +104,6 @@ class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
   @override
   void didUpdateWidget(CachingXMPPAvatar oldWidget) {
     super.didUpdateWidget(oldWidget);
-
-    // TODO(Unknown): Remove once we can query groupchat avatars.
-    if (widget.isGroupchat) {
-      return;
-    }
 
     if (widget.shouldRequest && !oldWidget.shouldRequest) {
       _performRequest();
@@ -149,7 +145,7 @@ class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
             builder: (context, snapshot) {
               final path = snapshot.data?.path ?? widget.path;
               // TODO(Unknown): Remove once we can handle groupchat avatars
-              if (path == null || widget.isGroupchat) {
+              if (path == null) {
                 return Ink(
                   color: Theme.of(context)
                       .extension<MoxxyThemeData>()!

@@ -313,6 +313,7 @@ Future<void> entrypoint(String initialLocale) async {
     StickersManager(),
     MessageProcessingHintManager(),
     MUCManager(),
+    VCardManager(),
     OccupantIdManager(),
   ]);
   GetIt.I.registerSingleton<XmppConnection>(connection);
