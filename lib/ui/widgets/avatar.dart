@@ -121,11 +121,19 @@ class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
       );
     }
 
-    assert(
-      widget.jid.length >= 2,
-      '${widget.jid} must be longer longer than 1 character',
-    );
-    return Text(widget.jid.substring(0, 2).toUpperCase());
+    // I think groups are better handled by an icon.
+    if (widget.isGroupchat) {
+      return Icon(
+        Icons.group,
+        size: widget.radius * (62 / 87),
+      );
+    } else {
+      assert(
+        widget.jid.length >= 2,
+        '${widget.jid} must be longer longer than 1 character',
+      );
+      return Text(widget.jid.substring(0, 2).toUpperCase());
+    }
   }
 
   @override
