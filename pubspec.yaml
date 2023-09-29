@@ -67,7 +67,7 @@ dependencies:
     version: 0.1.0
   moxxmpp_socket_tcp:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.3.1
+    version: 0.4.0
   moxxy_native:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.3.2
@@ -121,18 +121,18 @@ dev_dependencies:
 
 dependency_overrides:
   # NOTE: Leave here for development purposes
-  # moxxmpp:
-  #   path: ../moxxmpp/packages/moxxmpp
-  # moxxmpp_socket_tcp:
-  #   path: ../moxxmpp/packages/moxxmpp_socket_tcp
+  moxxmpp:
+    path: ../moxxmpp/packages/moxxmpp
+  moxxmpp_socket_tcp:
+    path: ../moxxmpp/packages/moxxmpp_socket_tcp
   # omemo_dart:
   #   path: ../../Personal/omemo_dart
 
-  moxxmpp:
-    git:
-      url: https://codeberg.org/moxxy/moxxmpp.git
-      rev: 814f99436b4bc5ff53136dfce73c2735b140b474
-      path: packages/moxxmpp
+  #moxxmpp:
+  #  git:
+  #    url: https://codeberg.org/moxxy/moxxmpp.git
+  #    rev: 814f99436b4bc5ff53136dfce73c2735b140b474
+  #    path: packages/moxxmpp
 
   # NOTE: Leave here for development purposes 
   # moxxy_native:

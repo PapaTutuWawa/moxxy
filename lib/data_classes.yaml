@@ -355,6 +355,14 @@ files:
           items:
             type: List<SendFilesRecipient>
             deserialise: true
+      - name: GroupchatMembersResult
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          members:
+            type: List<GroupchatMember>
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -714,6 +722,12 @@ files:
           - JsonImplementation
         attributes:
           jids: List<String>
+      - name: GetMembersForGroupchatCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

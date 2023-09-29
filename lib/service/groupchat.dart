@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/constants.dart';
@@ -7,12 +8,16 @@ import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/models/groupchat.dart';
+import 'package:moxxyv2/shared/models/groupchat_member.dart';
 
 /// The value of the "var" attribute of the field containing the avatar hash (for Prosody).
 const _prosodyAvatarHashFieldVar =
     '{http://modules.prosody.im/mod_vcard_muc}avatar#sha1';
 
 class GroupchatService {
+  /// Logger.
+  final Logger _log = Logger('GroupchatService');
+
   /// Retrieves the information about a group chat room specified by the given
   /// JID.
   /// Returns a [Future] that resolves to a [RoomInformation] object containing
@@ -59,6 +64,35 @@ class GroupchatService {
           ),
         );
       } else {
+        // TODO(Unknown): Maybe be a bit smarter about it
+        final db = GetIt.I.get<DatabaseService>().database;
+        await db.delete(
+          groupchatMembersTable,
+          where: 'roomJid = ? AND accountJid = ?',
+          whereArgs: [muc.toString(), accountJid],
+        );
+        final state = (await mm.getRoomState(muc))!;
+        final members = List<GroupchatMember>.empty(growable: true);
+        _log.finest('Got ${state.members.length} members for $muc');
+        for (final rawMember in state.members.values) {
+          final member = GroupchatMember(
+            accountJid,
+            muc.toString(),
+            rawMember.nick,
+            rawMember.role,
+            rawMember.affiliation,
+            null,
+            null,
+            null,
+          );
+          await db.insert(
+            groupchatMembersTable,
+            member.toJson(),
+          );
+          members.add(member);
+        }
+        members.sort((a, b) => a.nick.compareTo(b.nick));
+
         return Result(
           GroupchatDetails(
             muc.toBare().toString(),
@@ -156,5 +190,14 @@ class GroupchatService {
       return null;
     }
     return hashField.values.first;
+  }
+
+  Future<List<GroupchatMember>> getMembers(JID muc, String accountJid) async {
+    final result = await GetIt.I.get<DatabaseService>().database.query(
+      groupchatMembersTable,
+      where: 'roomJid = ? AND accountJid = ?',
+      whereArgs: [muc.toString(), accountJid],
+    );
+    return result.map(GroupchatMember.fromJson).toList();
   }
 }
