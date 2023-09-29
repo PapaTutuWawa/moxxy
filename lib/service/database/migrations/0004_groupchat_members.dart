@@ -15,6 +15,7 @@ Future<void> upgradeFromV48ToV49(DatabaseMigrationData data) async {
       avatarPath          TEXT,
       avatarHash          TEXT,
       realJid             TEXT,
+      isSelf              INTEGER NOT NULL,
       PRIMARY KEY (roomJid, accountJid, nick),
       CONSTRAINT fk_muc
         FOREIGN KEY (roomJid, accountJid)

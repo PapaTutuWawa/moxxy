@@ -84,6 +84,7 @@ class GroupchatService {
             null,
             null,
             null,
+            false,
           );
           await db.insert(
             groupchatMembersTable,
@@ -91,7 +92,23 @@ class GroupchatService {
           );
           members.add(member);
         }
-        members.sort((a, b) => a.nick.compareTo(b.nick));
+        // Add the self-participant
+        await db.insert(
+          groupchatMembersTable,
+          GroupchatMember(
+            accountJid,
+            muc.toString(),
+            state.nick!,
+            state.role!,
+            state.affiliation!,
+            null,
+            null,
+            null,
+            true,
+          ).toJson(),
+        );
+
+        // TODO(Unknown): In case the MUC changed our nick, update the groupchat details to reflect this.
 
         return Result(
           GroupchatDetails(

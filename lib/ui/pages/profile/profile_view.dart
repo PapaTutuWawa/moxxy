@@ -8,6 +8,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/groupchat_member.dart';
 import 'package:moxxyv2/ui/bloc/server_info_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/profile/conversationheader.dart';
 import 'package:moxxyv2/ui/pages/profile/profile.dart';
 import 'package:moxxyv2/ui/pages/profile/selfheader.dart';
@@ -55,24 +56,9 @@ class ProfileViewState extends State<ProfileView> {
       ),
     ))! as GroupchatMembersResult;
 
-    // TODO: Handle the display of our own data more gracefully. Maybe keep a special
-    //       GroupchatMember that also stores our own affiliation and role so that we can
-    //       cache it.
     // TODO: That also requires that we render that element separately so that we can just bypass
     //       the avatar data and just pull it from one of the BLoCs.
     final members = List.of(result.members)
-      ..add(
-        GroupchatMember(
-          '',
-          '',
-          t.messages.you,
-          Role.none,
-          Affiliation.none,
-          null,
-          null,
-          null,
-        ),
-      )
       ..sort(groupchatMemberSortingFunction);
 
     setState(() {
@@ -86,6 +72,55 @@ class ProfileViewState extends State<ProfileView> {
     _initStateAsync();
   }
 
+  Widget _buildMemberTile(GroupchatMember member) {
+    if (member.isSelf) {
+      return ListTile(
+        leading: CachingXMPPAvatar.self(radius: 20),
+        title: Text(
+          t.messages.you,
+          style: const TextStyle(
+            color: primaryColor,
+          ),
+        ),
+        subtitle: Text(
+          member.nick,
+          overflow: TextOverflow.ellipsis,
+        ),
+      );
+    } else {
+      return ListTile(
+        leading: CachingXMPPAvatar(
+          jid: '${widget.arguments.jid}/${member.nick}',
+          radius: 20,
+          hasContactId: false,
+          isGroupchat: true,
+          // TODO(Unknown): Request avatars at some point
+          shouldRequest: false,
+        ),
+        title: Text(
+          member.nick,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: switch (member.affiliation) {
+          // TODO: i18n
+          Affiliation.owner => const Text(
+              'Owner',
+              style: TextStyle(color: Colors.red),
+              overflow: TextOverflow.ellipsis,
+            ),
+          Affiliation.admin => const Text(
+              'Admin',
+              style: TextStyle(color: Colors.green),
+              overflow: TextOverflow.ellipsis,
+            ),
+          Affiliation.member => null,
+          Affiliation.none => null,
+          Affiliation.outcast => null,
+        },
+      );
+    }
+  }
+
   Widget _buildMemberList() {
     if (_members == null) {
       return const SliverToBoxAdapter(
@@ -96,30 +131,8 @@ class ProfileViewState extends State<ProfileView> {
     return SliverList.builder(
       itemCount: _members!.length,
       itemBuilder: (context, index) {
-        return ListTile(
-          leading: CachingXMPPAvatar(
-            jid: '${widget.arguments.jid}/${_members![index].nick}',
-            radius: 20,
-            hasContactId: false,
-            isGroupchat: true,
-            shouldRequest: false,
-          ),
-          title: Text(_members![index].nick),
-          subtitle: switch (_members![index].affiliation) {
-            // TODO: i18n
-            Affiliation.owner => const Text(
-                'Owner',
-                style: TextStyle(color: Colors.red),
-              ),
-            Affiliation.admin => const Text(
-                'Admin',
-                style: TextStyle(color: Colors.green),
-              ),
-            Affiliation.member => null,
-            Affiliation.none => null,
-            Affiliation.outcast => null,
-          },
-        );
+        final member = _members![index];
+        return _buildMemberTile(member);
       },
     );
   }
