@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
@@ -216,5 +217,64 @@ class GroupchatService {
       whereArgs: [muc.toString(), accountJid],
     );
     return result.map(GroupchatMember.fromJson).toList();
+  }
+
+  /// Deal with a member joining the groupchat [muc].
+  Future<void> handleGroupchatMemberLeaving(
+    JID muc,
+    String accountJid,
+    String nick,
+  ) async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final memberRaw = await db.query(
+      groupchatMembersTable,
+      where: 'roomJid = ? AND nick = ? AND accountJid = ?',
+      whereArgs: [muc.toString(), nick, accountJid],
+    );
+    if (memberRaw.isEmpty) {
+      _log.warning('Could not find groupchat member $muc/$nick');
+      return;
+    }
+    final member = GroupchatMember.fromJson(memberRaw.first);
+
+    // Delete the member's data.
+    await db.delete(
+      groupchatMembersTable,
+      where: 'roomJid = ? AND nick = ? AND accountJid = ?',
+      whereArgs: [muc.toString(), nick, accountJid],
+    );
+
+    // Maybe remove the avatar data.
+    if (member.avatarPath != null) {
+      await GetIt.I.get<AvatarService>().safeRemoveAvatar(
+            member.avatarPath,
+            false,
+          );
+    }
+  }
+
+  /// Deal with a member leaving the groupchat [muc].
+  Future<void> handleGroupchatMemberJoining(
+    JID muc,
+    String accountJid,
+    String nick,
+    Affiliation affiliation,
+    Role role,
+  ) async {
+    final member = GroupchatMember(
+      accountJid,
+      muc.toString(),
+      nick,
+      role,
+      affiliation,
+      null,
+      null,
+      null,
+      false,
+    );
+    await GetIt.I.get<DatabaseService>().database.insert(
+          groupchatMembersTable,
+          member.toJson(),
+        );
   }
 }
