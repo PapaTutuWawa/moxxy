@@ -57,13 +57,8 @@ class ProfileViewState extends State<ProfileView> {
       ),
     ))! as GroupchatMembersResult;
 
-    // TODO: Should be sort in the background?
-    // TODO: That also requires that we render that element separately so that we can just bypass
-    //       the avatar data and just pull it from one of the BLoCs.
-    final members = List.of(result.members)..sort(_groupchatMemberComparator);
-
     setState(() {
-      _members = members;
+      _members = List.of(result.members)..sort(_groupchatMemberComparator);
     });
   }
 
@@ -104,20 +99,17 @@ class ProfileViewState extends State<ProfileView> {
           overflow: TextOverflow.ellipsis,
         ),
         subtitle: switch (member.affiliation) {
-          // TODO: i18n
-          Affiliation.owner => const Text(
-              'Owner',
-              style: TextStyle(color: Colors.red),
+          Affiliation.owner => Text(
+              t.pages.profile.groupchat.owner,
+              style: const TextStyle(color: Colors.red),
               overflow: TextOverflow.ellipsis,
             ),
-          Affiliation.admin => const Text(
-              'Admin',
-              style: TextStyle(color: Colors.green),
+          Affiliation.admin => Text(
+              t.pages.profile.groupchat.admin,
+              style: const TextStyle(color: Colors.green),
               overflow: TextOverflow.ellipsis,
             ),
-          Affiliation.member => null,
-          Affiliation.none => null,
-          Affiliation.outcast => null,
+          Affiliation.member || Affiliation.none || Affiliation.outcast => null,
         },
       );
     }
