@@ -292,7 +292,7 @@
             },
             "groupchat": {
                 "owner": "Owner",
-                "admin": "Admin"
+                "admin": "Administrator"
             },
             "serverInfo": {
                 "title": "Server Information"
