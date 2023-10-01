@@ -14,23 +14,24 @@ import 'package:moxxyv2/ui/pages/profile/profile.dart';
 import 'package:moxxyv2/ui/pages/profile/selfheader.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 
-int affiliationToInt(Affiliation a) => switch (a) {
-      Affiliation.owner => 4,
-      Affiliation.admin => 3,
-      Affiliation.member => 2,
-      Affiliation.none => 1,
-      Affiliation.outcast => 0,
-    };
+extension AffiliationIntValue on Affiliation {
+  int get number => switch (this) {
+        Affiliation.owner => 4,
+        Affiliation.admin => 3,
+        Affiliation.member => 2,
+        Affiliation.none => 1,
+        Affiliation.outcast => 0,
+      };
+}
 
-int affiliationSortingFunction(Affiliation a, Affiliation b) =>
-    affiliationToInt(a).compareTo(affiliationToInt(b));
-
-int groupchatMemberSortingFunction(GroupchatMember a, GroupchatMember b) {
+/// [Comparator] implementation to achieve grouping of affiliations and sorting
+/// by nick name inside each group.
+int _groupchatMemberComparator(GroupchatMember a, GroupchatMember b) {
   if (a.affiliation == b.affiliation) {
     return b.nick.compareTo(a.nick);
   }
 
-  return affiliationSortingFunction(b.affiliation, a.affiliation);
+  return b.affiliation.number.compareTo(a.affiliation.number);
 }
 
 class ProfileView extends StatefulWidget {
@@ -56,10 +57,10 @@ class ProfileViewState extends State<ProfileView> {
       ),
     ))! as GroupchatMembersResult;
 
+    // TODO: Should be sort in the background?
     // TODO: That also requires that we render that element separately so that we can just bypass
     //       the avatar data and just pull it from one of the BLoCs.
-    final members = List.of(result.members)
-      ..sort(groupchatMemberSortingFunction);
+    final members = List.of(result.members)..sort(_groupchatMemberComparator);
 
     setState(() {
       _members = members;
