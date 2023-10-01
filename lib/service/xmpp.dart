@@ -72,6 +72,7 @@ class XmppService {
       EventTypeMatcher<NewFASTTokenReceivedEvent>(_onNewFastToken),
       EventTypeMatcher<MemberJoinedEvent>(_handleMucJoin),
       EventTypeMatcher<MemberLeftEvent>(_handleMucLeave),
+      EventTypeMatcher<MemberChangedNickEvent>(_handleMucNickChange),
     ]);
   }
 
@@ -1834,6 +1835,19 @@ class XmppService {
           event.roomJid,
           accountJid,
           event.nick,
+        );
+  }
+
+  Future<void> _handleMucNickChange(
+    MemberChangedNickEvent event, {
+    dynamic extra,
+  }) async {
+    final accountJid = (await GetIt.I.get<XmppStateService>().getAccountJid())!;
+    return GetIt.I.get<GroupchatService>().handleGroupchatNicknameChange(
+          event.roomJid,
+          accountJid,
+          event.oldNick,
+          event.newNick,
         );
   }
 }

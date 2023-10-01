@@ -277,4 +277,22 @@ class GroupchatService {
           member.toJson(),
         );
   }
+
+  /// Deal with a member changing their nickname inside [muc].
+  Future<void> handleGroupchatNicknameChange(
+    JID muc,
+    String accountJid,
+    String oldNick,
+    String newNick,
+  ) async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    await db.update(
+      groupchatMembersTable,
+      {
+        'nick': newNick,
+      },
+      where: 'roomJid = ? AND accountJid = ? AND nick = ?',
+      whereArgs: [muc.toString(), accountJid, oldNick],
+    );
+  }
 }
