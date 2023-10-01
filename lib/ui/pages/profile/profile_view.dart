@@ -78,13 +78,14 @@ class ProfileViewState extends State<ProfileView> {
       return ListTile(
         leading: CachingXMPPAvatar.self(radius: 20),
         title: Text(
+          member.nick,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
           t.messages.you,
           style: const TextStyle(
             color: primaryColor,
           ),
-        ),
-        subtitle: Text(
-          member.nick,
           overflow: TextOverflow.ellipsis,
         ),
       );
