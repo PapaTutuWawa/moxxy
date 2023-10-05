@@ -1,0 +1,17 @@
+pipeline:
+  check-metadata:
+    image: bash:alpine-3.18
+    commands:
+      - bash ./scripts/check-fastlane-metadata.sh
+
+  notify:
+    image: git.polynom.me/papatutuwawa/woodpecker-xmpp
+    settings:
+      xmpp_tls: 1
+      xmpp_is_muc: 1
+      xmpp_recipient: moxxy-build@muc.moxxy.org
+      xmpp_alias: 2Bot
+    secrets: [ xmpp_jid, xmpp_password, xmpp_server ]
+    when:
+      status:
+        - failure
