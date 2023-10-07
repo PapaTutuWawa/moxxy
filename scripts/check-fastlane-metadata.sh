@@ -2,6 +2,9 @@
 # Checks all fastlane metadata files for their maximum lengths.
 # Maximum lengths based on https://gitlab.com/-/snippets/1895688.
 
+# Every error should fail
+set -e
+
 # Check changelogs (ignoring the ones we know already exceed the limit).
 for locale in ./fastlane/metadata/android/*; do
   [[ ! -d $locale ]] && echo "Skipping $locale" && continue
