@@ -88,7 +88,7 @@ class StubSocketWrapper extends BaseSocketWrapper {
 
   @override
   Stream<String> getDataStream() {
-    return StreamController<String>().stream;
+    return StreamController<String>.broadcast().stream;
   }
 
   @override
