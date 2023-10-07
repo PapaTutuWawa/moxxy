@@ -121,10 +121,10 @@ dev_dependencies:
 
 dependency_overrides:
   # NOTE: Leave here for development purposes
-  moxxmpp:
-    path: ../moxxmpp/packages/moxxmpp
-  moxxmpp_socket_tcp:
-    path: ../moxxmpp/packages/moxxmpp_socket_tcp
+  # moxxmpp:
+  #   path: ../moxxmpp/packages/moxxmpp
+  # moxxmpp_socket_tcp:
+  #   path: ../moxxmpp/packages/moxxmpp_socket_tcp
   # omemo_dart:
   #   path: ../../Personal/omemo_dart
 

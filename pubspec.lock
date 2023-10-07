@@ -988,9 +988,10 @@ packages:
   moxxmpp:
     dependency: "direct main"
     description:
-      path: "../moxxmpp/packages/moxxmpp"
-      relative: true
-    source: path
+      name: moxxmpp
+      sha256: "38f49522782e54c6e1899a715cd1ab1f9a4c3aa5cf521ff4db8ee0a9429c0328"
+      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
+    source: hosted
     version: "0.4.0"
   moxxmpp_color:
     dependency: "direct main"
@@ -1003,9 +1004,10 @@ packages:
   moxxmpp_socket_tcp:
     dependency: "direct main"
     description:
-      path: "../moxxmpp/packages/moxxmpp_socket_tcp"
-      relative: true
-    source: path
+      name: moxxmpp_socket_tcp
+      sha256: "37ddbe153cde10e348a116978f6c1232b6b63df8083e7c350d4995e3c3b7c68f"
+      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
+    source: hosted
     version: "0.4.0"
   moxxy_native:
     dependency: "direct main"
