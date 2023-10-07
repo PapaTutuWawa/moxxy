@@ -1020,10 +1020,11 @@ packages:
   moxxyv2_builders:
     dependency: "direct main"
     description:
-      path: "../moxxyv2_builders"
-      relative: true
-    source: path
-    version: "0.2.0"
+      name: moxxyv2_builders
+      sha256: "8dff8dc0f9febcb235e5391b93c8cfb19cd1f49477af34fce882c384e3130175"
+      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
+    source: hosted
+    version: "0.2.1"
   native_imaging:
     dependency: "direct main"
     description:

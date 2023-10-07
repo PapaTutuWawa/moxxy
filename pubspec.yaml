@@ -73,7 +73,7 @@ dependencies:
     version: 0.3.2
   moxxyv2_builders:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.2.0
+    version: 0.2.1
   native_imaging: 0.1.0
   omemo_dart:
     hosted: https://git.polynom.me/api/packages/PapaTutuWawa/pub
@@ -138,8 +138,8 @@ dependency_overrides:
   # moxxy_native:
   #   path: ../moxxy_native
 
-  moxxyv2_builders:
-    path: ../moxxyv2_builders
+  # moxxyv2_builders:
+  #   path: ../moxxyv2_builders
  
 extra_licenses:
   - name: undraw.co

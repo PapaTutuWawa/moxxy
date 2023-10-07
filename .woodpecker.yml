@@ -6,6 +6,22 @@ pipeline:
     image: bash:alpine3.18
     commands:
       - bash ./scripts/check-fastlane-metadata.sh
+    when:
+      # Only run this check when the Fastlane metadata changes
+      path:
+        includes: ['fastlane/metadata/**']
+
+  analysis:
+    image: git.polynom.me/papatutuwawa/docker-flutter:3.13.6
+    commands:
+      - PUB_HOSTED_URL=http://172.17.0.1:8000 dart pub get
+      - dart run build_runner build
+      - dart run pigeon --input pigeon/quirks.dart
+      - flutter analyze --no-pub
+      - flutter test --no-pub
+    when:
+      path:
+        includes: ['test/**', 'src/**']
 
   notify:
     image: git.polynom.me/papatutuwawa/woodpecker-xmpp
