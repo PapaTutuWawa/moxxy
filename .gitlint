@@ -7,7 +7,7 @@ line-length=72
 [title-trailing-punctuation]
 [title-hard-tab]
 [title-match-regex]
-regex=^((feat|fix|chore|refactor)\((service|ui|shared|all|tests|i18n|docs|flake|android|ios|linux|windows|macos)+(,(service|ui|shared|all|tests|i18n|docs|flake|android|ios|linux|windows|macos))*\)|release): [A-Z0-9].*$
+regex=^((feat|fix|chore|refactor)\((service|ui|shared|all|tests|i18n|docs|flake|android|ios|linux|windows|macos|ci)+(,(service|ui|shared|all|tests|i18n|docs|flake|android|ios|linux|windows|macos|ci))*\)|release): [A-Z0-9].*$
 
 
 [body-trailing-whitespace]

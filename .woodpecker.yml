@@ -3,7 +3,7 @@ when:
 
 pipeline:
   check-metadata:
-    image: bash:alpine-3.18
+    image: bash:alpine3.18
     commands:
       - bash ./scripts/check-fastlane-metadata.sh
 
