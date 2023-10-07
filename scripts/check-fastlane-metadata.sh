@@ -13,7 +13,7 @@ for locale in ./fastlane/metadata/android/*; do
       continue
     fi
 
-    chars=$(wc --chars "$changelog" | awk -F\  '{print $1}')
+    chars=$(wc -m "$changelog" | awk -F\  '{print $1}')
     if [[ $chars -gt 500 ]]; then
       echo "$changelog exceeds the 500 character limit"
       exit 1
@@ -28,7 +28,7 @@ for locale in ./fastlane/metadata/android/*; do
   [[ ! -d $locale ]] && echo "Skipping $locale" && continue
   [[ ! -f $desc ]] && echo "Skipping $locale as it contains no short description" && continue
 
-    chars=$(wc --chars "$desc" | awk -F\  '{print $1}')
+    chars=$(wc -m "$desc" | awk -F\  '{print $1}')
     if [[ $chars -gt 80 ]]; then
       echo "$desc exceeds the 80 character limit"
       exit 1
@@ -42,7 +42,7 @@ for locale in ./fastlane/metadata/android/*; do
   [[ ! -d $locale ]] && echo "Skipping $locale" && continue
   [[ ! -f $desc ]] && echo "Skipping $locale as it contains no full description" && continue
 
-    chars=$(wc --chars "$desc" | awk -F\  '{print $1}')
+    chars=$(wc -m "$desc" | awk -F\  '{print $1}')
     if [[ $chars -gt 4000 ]]; then
       echo "$desc exceeds the 4000 character limit"
       exit 1
