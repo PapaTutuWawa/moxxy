@@ -118,6 +118,7 @@ void setupBackgroundEventHandler() {
         performFetchRecipientInformation,
       ),
       EventTypeMatcher<ExitConversationCommand>(performConversationExited),
+      EventTypeMatcher<GetMembersForGroupchatCommand>(performGetMembers),
     ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -336,13 +337,10 @@ Future<void> performAddConversation(
   );
 
   if (conversation!.type == ConversationType.groupchat) {
-    await GetIt.I
-        .get<XmppConnection>()
-        .getManagerById<MUCManager>(mucManager)!
-        .joinRoom(
+    await GetIt.I.get<GroupchatService>().joinRoom(
           JID.fromString(conversation.jid),
+          accountJid,
           conversation.groupchatDetails!.nick,
-          maxHistoryStanzas: 0,
         );
   }
 }
@@ -1631,18 +1629,6 @@ Future<void> performJoinGroupchat(
         );
   } else {
     // We did not have a conversation with that JID.
-    final joinRoomResult = await GetIt.I.get<GroupchatService>().joinRoom(
-          JID.fromString(jid),
-          accountJid,
-          nick,
-        );
-    if (joinRoomResult.isType<GroupchatErrorType>()) {
-      sendEvent(
-        ErrorEvent(errorId: joinRoomResult.get<GroupchatErrorType>().value),
-        id: id,
-      );
-    }
-
     await cs.createOrUpdateConversation(
       jid,
       accountJid,
@@ -1682,6 +1668,19 @@ Future<void> performJoinGroupchat(
         return newConversation;
       },
     );
+
+    // Join the room.
+    final joinRoomResult = await GetIt.I.get<GroupchatService>().joinRoom(
+          JID.fromString(jid),
+          accountJid,
+          nick,
+        );
+    if (joinRoomResult.isType<GroupchatErrorType>()) {
+      sendEvent(
+        ErrorEvent(errorId: joinRoomResult.get<GroupchatErrorType>().value),
+        id: id,
+      );
+    }
   }
 }
 
@@ -1745,4 +1744,23 @@ Future<void> performConversationExited(
 
   // Reset the active conversation
   cs.activeConversationJid = null;
+}
+
+Future<void> performGetMembers(
+  GetMembersForGroupchatCommand command, {
+  dynamic extra,
+}) async {
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
+  final gs = GetIt.I.get<GroupchatService>();
+
+  // TODO(Unknown): Page this request
+  sendEvent(
+    GroupchatMembersResult(
+      members: await gs.getMembers(
+        JID.fromString(command.jid),
+        accountJid!,
+      ),
+    ),
+    id: extra as String,
+  );
 }

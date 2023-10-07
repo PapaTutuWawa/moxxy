@@ -57,7 +57,16 @@ class AvatarService {
   Future<bool> canRemoveAvatar(String path, bool ignoreSelf) async {
     final db = GetIt.I.get<DatabaseService>().database;
     final result = await db.rawQuery(
-      'SELECT COUNT(*) as usage FROM $conversationsTable WHERE avatarPath = ?',
+      '''
+        SELECT
+          COUNT(c.avatarPath) as usage_conversation,
+          COUNT(p.avatarPath) as usage_members
+        FROM
+          $conversationsTable as c,
+          $groupchatMembersTable as p
+        WHERE
+          avatarPath = ?
+      ''',
       [path],
     );
 
@@ -71,7 +80,7 @@ class AvatarService {
 
   /// Remove the avatar file at [path], if [path] is non-null and [canRemoveAvatar] approves.
   /// [ignoreSelf] is passed to [canRemoveAvatar]'s ignoreSelf parameter.
-  Future<void> _safeRemove(String? path, bool ignoreSelf) async {
+  Future<void> safeRemoveAvatar(String? path, bool ignoreSelf) async {
     if (path == null) {
       return;
     }
@@ -199,7 +208,7 @@ class AvatarService {
       );
 
       // Try to delete the old avatar
-      await _safeRemove(conversation.avatarPath, false);
+      await safeRemoveAvatar(conversation.avatarPath, false);
     }
 
     // Update the roster item
@@ -215,7 +224,7 @@ class AvatarService {
       );
 
       // Try to delete the old avatar
-      await _safeRemove(rosterItem.avatarPath, false);
+      await safeRemoveAvatar(rosterItem.avatarPath, false);
     }
 
     // Update the UI.
@@ -462,7 +471,7 @@ class AvatarService {
     sendEvent(SelfAvatarChangedEvent(path: newAvatarPath, hash: id));
 
     // Try to safely delete the old avatar.
-    await _safeRemove(oldAvatarPath, true);
+    await safeRemoveAvatar(oldAvatarPath, true);
 
     // Update the notification UI.
     await GetIt.I.get<NotificationsService>().maybeSetAvatarFromState();
@@ -537,7 +546,7 @@ class AvatarService {
     await GetIt.I.get<NotificationsService>().maybeSetAvatarFromState();
 
     // Safely remove the old avatar
-    await _safeRemove(oldAvatarPath, true);
+    await safeRemoveAvatar(oldAvatarPath, true);
 
     // Remove the temp file.
     await file.delete();

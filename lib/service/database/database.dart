@@ -50,6 +50,7 @@ import 'package:moxxyv2/service/database/migrations/0003_notifications.dart';
 import 'package:moxxyv2/service/database/migrations/0003_occupant_id.dart';
 import 'package:moxxyv2/service/database/migrations/0003_remove_subscriptions.dart';
 import 'package:moxxyv2/service/database/migrations/0003_sticker_pack_timestamp.dart';
+import 'package:moxxyv2/service/database/migrations/0004_groupchat_members.dart';
 import 'package:moxxyv2/service/database/migrations/0004_new_avatar_cache.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:path/path.dart' as path;
@@ -109,6 +110,7 @@ const List<Migration<DatabaseMigrationData>> migrations = [
   Migration(46, upgradeFromV45ToV46),
   Migration(47, upgradeFromV46ToV47),
   Migration(48, upgradeFromV47ToV48),
+  Migration(49, upgradeFromV48ToV49),
 ];
 
 class DatabaseService {

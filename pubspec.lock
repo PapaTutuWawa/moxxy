@@ -988,11 +988,10 @@ packages:
   moxxmpp:
     dependency: "direct main"
     description:
-      path: "packages/moxxmpp"
-      ref: HEAD
-      resolved-ref: "814f99436b4bc5ff53136dfce73c2735b140b474"
-      url: "https://codeberg.org/moxxy/moxxmpp.git"
-    source: git
+      name: moxxmpp
+      sha256: "38f49522782e54c6e1899a715cd1ab1f9a4c3aa5cf521ff4db8ee0a9429c0328"
+      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
+    source: hosted
     version: "0.4.0"
   moxxmpp_color:
     dependency: "direct main"
@@ -1006,10 +1005,10 @@ packages:
     dependency: "direct main"
     description:
       name: moxxmpp_socket_tcp
-      sha256: "32c2ee3316c6b87d9c6082e8ba35bb577700f7c0294587fb0b79e62c54d90577"
+      sha256: "37ddbe153cde10e348a116978f6c1232b6b63df8083e7c350d4995e3c3b7c68f"
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.3.1"
+    version: "0.4.0"
   moxxy_native:
     dependency: "direct main"
     description:

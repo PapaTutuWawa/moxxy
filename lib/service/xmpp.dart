@@ -70,6 +70,9 @@ class XmppService {
       EventTypeMatcher<StanzaSendingCancelledEvent>(_onStanzaSendingCancelled),
       EventTypeMatcher<NonRecoverableErrorEvent>(_onUnrecoverableError),
       EventTypeMatcher<NewFASTTokenReceivedEvent>(_onNewFastToken),
+      EventTypeMatcher<MemberJoinedEvent>(_handleMucJoin),
+      EventTypeMatcher<MemberLeftEvent>(_handleMucLeave),
+      EventTypeMatcher<MemberChangedNickEvent>(_handleMucNickChange),
     ]);
   }
 
@@ -1807,5 +1810,44 @@ class XmppService {
     await GetIt.I.get<XmppStateService>().modifyXmppState((state) {
       return state.copyWith(fastToken: event.token.token);
     });
+  }
+
+  Future<void> _handleMucJoin(
+    MemberJoinedEvent event, {
+    dynamic extra,
+  }) async {
+    final accountJid = (await GetIt.I.get<XmppStateService>().getAccountJid())!;
+    return GetIt.I.get<GroupchatService>().handleGroupchatMemberJoining(
+          event.roomJid,
+          accountJid,
+          event.member.nick,
+          event.member.affiliation,
+          event.member.role,
+        );
+  }
+
+  Future<void> _handleMucLeave(
+    MemberLeftEvent event, {
+    dynamic extra,
+  }) async {
+    final accountJid = (await GetIt.I.get<XmppStateService>().getAccountJid())!;
+    return GetIt.I.get<GroupchatService>().handleGroupchatMemberLeaving(
+          event.roomJid,
+          accountJid,
+          event.nick,
+        );
+  }
+
+  Future<void> _handleMucNickChange(
+    MemberChangedNickEvent event, {
+    dynamic extra,
+  }) async {
+    final accountJid = (await GetIt.I.get<XmppStateService>().getAccountJid())!;
+    return GetIt.I.get<GroupchatService>().handleGroupchatNicknameChange(
+          event.roomJid,
+          accountJid,
+          event.oldNick,
+          event.newNick,
+        );
   }
 }

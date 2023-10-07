@@ -1,18 +1,24 @@
 import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/models/groupchat.dart';
+import 'package:moxxyv2/shared/models/groupchat_member.dart';
 
 /// The value of the "var" attribute of the field containing the avatar hash (for Prosody).
 const _prosodyAvatarHashFieldVar =
     '{http://modules.prosody.im/mod_vcard_muc}avatar#sha1';
 
 class GroupchatService {
+  /// Logger.
+  final Logger _log = Logger('GroupchatService');
+
   /// Retrieves the information about a group chat room specified by the given
   /// JID.
   /// Returns a [Future] that resolves to a [RoomInformation] object containing
@@ -59,6 +65,52 @@ class GroupchatService {
           ),
         );
       } else {
+        // TODO(Unknown): Maybe be a bit smarter about it
+        final db = GetIt.I.get<DatabaseService>().database;
+        await db.delete(
+          groupchatMembersTable,
+          where: 'roomJid = ? AND accountJid = ?',
+          whereArgs: [muc.toString(), accountJid],
+        );
+        final state = (await mm.getRoomState(muc))!;
+        final members = List<GroupchatMember>.empty(growable: true);
+        _log.finest('Got ${state.members.length} members for $muc');
+        for (final rawMember in state.members.values) {
+          final member = GroupchatMember(
+            accountJid,
+            muc.toString(),
+            rawMember.nick,
+            rawMember.role,
+            rawMember.affiliation,
+            null,
+            null,
+            null,
+            false,
+          );
+          await db.insert(
+            groupchatMembersTable,
+            member.toJson(),
+          );
+          members.add(member);
+        }
+        // Add the self-participant
+        await db.insert(
+          groupchatMembersTable,
+          GroupchatMember(
+            accountJid,
+            muc.toString(),
+            state.nick!,
+            state.role!,
+            state.affiliation!,
+            null,
+            null,
+            null,
+            true,
+          ).toJson(),
+        );
+
+        // TODO(Unknown): In case the MUC changed our nick, update the groupchat details to reflect this.
+
         return Result(
           GroupchatDetails(
             muc.toBare().toString(),
@@ -156,5 +208,91 @@ class GroupchatService {
       return null;
     }
     return hashField.values.first;
+  }
+
+  Future<List<GroupchatMember>> getMembers(JID muc, String accountJid) async {
+    final result = await GetIt.I.get<DatabaseService>().database.query(
+      groupchatMembersTable,
+      where: 'roomJid = ? AND accountJid = ?',
+      whereArgs: [muc.toString(), accountJid],
+    );
+    return result.map(GroupchatMember.fromJson).toList();
+  }
+
+  /// Deal with a member joining the groupchat [muc].
+  Future<void> handleGroupchatMemberLeaving(
+    JID muc,
+    String accountJid,
+    String nick,
+  ) async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final memberRaw = await db.query(
+      groupchatMembersTable,
+      where: 'roomJid = ? AND nick = ? AND accountJid = ?',
+      whereArgs: [muc.toString(), nick, accountJid],
+    );
+    if (memberRaw.isEmpty) {
+      _log.warning('Could not find groupchat member $muc/$nick');
+      return;
+    }
+    final member = GroupchatMember.fromJson(memberRaw.first);
+
+    // Delete the member's data.
+    await db.delete(
+      groupchatMembersTable,
+      where: 'roomJid = ? AND nick = ? AND accountJid = ?',
+      whereArgs: [muc.toString(), nick, accountJid],
+    );
+
+    // Maybe remove the avatar data.
+    if (member.avatarPath != null) {
+      await GetIt.I.get<AvatarService>().safeRemoveAvatar(
+            member.avatarPath,
+            false,
+          );
+    }
+  }
+
+  /// Deal with a member leaving the groupchat [muc].
+  Future<void> handleGroupchatMemberJoining(
+    JID muc,
+    String accountJid,
+    String nick,
+    Affiliation affiliation,
+    Role role,
+  ) async {
+    final member = GroupchatMember(
+      accountJid,
+      muc.toString(),
+      nick,
+      role,
+      affiliation,
+      null,
+      null,
+      null,
+      false,
+    );
+    await GetIt.I.get<DatabaseService>().database.insert(
+          groupchatMembersTable,
+          member.toJson(),
+        );
+  }
+
+  /// Deal with a member changing their nickname inside [muc].
+  Future<void> handleGroupchatNicknameChange(
+    JID muc,
+    String accountJid,
+    String oldNick,
+    String newNick,
+  ) async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    await db.update(
+      groupchatMembersTable,
+      {
+        'nick': newNick,
+      },
+      where: 'roomJid = ? AND accountJid = ? AND nick = ?',
+      whereArgs: [muc.toString(), accountJid, oldNick],
+    );
   }
 }
