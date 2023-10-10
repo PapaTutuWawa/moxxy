@@ -61,6 +61,8 @@ class EmojiStickerPickerIcon extends StatelessWidget {
   }
 }
 
+typedef ContentInsertionCallback = void Function(KeyboardInsertedContent);
+
 class MobileMessagingTextField extends StatefulWidget {
   const MobileMessagingTextField({
     required this.conversationController,
@@ -69,6 +71,7 @@ class MobileMessagingTextField extends StatefulWidget {
     required this.tabController,
     required this.speedDialValueNotifier,
     required this.isEncrypted,
+    required this.insertionCallback,
     super.key,
   });
 
@@ -83,6 +86,10 @@ class MobileMessagingTextField extends StatefulWidget {
   final ValueNotifier<bool> speedDialValueNotifier;
 
   final bool isEncrypted;
+
+  /// Callback for when the system tells us that the soft keyboard inserted some
+  /// data into the [TextField].
+  final ContentInsertionCallback insertionCallback;
 
   @override
   MobileMessagingTextFieldState createState() =>
@@ -208,6 +215,11 @@ class MobileMessagingTextFieldState extends State<MobileMessagingTextField>
                                           color: Theme.of(context)
                                               .extension<MoxxyThemeData>()!
                                               .conversationTextFieldTextColor,
+                                        ),
+                                        contentInsertionConfiguration:
+                                            ContentInsertionConfiguration(
+                                          onContentInserted:
+                                              widget.insertionCallback,
                                         ),
                                         decoration: InputDecoration(
                                           border: InputBorder.none,

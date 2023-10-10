@@ -6,13 +6,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
 import 'package:grouped_list/grouped_list.dart';
+import 'package:mime/mime.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
@@ -29,6 +32,8 @@ import 'package:moxxyv2/ui/widgets/chat/typing_indicator.dart';
 import 'package:moxxyv2/ui/widgets/combined_picker.dart';
 import 'package:moxxyv2/ui/widgets/context_menu.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/messaging_textfield.dart';
+import 'package:path/path.dart' as path;
+import 'package:uuid/uuid.dart';
 
 class ConversationPageArguments {
   const ConversationPageArguments(
@@ -623,6 +628,39 @@ class ConversationPageState extends State<ConversationPage>
               speedDialValueNotifier: _speedDialValueNotifier,
               textFieldFocusNode: _textfieldFocusNode,
               isEncrypted: state.conversation?.encrypted ?? false,
+              insertionCallback: (content) async {
+                assert(
+                  content.hasData,
+                  'Inserted content has no data',
+                );
+
+                // Write the data to a tempoary file
+                final extension = extensionFromMime(content.mimeType);
+                final fileId = const Uuid().v4();
+                final filename = '$fileId.$extension';
+                final tempFile = path.join(
+                  await MoxxyPlatformApi().getCacheDataPath(),
+                  filename,
+                );
+                await File(tempFile).writeAsBytes(content.data!);
+
+                // Open the SendFiles page
+                GetIt.I.get<SendFilesBloc>().add(
+                      SendFilesPageRequestedEvent(
+                        [
+                          SendFilesRecipient(
+                            state.conversation!.jid,
+                            state.conversation!.titleWithOptionalContact,
+                            state.conversation!.avatarPath,
+                            state.conversation!.avatarHash,
+                            state.conversation!.contactId != null,
+                          ),
+                        ],
+                        SendFilesType.media,
+                        paths: [tempFile],
+                      ),
+                    );
+              },
             ),
           ),
         ],
