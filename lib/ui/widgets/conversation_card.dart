@@ -1,6 +1,5 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:flutter/material.dart';
-import 'package:flutter_zxing/zxing_mobile.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -174,7 +173,7 @@ class ConversationCard extends StatelessWidget {
     final sentBySelf = conversation.lastMessage?.sender ==
         GetIt.I.get<UIDataService>().ownJid!;
     return Material(
-      color: Theme.of(context).colorScheme.surface,
+      color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         child: SizedBox(
