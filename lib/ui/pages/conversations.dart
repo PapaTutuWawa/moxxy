@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
-import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
 import 'package:moxxyv2/ui/bloc/request_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -16,7 +14,6 @@ import 'package:moxxyv2/ui/post_build.dart';
 import 'package:moxxyv2/ui/request_dialog.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/context_menu.dart';
-import 'package:moxxyv2/ui/widgets/conversation.dart';
 import 'package:moxxyv2/ui/widgets/conversation_card.dart';
 
 enum ConversationsOptions { settings }
@@ -152,6 +149,7 @@ class ConversationsPageState extends State<ConversationsPage>
             _conversationKeys[item.jid] = key;
           }
 
+          // TODO: Port the rest
           /*final row = ConversationsListRow(
             item,
             true,
@@ -170,6 +168,15 @@ class ConversationsPageState extends State<ConversationsPage>
           );*/
           final row = ConversationCard(
             conversation: item,
+            onTap: () {
+              GetIt.I.get<ConversationBloc>().add(
+                    RequestedConversationEvent(
+                      item.jid,
+                      item.title,
+                      item.avatarPath,
+                    ),
+                  );
+            },
             key: key,
           );
 

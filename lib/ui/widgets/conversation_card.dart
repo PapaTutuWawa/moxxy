@@ -1,11 +1,13 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:flutter/material.dart';
+import 'package:flutter_zxing/zxing_mobile.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/service/data.dart';
+import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -52,10 +54,15 @@ class _RowIcon extends StatelessWidget {
 class ConversationCard extends StatelessWidget {
   const ConversationCard({
     required this.conversation,
+    required this.onTap,
     super.key,
   });
 
+  /// The conversation to display.
   final Conversation conversation;
+
+  /// Callback for when the conversation card has been tapped.
+  final void Function() onTap;
 
   Widget _buildLastMessagePreview() {
     Widget? preview;
@@ -104,6 +111,8 @@ class ConversationCard extends StatelessWidget {
     );
   }
 
+  /// Render the "message" line under the conversation title, if we have a last
+  /// message we can display.
   Widget _renderLastMessage(BuildContext context, bool sentBySelf) {
     if (conversation.lastMessage == null) {
       return const SizedBox();
@@ -164,104 +173,104 @@ class ConversationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final sentBySelf = conversation.lastMessage?.sender ==
         GetIt.I.get<UIDataService>().ownJid!;
-    return SizedBox(
-      height: 74,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              /*child: CachingXMPPAvatar(
-                jid: conversation.jid,
-                radius: 40,
-                hasContactId: conversation.contactId != null,
-                isGroupchat: conversation.isGroupchat,
-              ),*/
-              // TODO: Fix
-              child: SizedBox(
-                width: 64,
-                height: 64,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.all(Radius.circular(12)),
-                    color: Theme.of(context).colorScheme.outline,
+    return Material(
+      color: Theme.of(context).colorScheme.surface,
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          height: 74,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: SquircleCachingXMPPAvatar(
+                    jid: conversation.jid,
+                    size: 64,
+                    borderRadius: 12,
+                    hasContactId: conversation.contactId != null,
+                    isGroupchat: conversation.isGroupchat,
+                    path: conversation.avatarPath,
+                    hash: conversation.avatarHash,
                   ),
                 ),
-              ),
-            ),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        // TODO: Determine if its a public groupchat
-                        if (conversation.isGroupchat)
-                          const _RowIcon(Icons.public),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            // TODO: Determine if its a public groupchat
+                            if (conversation.isGroupchat)
+                              const _RowIcon(Icons.public),
 
-                        if (conversation.muted)
-                          const _RowIcon(Icons.notifications_off),
+                            if (conversation.muted)
+                              const _RowIcon(Icons.notifications_off),
 
-                        Expanded(
-                          child: Text(
-                            conversation.titleWithOptionalContact,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-
-                        Offstage(
-                          offstage: !conversation.hasUnreads,
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                              left: 8,
-                              right: 14,
-                            ),
-                            child: badges.Badge(
-                              badgeStyle: badges.BadgeStyle(
-                                badgeColor:
-                                    Theme.of(context).colorScheme.primary,
-                                padding: const EdgeInsets.all(8),
+                            Expanded(
+                              child: Text(
+                                conversation.titleWithOptionalContact,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              badgeContent: Text(
-                                conversation.unreadsString,
-                                style: TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.onPrimary,
-                                  fontSize: 16,
+                            ),
+
+                            Offstage(
+                              offstage: !conversation.hasUnreads,
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 8,
+                                  right: 14,
+                                ),
+                                child: badges.Badge(
+                                  badgeStyle: badges.BadgeStyle(
+                                    badgeColor:
+                                        Theme.of(context).colorScheme.primary,
+                                    padding: const EdgeInsets.all(8),
+                                  ),
+                                  badgeContent: Text(
+                                    conversation.unreadsString,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
+                                      fontSize: 16,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
 
-                        Text(
-                          formatConversationTimestamp(
-                              conversation.lastChangeTimestamp,
-                              DateTime.now().millisecondsSinceEpoch),
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: conversation.hasUnreads
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).colorScheme.outline,
-                          ),
+                            Text(
+                              formatConversationTimestamp(
+                                conversation.lastChangeTimestamp,
+                                DateTime.now().millisecondsSinceEpoch,
+                              ),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: conversation.hasUnreads
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.outline,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      Expanded(
+                        child: _renderLastMessage(context, sentBySelf),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: _renderLastMessage(context, sentBySelf),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
