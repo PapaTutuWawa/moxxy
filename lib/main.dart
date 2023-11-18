@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -75,7 +76,6 @@ import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
 import 'package:moxxyv2/ui/service/read.dart';
 import 'package:moxxyv2/ui/service/sharing.dart';
-import 'package:moxxyv2/ui/theme.dart';
 import 'package:page_transition/page_transition.dart';
 
 void setupLogging() {
@@ -271,100 +271,116 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      locale: TranslationProvider.of(context).flutterLocale,
-      supportedLocales: AppLocaleUtils.supportedLocales,
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      title: 'Moxxy',
-      theme: getThemeData(context, Brightness.light),
-      darkTheme: getThemeData(context, Brightness.dark),
-      navigatorKey: widget.navigationKey,
-      onGenerateRoute: (settings) {
-        switch (settings.name) {
-          case introRoute:
-            return Intro.route;
-          case loginRoute:
-            return Login.route;
-          case conversationsRoute:
-            return ConversationsPage.route;
-          case newConversationRoute:
-            return NewConversationPage.route;
-          case conversationRoute:
-            final args = settings.arguments! as ConversationPageArguments;
-            return PageTransition<dynamic>(
-              type: PageTransitionType.rightToLeft,
-              settings: settings,
-              child: ConversationPage(
-                conversationJid: args.conversationJid,
-                initialText: args.initialText,
-                conversationType: args.type,
-              ),
+    return DynamicColorBuilder(
+      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+        final light = lightDynamic?.harmonized() ??
+            ColorScheme.fromSeed(seedColor: primaryColor);
+        final dark = darkDynamic?.harmonized() ??
+            ColorScheme.fromSeed(
+              seedColor: primaryColor,
+              brightness: Brightness.dark,
             );
-          // case sharedMediaRoute:
-          //   return SharedMediaPage.getRoute(
-          //     settings.arguments! as SharedMediaPageArguments,
-          //   );
-          case blocklistRoute:
-            return BlocklistPage.route;
-          case profileRoute:
-            return ProfilePage.getRoute(
-              settings.arguments! as ProfileArguments,
-            );
-          case settingsRoute:
-            return SettingsPage.route;
-          case aboutRoute:
-            return SettingsAboutPage.route;
-          case licensesRoute:
-            return SettingsLicensesPage.route;
-          case networkRoute:
-            return NetworkPage.route;
-          case privacyRoute:
-            return PrivacyPage.route;
-          case debuggingRoute:
-            return DebuggingPage.route;
-          case addContactRoute:
-            return StartChatPage.route;
-          case joinGroupchatRoute:
-            return JoinGroupchatPage.getRoute(
-              settings.arguments! as JoinGroupchatArguments,
-            );
-          case cropRoute:
-            return CropPage.route;
-          case sendFilesRoute:
-            return SendFilesPage.route;
-          case backgroundCroppingRoute:
-            return CropBackgroundPage.route;
-          case shareSelectionRoute:
-            return ShareSelectionPage.route;
-          case serverInfoRoute:
-            return ServerInfoPage.route;
-          case conversationSettingsRoute:
-            return ConversationSettingsPage.route;
-          case devicesRoute:
-            return DevicesPage.route;
-          case ownDevicesRoute:
-            return OwnDevicesPage.route;
-          case appearanceRoute:
-            return AppearanceSettingsPage.route;
-          case qrCodeScannerRoute:
-            return QrCodeScanningPage.getRoute(
-              settings.arguments! as QrCodeScanningArguments,
-            );
-          case stickersRoute:
-            return StickersSettingsPage.route;
-          case stickerPacksRoute:
-            return StickerPacksSettingsPage.route;
-          case stickerPackRoute:
-            return StickerPackPage.route;
-          case storageSettingsRoute:
-            return StorageSettingsPage.route;
-          case storageSharedMediaSettingsRoute:
-            return StorageSharedMediaPage.route;
-        }
 
-        return null;
+        return MaterialApp(
+          locale: TranslationProvider.of(context).flutterLocale,
+          supportedLocales: AppLocaleUtils.supportedLocales,
+          localizationsDelegates: GlobalMaterialLocalizations.delegates,
+          title: 'Moxxy',
+          theme: ThemeData(
+            colorScheme: light,
+          ),
+          darkTheme: ThemeData(
+            colorScheme: dark,
+          ),
+          navigatorKey: widget.navigationKey,
+          onGenerateRoute: (settings) {
+            switch (settings.name) {
+              case introRoute:
+                return Intro.route;
+              case loginRoute:
+                return Login.route;
+              case conversationsRoute:
+                return ConversationsPage.route;
+              case newConversationRoute:
+                return NewConversationPage.route;
+              case conversationRoute:
+                final args = settings.arguments! as ConversationPageArguments;
+                return PageTransition<dynamic>(
+                  type: PageTransitionType.rightToLeft,
+                  settings: settings,
+                  child: ConversationPage(
+                    conversationJid: args.conversationJid,
+                    initialText: args.initialText,
+                    conversationType: args.type,
+                  ),
+                );
+              // case sharedMediaRoute:
+              //   return SharedMediaPage.getRoute(
+              //     settings.arguments! as SharedMediaPageArguments,
+              //   );
+              case blocklistRoute:
+                return BlocklistPage.route;
+              case profileRoute:
+                return ProfilePage.getRoute(
+                  settings.arguments! as ProfileArguments,
+                );
+              case settingsRoute:
+                return SettingsPage.route;
+              case aboutRoute:
+                return SettingsAboutPage.route;
+              case licensesRoute:
+                return SettingsLicensesPage.route;
+              case networkRoute:
+                return NetworkPage.route;
+              case privacyRoute:
+                return PrivacyPage.route;
+              case debuggingRoute:
+                return DebuggingPage.route;
+              case addContactRoute:
+                return StartChatPage.route;
+              case joinGroupchatRoute:
+                return JoinGroupchatPage.getRoute(
+                  settings.arguments! as JoinGroupchatArguments,
+                );
+              case cropRoute:
+                return CropPage.route;
+              case sendFilesRoute:
+                return SendFilesPage.route;
+              case backgroundCroppingRoute:
+                return CropBackgroundPage.route;
+              case shareSelectionRoute:
+                return ShareSelectionPage.route;
+              case serverInfoRoute:
+                return ServerInfoPage.route;
+              case conversationSettingsRoute:
+                return ConversationSettingsPage.route;
+              case devicesRoute:
+                return DevicesPage.route;
+              case ownDevicesRoute:
+                return OwnDevicesPage.route;
+              case appearanceRoute:
+                return AppearanceSettingsPage.route;
+              case qrCodeScannerRoute:
+                return QrCodeScanningPage.getRoute(
+                  settings.arguments! as QrCodeScanningArguments,
+                );
+              case stickersRoute:
+                return StickersSettingsPage.route;
+              case stickerPacksRoute:
+                return StickerPacksSettingsPage.route;
+              case stickerPackRoute:
+                return StickerPackPage.route;
+              case storageSettingsRoute:
+                return StorageSettingsPage.route;
+              case storageSharedMediaSettingsRoute:
+                return StorageSharedMediaPage.route;
+            }
+
+            return null;
+          },
+          home: const Splashscreen(),
+        );
       },
-      home: const Splashscreen(),
     );
   }
 }

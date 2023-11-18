@@ -23,6 +23,7 @@ dependencies:
   #cupertino_icons: 1.0.2
   dart_emoji: 0.2.0+2
   decorated_icon: 1.2.1
+  dynamic_color: 1.6.8
   emoji_picker_flutter: ^1.6.1
   flutter:
     sdk: flutter
