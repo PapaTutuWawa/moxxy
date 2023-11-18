@@ -325,6 +325,10 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   settings.arguments! as ProfileArguments,
                 );
               case settingsRoute:
+                return PageTransition<dynamic>(
+                  type: PageTransitionType.rightToLeft,
+                  child: SettingsPage(),
+                );
                 return SettingsPage.route;
               case aboutRoute:
                 return SettingsAboutPage.route;

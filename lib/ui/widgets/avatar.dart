@@ -199,14 +199,16 @@ class SquircleCachingXMPPAvatar extends StatefulWidget {
   });
 
   static Widget self({
-    required double radius,
+    required double size,
+    required double borderRadius,
     VoidCallback? onTap,
   }) {
     return BlocBuilder<ConversationsBloc, ConversationsState>(
       buildWhen: (prev, next) => prev.avatarPath != next.avatarPath,
       builder: (context, state) {
-        return CachingXMPPAvatar(
-          radius: radius,
+        return SquircleCachingXMPPAvatar(
+          size: size,
+          borderRadius: borderRadius,
           path: state.avatarPath,
           altIcon: Icons.person,
           hasContactId: false,

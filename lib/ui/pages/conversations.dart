@@ -6,7 +6,6 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
-import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
 import 'package:moxxyv2/ui/bloc/request_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -263,71 +262,45 @@ class ConversationsPageState extends State<ConversationsPage>
         builder: (BuildContext context, ConversationsState state) => Scaffold(
           appBar: AppBar(
             automaticallyImplyLeading: false,
-            title: ClipRRect(
-              borderRadius: BorderRadius.circular(textfieldRadiusConversation),
-              child: Material(
-                child: InkWell(
-                  onTap: () {
-                    // Dismiss the selection, if we have an active one
-                    if (_selectedConversation != null) {
-                      dismissContextMenu();
-                    }
-
-                    GetIt.I.get<profile.ProfileBloc>().add(
-                          profile.ProfilePageRequestedEvent(
-                            true,
-                            jid: state.jid,
-                            avatarUrl: state.avatarPath,
-                            displayName: state.displayName,
-                          ),
-                        );
-                  },
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Hero(
-                          tag: 'self_profile_picture',
-                          child: Material(
-                            color: Colors.transparent,
-                            // NOTE: We do not care about the avatar hash because
-                            //       we just read it from the XMPP state in the
-                            //       avatar service.
-                            child: CachingXMPPAvatar.self(
-                              radius: 20,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Text(
-                          state.displayName,
-                          style: const TextStyle(
-                            fontSize: fontsizeAppbar,
-                          ),
-                        ),
-                      ),
-                    ],
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // TODO: Make larger
+                // TODO: Fix padding
+                Padding(
+                  padding: const EdgeInsets.only(right: 14),
+                  child: SquircleCachingXMPPAvatar.self(
+                    size: 40,
+                    borderRadius: 30,
                   ),
                 ),
-              ),
+
+                Text(
+                  state.displayName,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.inverseSurface,
+                  ),
+                ),
+              ],
             ),
             actions: [
-              PopupMenuButton(
-                onSelected: (ConversationsOptions result) {
-                  switch (result) {
-                    case ConversationsOptions.settings:
-                      Navigator.pushNamed(context, settingsRoute);
-                  }
+              IconButton(
+                icon: const Icon(
+                  Icons.search,
+                  size: 25,
+                ),
+                onPressed: () {},
+              ),
+              IconButton(
+                icon: const Icon(
+                  Icons.settings_outlined,
+                  size: 25,
+                ),
+                onPressed: () {
+                  Navigator.pushNamed(context, settingsRoute);
                 },
-                icon: const Icon(Icons.more_vert),
-                itemBuilder: (BuildContext context) => [
-                  PopupMenuItem(
-                    value: ConversationsOptions.settings,
-                    child: Text(t.pages.conversations.overlaySettings),
-                  ),
-                ],
               ),
             ],
           ),
