@@ -17,6 +17,7 @@ import 'package:moxxyv2/ui/request_dialog.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/context_menu.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
+import 'package:moxxyv2/ui/widgets/conversation_card.dart';
 
 enum ConversationsOptions { settings }
 
@@ -151,7 +152,7 @@ class ConversationsPageState extends State<ConversationsPage>
             _conversationKeys[item.jid] = key;
           }
 
-          final row = ConversationsListRow(
+          /*final row = ConversationsListRow(
             item,
             true,
             enableAvatarOnTap: true,
@@ -165,6 +166,10 @@ class ConversationsPageState extends State<ConversationsPage>
                     ),
                   );
             },
+            key: key,
+          );*/
+          final row = ConversationCard(
+            conversation: item,
             key: key,
           );
 
@@ -397,46 +402,13 @@ class ConversationsPageState extends State<ConversationsPage>
               ),
             ],
           ),
-          floatingActionButton: SpeedDial(
-            icon: Icons.chat,
-            curve: Curves.bounceInOut,
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
-
-            // Adjust to Material3's specifications
-            // (Thanks https://github.com/darioielardi/flutter_speed_dial/issues/279#issuecomment-1373002572)
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(16)),
-            ),
-            spacing: 16,
-            childMargin: EdgeInsets.zero,
-            childPadding: const EdgeInsets.all(8),
-
-            children: [
-              SpeedDialChild(
-                child: const Icon(Icons.notes),
-                onTap: () {
-                  context.read<NewConversationBloc>().add(
-                        NewConversationAddedEvent(
-                          '',
-                          t.pages.conversations.speeddialAddNoteToSelf,
-                          null,
-                          ConversationType.note,
-                        ),
-                      );
-                },
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                label: t.pages.conversations.speeddialAddNoteToSelf,
-              ),
-              SpeedDialChild(
-                child: const Icon(Icons.person_add),
-                onTap: () => Navigator.pushNamed(context, newConversationRoute),
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                label: t.pages.conversations.speeddialNewChat,
-              ),
-            ],
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () => Navigator.pushNamed(context, newConversationRoute),
+            // TODO: i18n
+            label: const Text('Chat'),
+            icon: const Icon(Icons.chat_outlined),
+            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+            foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
           ),
         ),
       ),

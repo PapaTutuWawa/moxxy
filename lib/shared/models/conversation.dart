@@ -285,6 +285,18 @@ class Conversation with _$Conversation {
 
   /// True, if the conversation is a groupchat. False, if not.
   bool get isGroupchat => type == ConversationType.groupchat;
+
+  /// True, if we have unread messages. False, if not.
+  bool get hasUnreads => unreadCounter > 0;
+
+  /// A string that is either "99+" if unreadsCounter > 99 or unreadsCounter.
+  String get unreadsString {
+    if (unreadCounter > 99) {
+      return '99+';
+    } else {
+      return unreadCounter.toString();
+    }
+  }
 }
 
 /// Sorts conversations in descending order by their last change timestamp.
