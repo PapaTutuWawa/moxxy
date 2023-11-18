@@ -177,7 +177,7 @@ class ConversationCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: SizedBox(
-          height: 74,
+          height: 85,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
