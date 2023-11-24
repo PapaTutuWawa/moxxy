@@ -137,7 +137,14 @@ class ConversationCard extends StatelessWidget {
 
     return Row(
       children: [
-        if (!conversation.isGroupchat && sentBySelf)
+        if (message.hasError)
+          _RowIcon(
+            Icons.error_outline,
+            color: Theme.of(context).colorScheme.error,
+          ),
+
+        // With read markers and an error it will get too crowded
+        if (!conversation.isGroupchat && sentBySelf && !message.hasError)
           _RowIcon(
             _messageStateToIcon(message),
             color: message.displayed
