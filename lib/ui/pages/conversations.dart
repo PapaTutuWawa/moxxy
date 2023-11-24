@@ -36,7 +36,8 @@ class AccountListTile extends StatelessWidget {
   /// Flag indicating whether the account is currently active.
   final bool active;
 
-  static double get height => _accountListTileVerticalPadding * 2 + _accountListTilePictureHeight;
+  static double get height =>
+      _accountListTileVerticalPadding * 2 + _accountListTilePictureHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -361,7 +362,10 @@ class ConversationsPageState extends State<ConversationsPage>
         body: BlocBuilder<ConversationsBloc, ConversationsState>(
           builder: (BuildContext context, ConversationsState state) => Scaffold(
             appBar: AppBar(
+              foregroundColor: Theme.of(context).colorScheme.onSurface,
+              backgroundColor: Theme.of(context).colorScheme.surface,
               automaticallyImplyLeading: false,
+              elevation: 0,
               toolbarHeight: 70,
               title: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -379,7 +383,8 @@ class ConversationsPageState extends State<ConversationsPage>
                         const numberAccounts = 3;
                         final extent = clampDouble(
                           // TODO: Update to 3.16 and use mq.textScaler.scale(20) to get the logical size?
-                          (numberAccounts * AccountListTile.height + 80) / mq.size.height,
+                          (numberAccounts * AccountListTile.height + 80) /
+                              mq.size.height,
                           0,
                           0.9,
                         );
@@ -500,7 +505,11 @@ class ConversationsPageState extends State<ConversationsPage>
             ),
             body: Stack(
               children: [
-                _listWrapper(context, state),
+                Material(
+                  color: Theme.of(context).colorScheme.surface,
+                  surfaceTintColor: Theme.of(context).colorScheme.surfaceTint,
+                  child: _listWrapper(context, state),
+                ),
                 if (_selectedConversation != null)
                   Positioned(
                     top: 0,
