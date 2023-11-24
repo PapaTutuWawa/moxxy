@@ -115,6 +115,183 @@ class AccountListTile extends StatelessWidget {
   }
 }
 
+// TODO: Handle the underscroll color change
+class ConversationsHomeAppBar extends StatefulWidget
+    implements PreferredSizeWidget {
+  const ConversationsHomeAppBar({
+    required this.foregroundColor,
+    required this.backgroundColor,
+    required this.title,
+    required this.actions,
+    required this.controller,
+    super.key,
+  });
+
+  final Color foregroundColor;
+  final Color backgroundColor;
+  final Widget title;
+  final List<Widget> actions;
+  final TextEditingController controller;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(70);
+
+  @override
+  ConversationsHomeAppBarState createState() => ConversationsHomeAppBarState();
+}
+
+class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
+  bool _searchVisible = false;
+  bool _searchFieldHasData = false;
+
+  // TODO: This did not always work
+  /*@override
+  void initState() {
+    super.initState();
+
+    print('Listener added');
+    widget.controller.addListener(_onTextFieldChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onTextFieldChanged);
+
+    super.dispose();
+  }*/
+
+  void _onTextFieldChanged() {
+    if (widget.controller.text.isEmpty && _searchFieldHasData) {
+      setState(() => _searchFieldHasData = false);
+    } else if (widget.controller.text.isNotEmpty && !_searchFieldHasData) {
+      setState(() => _searchFieldHasData = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: SizedBox(
+        height: widget.preferredSize.height,
+        child: Material(
+          color: widget.backgroundColor,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: AnimatedCrossFade(
+              duration: const Duration(milliseconds: 250),
+              crossFadeState: _searchVisible
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
+              firstChild: Row(
+                children: [
+                  // NOTE: Ensures that the row is as tall as the second child
+                  SizedBox(height: widget.preferredSize.height),
+
+                  Expanded(child: widget.title),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.search,
+                      size: 25,
+                    ),
+                    onPressed: () {
+                      // Toggle to the search
+                      setState(() => _searchVisible = true);
+                    },
+                  ),
+                  ...widget.actions,
+                ],
+              ),
+              secondChild: Row(
+                children: [
+                  // NOTE: Ensures that the row is as tall as the second child
+                  SizedBox(height: widget.preferredSize.height),
+
+                  IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      size: 25,
+                    ),
+                    onPressed: () {
+                      // Toggle to the search
+                      setState(() => _searchVisible = false);
+
+                      // Reset the search field
+                      widget.controller.text = '';
+                      _onTextFieldChanged();
+                    },
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: SizedBox(
+                        height: 0.619 * widget.preferredSize.height,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(40),
+                          child: Material(
+                            color: Theme.of(context).colorScheme.surfaceVariant,
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
+                              // TODO: It's not really vertically centered
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      decoration: const InputDecoration(
+                                        border: InputBorder.none,
+                                        // TODO: i18n
+                                        hintText: 'Search...',
+                                      ),
+                                      controller: widget.controller,
+                                      onChanged: (_) {
+                                        _onTextFieldChanged();
+                                      },
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 12),
+                                    child: InkResponse(
+                                      child: Icon(
+                                        _searchFieldHasData
+                                            ? Icons.close
+                                            : Icons.search,
+                                        size: 20,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
+                                      ),
+                                      onTap: () {
+                                        if (_searchFieldHasData) {
+                                          widget.controller.text = '';
+                                          _onTextFieldChanged();
+                                        } else if (widget
+                                            .controller.text.isNotEmpty) {
+                                          showNotImplementedDialog(
+                                            'search',
+                                            context,
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 enum ConversationsOptions { settings }
 
 class ConversationsRowDismissible extends StatefulWidget {
@@ -361,12 +538,13 @@ class ConversationsPageState extends State<ConversationsPage>
       child: Scaffold(
         body: BlocBuilder<ConversationsBloc, ConversationsState>(
           builder: (BuildContext context, ConversationsState state) => Scaffold(
-            appBar: AppBar(
+            appBar: ConversationsHomeAppBar(
               foregroundColor: Theme.of(context).colorScheme.onSurface,
               backgroundColor: Theme.of(context).colorScheme.surface,
-              automaticallyImplyLeading: false,
-              elevation: 0,
-              toolbarHeight: 70,
+              controller: TextEditingController(),
+              //automaticallyImplyLeading: false,
+              //elevation: 0,
+              //toolbarHeight: 70,
               title: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -485,13 +663,6 @@ class ConversationsPageState extends State<ConversationsPage>
                 ],
               ),
               actions: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.search,
-                    size: 25,
-                  ),
-                  onPressed: () {},
-                ),
                 IconButton(
                   icon: const Icon(
                     Icons.settings_outlined,
