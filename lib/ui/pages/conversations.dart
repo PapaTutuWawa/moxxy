@@ -174,7 +174,9 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
   }
 
   void _onSearchOpenChanged() {
-    setState(() {});
+    _setSearchFieldOpen(
+      widget.searchOpenNotifier.value,
+    );
   }
 
   // TODO: This did not always trigger
@@ -187,6 +189,12 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
   }
 
   void _setSearchFieldOpen(bool value) {
+    // Reset the TextField if we close the search.
+    if (!value) {
+      widget.controller.text = '';
+      _onTextFieldChanged();
+    }
+
     widget.searchOpenNotifier.value = value;
     setState(() {});
   }
@@ -241,10 +249,6 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
                       onPressed: () {
                         // Close the search.
                         _setSearchFieldOpen(false);
-
-                        // Reset the search field
-                        widget.controller.text = '';
-                        _onTextFieldChanged();
                       },
                     ),
                     Expanded(
