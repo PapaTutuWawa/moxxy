@@ -209,6 +209,9 @@ class ConversationCard extends StatelessWidget {
                       Expanded(
                         child: Row(
                           children: [
+                            if (conversation.favourite)
+                              const _RowIcon(Icons.star_outline),
+
                             // TODO: Determine if its a public groupchat
                             if (conversation.isGroupchat)
                               const _RowIcon(Icons.public),

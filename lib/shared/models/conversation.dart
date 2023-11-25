@@ -297,6 +297,10 @@ class Conversation with _$Conversation {
       return unreadCounter.toString();
     }
   }
+
+  /// Flag indicating whether the conversation is "favourited".
+  // TODO: Replace with an actual database attribute.
+  bool get favourite => true;
 }
 
 /// Sorts conversations in descending order by their last change timestamp.
