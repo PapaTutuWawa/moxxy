@@ -5,9 +5,11 @@ import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/request_bloc.dart';
+import 'package:moxxyv2/ui/bloc/state/account.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/post_build.dart';
@@ -580,242 +582,238 @@ class ConversationsPageState extends State<ConversationsPage>
           }
         },
         child: Scaffold(
-          body: BlocBuilder<ConversationsBloc, ConversationsState>(
-            builder: (BuildContext context, ConversationsState state) =>
-                Scaffold(
-              appBar: ConversationsHomeAppBar(
-                foregroundColor: Theme.of(context).colorScheme.onSurface,
-                backgroundColor: Theme.of(context).colorScheme.surface,
-                controller: TextEditingController(),
-                searchOpenNotifier: isSearchOpen,
-                //automaticallyImplyLeading: false,
-                //elevation: 0,
-                //toolbarHeight: 70,
-                title: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // TODO: Fix padding
-                    Padding(
-                      padding: const EdgeInsets.only(right: 14),
-                      child: SquircleCachingXMPPAvatar.self(
-                        size: 50,
-                        borderRadius: 30,
-                        onTap: () {
-                          // Compute the max extent.
-                          final mq = MediaQuery.of(context);
-                          // TODO: Pull this value from somewhere.
-                          const numberAccounts = 3;
-                          final extent = clampDouble(
-                            // TODO: Update to 3.16 and use mq.textScaler.scale(20) to get the logical size?
-                            (numberAccounts * AccountListTile.height + 80) /
-                                mq.size.height,
-                            0,
-                            0.9,
-                          );
+          appBar: ConversationsHomeAppBar(
+            foregroundColor: Theme.of(context).colorScheme.onSurface,
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            controller: TextEditingController(),
+            searchOpenNotifier: isSearchOpen,
+            //automaticallyImplyLeading: false,
+            //elevation: 0,
+            //toolbarHeight: 70,
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // TODO: Fix padding
+                Padding(
+                  padding: const EdgeInsets.only(right: 14),
+                  child: SquircleCachingXMPPAvatar.self(
+                    size: 50,
+                    borderRadius: 30,
+                    onTap: () {
+                      // Compute the max extent.
+                      final mq = MediaQuery.of(context);
+                      // TODO: Pull this value from somewhere.
+                      const numberAccounts = 3;
+                      final extent = clampDouble(
+                        // TODO: Update to 3.16 and use mq.textScaler.scale(20) to get the logical size?
+                        (numberAccounts * AccountListTile.height + 80) /
+                            mq.size.height,
+                        0,
+                        0.9,
+                      );
 
-                          showModalBottomSheet<void>(
-                            context: context,
-                            showDragHandle: true,
-                            isScrollControlled: true,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(28),
-                                topRight: Radius.circular(28),
+                      showModalBottomSheet<void>(
+                        context: context,
+                        showDragHandle: true,
+                        isScrollControlled: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(28),
+                            topRight: Radius.circular(28),
+                          ),
+                        ),
+                        builder: (context) => DraggableScrollableSheet(
+                          expand: false,
+                          snap: true,
+                          minChildSize: extent,
+                          initialChildSize: extent,
+                          maxChildSize: extent,
+                          builder: (context, scrollController) => ListView(
+                            controller: scrollController,
+                            // Disable scrolling when we don't "fill" the screen.
+                            physics: extent < 0.9
+                                ? const NeverScrollableScrollPhysics()
+                                : null,
+                            children: [
+                              // TODO: Actually load the accounts from somewhere
+                              BlocBuilder<AccountCubit, AccountState>(
+                                builder: (context, account) => AccountListTile(
+                                  displayName: account.displayName,
+                                  jid: account.jid,
+                                  active: true,
+                                ),
                               ),
-                            ),
-                            builder: (context) => DraggableScrollableSheet(
-                              expand: false,
-                              snap: true,
-                              minChildSize: extent,
-                              initialChildSize: extent,
-                              maxChildSize: extent,
-                              builder: (context, scrollController) => ListView(
-                                controller: scrollController,
-                                // Disable scrolling when we don't "fill" the screen.
-                                physics: extent < 0.9
-                                    ? const NeverScrollableScrollPhysics()
-                                    : null,
-                                children: [
-                                  // TODO: Actually load the accounts from somewhere
-                                  AccountListTile(
-                                    displayName: state.displayName,
-                                    jid: state.jid,
-                                    active: true,
+                              // TODO: Remove
+                              const AccountListTile(
+                                displayName: 'User-chan',
+                                jid: 'user@example.com',
+                                active: false,
+                              ),
+                              // TODO: Remove
+                              const AccountListTile(
+                                displayName: 'Alt-tan',
+                                jid: 'alt@server.net',
+                                active: false,
+                              ),
+                              InkWell(
+                                onTap: () {},
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
                                   ),
-                                  // TODO: Remove
-                                  const AccountListTile(
-                                    displayName: 'User-chan',
-                                    jid: 'user@example.com',
-                                    active: false,
-                                  ),
-                                  // TODO: Remove
-                                  const AccountListTile(
-                                    displayName: 'Alt-tan',
-                                    jid: 'alt@server.net',
-                                    active: false,
-                                  ),
-                                  InkWell(
-                                    onTap: () {},
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 8,
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.add,
+                                        size: 20,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
                                       ),
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            Icons.add,
-                                            size: 20,
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 12),
+                                        child: Text(
+                                          // TODO: i18n
+                                          "Add another account",
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            height: 2,
+                                            fontWeight: FontWeight.w600,
                                             color: Theme.of(context)
                                                 .colorScheme
-                                                .onSurface,
+                                                .inverseSurface,
                                           ),
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(left: 12),
-                                            child: Text(
-                                              // TODO: i18n
-                                              "Add another account",
-                                              style: TextStyle(
-                                                fontSize: 20,
-                                                height: 2,
-                                                fontWeight: FontWeight.w600,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .inverseSurface,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-
-                    Text(
-                      state.displayName,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.inverseSurface,
-                      ),
-                    ),
-                  ],
-                ),
-                actions: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.settings_outlined,
-                      size: 25,
-                    ),
-                    onPressed: () {
-                      Navigator.pushNamed(context, settingsRoute);
+                            ],
+                          ),
+                        ),
+                      );
                     },
                   ),
-                ],
-              ),
-              body: Stack(
-                children: [
-                  Material(
-                    color: Theme.of(context).colorScheme.surface,
-                    surfaceTintColor: Theme.of(context).colorScheme.surfaceTint,
-                    child: BlocBuilder<ConversationsCubit, List<Conversation>>(
-                      builder: (context, state) => _listWrapper(context, state),
-                    ),
-                  ),
-                  if (_selectedConversation != null)
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: GestureDetector(
-                        onTap: dismissContextMenu,
-                        // NOTE: We must set the color to Colors.transparent because the container
-                        // would otherwise not span the entire screen (or Scaffold body to be
-                        // more precise).
-                        child: const ColoredBox(
-                          color: Colors.transparent,
-                        ),
-                      ),
-                    ),
-                  Positioned(
-                    top: _topStackOffset,
-                    left: 8,
-                    child: AnimatedBuilder(
-                      animation: _contextMenuAnimation,
-                      builder: (context, child) => IgnorePointer(
-                        ignoring: _selectedConversation == null,
-                        child: Opacity(
-                          opacity: _contextMenuAnimation.value,
-                          child: child,
-                        ),
-                      ),
-                      child: ContextMenu(
-                        children: [
-                          if ((_selectedConversation?.unreadCounter ?? 0) > 0)
-                            ContextMenuItem(
-                              icon: Icons.done_all,
-                              text: t.pages.conversations.markAsRead,
-                              onPressed: () {
-                                context.read<ConversationsBloc>().add(
-                                      ConversationMarkedAsReadEvent(
-                                        _selectedConversation!.jid,
-                                      ),
-                                    );
-                                dismissContextMenu();
-                              },
-                            ),
-                          ContextMenuItem(
-                            icon: Icons.close,
-                            text: t.pages.conversations.closeChat,
-                            onPressed: () async {
-                              // ignore: use_build_context_synchronously
-                              final result = await showConfirmationDialog(
-                                t.pages.conversations.closeChat,
-                                t.pages.conversations.closeChatBody(
-                                  conversationTitle:
-                                      _selectedConversation?.title ?? '',
-                                ),
-                                context,
-                              );
+                ),
 
-                              if (result) {
-                                // TODO(Unknown): Show a snackbar allowing the user to revert the action
-                                // ignore: use_build_context_synchronously
-                                context.read<ConversationsBloc>().add(
-                                      ConversationClosedEvent(
-                                        _selectedConversation!.jid,
-                                      ),
-                                    );
-                                dismissContextMenu();
-                              }
-                            },
-                          ),
-                        ],
-                      ),
+                BlocBuilder<AccountCubit, AccountState>(
+                  builder: (context, account) => Text(
+                    account.displayName,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.inverseSurface,
                     ),
                   ),
-                ],
-              ),
-              floatingActionButton: FloatingActionButton.extended(
-                onPressed: () =>
-                    Navigator.pushNamed(context, newConversationRoute),
-                // TODO: i18n
-                label: const Text('Chat'),
-                icon: const Icon(Icons.chat_outlined),
-                backgroundColor:
-                    Theme.of(context).colorScheme.secondaryContainer,
-                foregroundColor:
-                    Theme.of(context).colorScheme.onSecondaryContainer,
-              ),
+                ),
+              ],
             ),
+            actions: [
+              IconButton(
+                icon: const Icon(
+                  Icons.settings_outlined,
+                  size: 25,
+                ),
+                onPressed: () {
+                  Navigator.pushNamed(context, settingsRoute);
+                },
+              ),
+            ],
+          ),
+          body: Stack(
+            children: [
+              Material(
+                color: Theme.of(context).colorScheme.surface,
+                surfaceTintColor: Theme.of(context).colorScheme.surfaceTint,
+                child: BlocBuilder<ConversationsCubit, List<Conversation>>(
+                  builder: (context, state) => _listWrapper(context, state),
+                ),
+              ),
+              if (_selectedConversation != null)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: GestureDetector(
+                    onTap: dismissContextMenu,
+                    // NOTE: We must set the color to Colors.transparent because the container
+                    // would otherwise not span the entire screen (or Scaffold body to be
+                    // more precise).
+                    child: const ColoredBox(
+                      color: Colors.transparent,
+                    ),
+                  ),
+                ),
+              Positioned(
+                top: _topStackOffset,
+                left: 8,
+                child: AnimatedBuilder(
+                  animation: _contextMenuAnimation,
+                  builder: (context, child) => IgnorePointer(
+                    ignoring: _selectedConversation == null,
+                    child: Opacity(
+                      opacity: _contextMenuAnimation.value,
+                      child: child,
+                    ),
+                  ),
+                  child: ContextMenu(
+                    children: [
+                      if ((_selectedConversation?.unreadCounter ?? 0) > 0)
+                        ContextMenuItem(
+                          icon: Icons.done_all,
+                          text: t.pages.conversations.markAsRead,
+                          onPressed: () {
+                            context.read<ConversationsBloc>().add(
+                                  ConversationMarkedAsReadEvent(
+                                    _selectedConversation!.jid,
+                                  ),
+                                );
+                            dismissContextMenu();
+                          },
+                        ),
+                      ContextMenuItem(
+                        icon: Icons.close,
+                        text: t.pages.conversations.closeChat,
+                        onPressed: () async {
+                          // ignore: use_build_context_synchronously
+                          final result = await showConfirmationDialog(
+                            t.pages.conversations.closeChat,
+                            t.pages.conversations.closeChatBody(
+                              conversationTitle:
+                                  _selectedConversation?.title ?? '',
+                            ),
+                            context,
+                          );
+
+                          if (result) {
+                            // TODO(Unknown): Show a snackbar allowing the user to revert the action
+                            // ignore: use_build_context_synchronously
+                            context.read<ConversationsBloc>().add(
+                                  ConversationClosedEvent(
+                                    _selectedConversation!.jid,
+                                  ),
+                                );
+                            dismissContextMenu();
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () => Navigator.pushNamed(context, newConversationRoute),
+            // TODO: i18n
+            label: const Text('Chat'),
+            icon: const Icon(Icons.chat_outlined),
+            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+            foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
           ),
         ),
       ),

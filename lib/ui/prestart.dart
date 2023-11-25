@@ -5,12 +5,14 @@ import 'package:logging/logging.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/quirks/quirks.g.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/bloc/request_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
+import 'package:moxxyv2/ui/bloc/state/account.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/events.dart';
 import 'package:moxxyv2/ui/service/data.dart';
@@ -47,13 +49,12 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
     await GetIt.I.get<ConversationsCubit>().init(
           result.conversations!,
         );
-    GetIt.I.get<ConversationsBloc>().add(
-          ConversationsInitEvent(
-            result.displayName!,
-            result.jid!,
-            // TODO: Remove
-            result.conversations!,
-            avatarUrl: result.avatarUrl,
+    GetIt.I.get<AccountCubit>().setAccount(
+          AccountState(
+            displayName: result.displayName!,
+            avatarPath: result.avatarUrl,
+            avatarHash: result.avatarHash,
+            jid: result.jid!,
           ),
         );
     GetIt.I.get<NewConversationBloc>().add(

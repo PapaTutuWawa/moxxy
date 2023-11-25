@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/bloc/state/account.dart';
 import 'package:moxxyv2/ui/service/avatars.dart';
 import 'package:moxxyv2/ui/theme.dart';
 
@@ -203,17 +205,18 @@ class SquircleCachingXMPPAvatar extends StatefulWidget {
     required double borderRadius,
     VoidCallback? onTap,
   }) {
-    return BlocBuilder<ConversationsBloc, ConversationsState>(
+    return BlocBuilder<AccountCubit, AccountState>(
       buildWhen: (prev, next) => prev.avatarPath != next.avatarPath,
-      builder: (context, state) {
+      builder: (context, account) {
         return SquircleCachingXMPPAvatar(
           size: size,
           borderRadius: borderRadius,
-          path: state.avatarPath,
+          path: account.avatarPath,
+          hash: account.avatarHash,
           altIcon: Icons.person,
           hasContactId: false,
           isGroupchat: false,
-          jid: state.jid,
+          jid: account.jid,
           ownAvatar: true,
           onTap: onTap,
         );

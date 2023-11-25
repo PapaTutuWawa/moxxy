@@ -11,6 +11,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
+import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
@@ -123,6 +124,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<RequestBloc>(RequestBloc());
   GetIt.I.registerSingleton<JoinGroupchatBloc>(JoinGroupchatBloc());
   GetIt.I.registerSingleton<ConversationsCubit>(ConversationsCubit());
+  GetIt.I.registerSingleton<AccountCubit>(AccountCubit());
 }
 
 void main() async {
@@ -204,6 +206,9 @@ void main() async {
         BlocProvider<JoinGroupchatBloc>(
           create: (_) => GetIt.I.get<JoinGroupchatBloc>(),
         ),
+        BlocProvider<AccountCubit>(
+          create: (_) => GetIt.I.get<AccountCubit>(),
+        )
       ],
       child: TranslationProvider(
         child: MyApp(navKey),

@@ -54,9 +54,9 @@ class NewConversationBloc
     if (result is NoConversationModifiedEvent) {
       // Fall through
     } else if (result is ConversationUpdatedEvent) {
-      await conversations.updateConversation(result.conversation!);
+      await conversations.updateConversation(result.conversation);
     } else if (result is ConversationAddedEvent) {
-      await conversations.addConversation(result.conversation!);
+      await conversations.addConversation(result.conversation);
     }
 
     GetIt.I.get<conversation.ConversationBloc>().add(
