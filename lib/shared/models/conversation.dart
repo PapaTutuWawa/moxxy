@@ -300,7 +300,7 @@ class Conversation with _$Conversation {
 
   /// Flag indicating whether the conversation is "favourited".
   // TODO: Replace with an actual database attribute.
-  bool get favourite => true;
+  bool get favourite => false;
 }
 
 /// Sorts conversations in descending order by their last change timestamp.
