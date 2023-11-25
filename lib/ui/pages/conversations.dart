@@ -7,7 +7,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/request_bloc.dart';
 import 'package:moxxyv2/ui/bloc/state/account.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -352,9 +352,11 @@ class ConversationsRowDismissibleState
     return Dismissible(
       key: ValueKey('conversation;${widget.item}'),
       // TODO(Unknown): Show a snackbar allowing the user to revert the action
-      onDismissed: (direction) => context.read<ConversationsBloc>().add(
+      // TODO: Fix
+      onDismissed: (direction) {},
+      /*context.read<OldConversationsBloc>().add(
             ConversationClosedEvent(widget.item.jid),
-          ),
+          ),*/
       onUpdate: (details) {
         if (details.direction != direction) {
           setState(() {
@@ -767,11 +769,12 @@ class ConversationsPageState extends State<ConversationsPage>
                           icon: Icons.done_all,
                           text: t.pages.conversations.markAsRead,
                           onPressed: () {
-                            context.read<ConversationsBloc>().add(
+                            // TODO: Fix
+                            /*context.read<OldConversationsBloc>().add(
                                   ConversationMarkedAsReadEvent(
                                     _selectedConversation!.jid,
                                   ),
-                                );
+                                );*/
                             dismissContextMenu();
                           },
                         ),
@@ -791,12 +794,13 @@ class ConversationsPageState extends State<ConversationsPage>
 
                           if (result) {
                             // TODO(Unknown): Show a snackbar allowing the user to revert the action
+                            // TODO: Fix
                             // ignore: use_build_context_synchronously
-                            context.read<ConversationsBloc>().add(
+                            /*context.read<OldConversationsBloc>().add(
                                   ConversationClosedEvent(
                                     _selectedConversation!.jid,
                                   ),
-                                );
+                                );*/
                             dismissContextMenu();
                           }
                         },

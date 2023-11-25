@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -46,11 +45,9 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     RequestedConversationEvent event,
     Emitter<ConversationState> emit,
   ) async {
-    final cb = GetIt.I.get<ConversationsBloc>();
+    final cb = GetIt.I.get<ConversationsCubit>();
     await cb.waitUntilInitialized();
-    final conversation = cb.state.conversations.firstWhereOrNull(
-      (Conversation c) => c.jid == event.jid,
-    )!;
+    final conversation = cb.getConversationByJid(event.jid)!;
     emit(
       state.copyWith(
         conversation: conversation,

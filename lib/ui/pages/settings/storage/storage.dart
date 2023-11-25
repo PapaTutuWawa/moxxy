@@ -7,7 +7,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as nav;
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -248,8 +248,8 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
                   );
 
                   // Show the new conversations list
-                  GetIt.I.get<ConversationsBloc>().add(
-                        ConversationsSetEvent(deleteResult.conversations),
+                  await GetIt.I.get<ConversationsCubit>().setConversations(
+                        deleteResult.conversations,
                       );
                 }
               },

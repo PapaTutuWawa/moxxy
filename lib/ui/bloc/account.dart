@@ -8,4 +8,14 @@ class AccountCubit extends Cubit<AccountState> {
   void setAccount(AccountState account) {
     emit(account);
   }
+
+  /// Update the account's avatar data in the UI.
+  void changeAvatar(String path, String hash) {
+    emit(
+      state.copyWith(
+        avatarPath: path,
+        avatarHash: hash,
+      ),
+    );
+  }
 }

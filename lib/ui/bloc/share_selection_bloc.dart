@@ -7,7 +7,7 @@ import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
@@ -192,7 +192,7 @@ class ShareSelectionBloc
     Emitter<ShareSelectionState> emit,
   ) async {
     _updateItems(
-      GetIt.I.get<ConversationsBloc>().state.conversations,
+      GetIt.I.get<ConversationsCubit>().state,
       event.rosterItems,
       emit,
     );

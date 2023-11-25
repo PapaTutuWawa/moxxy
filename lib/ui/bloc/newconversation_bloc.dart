@@ -8,7 +8,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 
 part 'newconversation_bloc.freezed.dart';

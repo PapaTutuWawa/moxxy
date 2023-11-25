@@ -10,7 +10,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
 import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart' as blocklist;
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart' as conversations;
+import 'package:moxxyv2/ui/bloc/conversations.dart' as conversations;
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart' as new_conversation;
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';

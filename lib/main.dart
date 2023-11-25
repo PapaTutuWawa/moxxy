@@ -14,7 +14,7 @@ import 'package:moxxyv2/shared/synchronized_queue.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
 import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
@@ -105,7 +105,6 @@ Future<void> setupUIServices() async {
 void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I
       .registerSingleton<NavigationBloc>(NavigationBloc(navigationKey: navKey));
-  GetIt.I.registerSingleton<ConversationsBloc>(ConversationsBloc());
   GetIt.I.registerSingleton<NewConversationBloc>(NewConversationBloc());
   GetIt.I.registerSingleton<ConversationBloc>(ConversationBloc());
   GetIt.I.registerSingleton<BlocklistBloc>(BlocklistBloc());
@@ -148,9 +147,6 @@ void main() async {
         ),
         BlocProvider<LoginBloc>(
           create: (_) => LoginBloc(),
-        ),
-        BlocProvider<ConversationsBloc>(
-          create: (_) => GetIt.I.get<ConversationsBloc>(),
         ),
         BlocProvider<ConversationsCubit>(
           create: (_) => GetIt.I.get<ConversationsCubit>(),
@@ -208,7 +204,7 @@ void main() async {
         ),
         BlocProvider<AccountCubit>(
           create: (_) => GetIt.I.get<AccountCubit>(),
-        )
+        ),
       ],
       child: TranslationProvider(
         child: MyApp(navKey),

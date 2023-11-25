@@ -6,7 +6,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/quirks/quirks.g.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
@@ -46,7 +46,7 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
     GetIt.I.get<UIDataService>().processPreStartDoneEvent(result);
 
     // Set up the BLoCs
-    await GetIt.I.get<ConversationsCubit>().init(
+    await GetIt.I.get<ConversationsCubit>().setConversations(
           result.conversations!,
         );
     GetIt.I.get<AccountCubit>().setAccount(

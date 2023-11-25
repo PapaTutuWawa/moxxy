@@ -4,7 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/profile/profile.dart';
@@ -76,7 +76,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       ),
     );
 
-    GetIt.I.get<ConversationsBloc>().add(AvatarChangedEvent(event.path));
+    GetIt.I.get<AccountCubit>().changeAvatar(event.path, event.hash);
 
     if (event.userTriggered) {
       await getForegroundService().send(

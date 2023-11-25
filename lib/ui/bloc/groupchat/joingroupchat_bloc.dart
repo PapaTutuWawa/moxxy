@@ -7,7 +7,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversations.dart';
 
 part 'joingroupchat_bloc.freezed.dart';
 part 'joingroupchat_event.dart';

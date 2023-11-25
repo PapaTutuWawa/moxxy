@@ -4,7 +4,7 @@ import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
 import 'package:moxxyv2/ui/constants.dart';
@@ -213,10 +213,11 @@ class ConversationTopbar extends StatelessWidget
 
                     if (result) {
                       // ignore: use_build_context_synchronously
-                      context.read<ConversationsBloc>().add(
-                            ConversationClosedEvent(
-                              state.conversation!.jid,
-                            ),
+                      await context
+                          .read<ConversationsCubit>()
+                          .closeConversation(
+                            state.conversation!.jid,
+                            state.conversation!.accountJid,
                           );
 
                       // Navigate back

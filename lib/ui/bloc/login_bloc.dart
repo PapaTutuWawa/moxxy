@@ -5,9 +5,10 @@ import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/request_bloc.dart';
+import 'package:moxxyv2/ui/bloc/state/account.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 
@@ -92,11 +93,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       GetIt.I.get<UIDataService>().processPreStartDoneEvent(result.preStart);
 
       // Set up BLoCs
-      GetIt.I.get<ConversationsBloc>().add(
-            ConversationsInitEvent(
-              result.preStart.displayName!,
-              state.jid,
-              result.preStart.conversations!,
+      GetIt.I.get<AccountCubit>().setAccount(
+            AccountState(
+              displayName: result.preStart.displayName!,
+              avatarPath: result.preStart.avatarUrl,
+              avatarHash: result.preStart.avatarHash,
+              jid: result.preStart.jid!,
             ),
           );
       GetIt.I.get<NavigationBloc>().add(

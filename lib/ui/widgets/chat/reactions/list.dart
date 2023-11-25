@@ -5,7 +5,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/reaction_group.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
@@ -66,7 +66,7 @@ class ReactionList extends StatelessWidget {
         // insert a "pseudo" entry so that we can add new reactions.
         final reactions = ensureReactionGroupOrder(reactionsRaw, ownJid);
 
-        final bloc = GetIt.I.get<ConversationsBloc>();
+        final bloc = GetIt.I.get<ConversationsCubit>();
         return ListView.builder(
           shrinkWrap: true,
           itemCount: reactions.length,
