@@ -445,12 +445,12 @@ class ConversationsPageState extends State<ConversationsPage>
     });
   }
 
-  Widget _listWrapper(BuildContext context, ConversationsState state) {
-    if (state.conversations.isNotEmpty) {
+  Widget _listWrapper(BuildContext context, List<Conversation> state) {
+    if (state.isNotEmpty) {
       return ListView.builder(
-        itemCount: state.conversations.length,
+        itemCount: state.length,
         itemBuilder: (context, index) {
-          final item = state.conversations[index];
+          final item = state[index];
 
           GlobalKey key;
           if (_conversationKeys.containsKey(item.jid)) {
@@ -725,7 +725,9 @@ class ConversationsPageState extends State<ConversationsPage>
                   Material(
                     color: Theme.of(context).colorScheme.surface,
                     surfaceTintColor: Theme.of(context).colorScheme.surfaceTint,
-                    child: _listWrapper(context, state),
+                    child: BlocBuilder<ConversationsCubit, List<Conversation>>(
+                      builder: (context, state) => _listWrapper(context, state),
+                    ),
                   ),
                   if (_selectedConversation != null)
                     Positioned(

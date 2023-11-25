@@ -24,18 +24,6 @@ class ConversationExitedEvent extends ConversationsEvent {
   final ConversationType type;
 }
 
-/// Triggered when a conversation has been added.
-class ConversationsAddedEvent extends ConversationsEvent {
-  ConversationsAddedEvent(this.conversation);
-  final Conversation conversation;
-}
-
-/// Triggered when a conversation got updated
-class ConversationsUpdatedEvent extends ConversationsEvent {
-  ConversationsUpdatedEvent(this.conversation);
-  final Conversation conversation;
-}
-
 /// Triggered when the avatar of the logged-in user has changed
 class AvatarChangedEvent extends ConversationsEvent {
   AvatarChangedEvent(this.path);

@@ -87,14 +87,11 @@ class StartChatBloc extends Bloc<StartChatEvent, StartChatState> {
 
     final addResult = result! as AddContactResultEvent;
     if (addResult.conversation != null) {
+      final bloc = GetIt.I.get<ConversationsCubit>();
       if (addResult.added) {
-        GetIt.I.get<ConversationsBloc>().add(
-              ConversationsAddedEvent(addResult.conversation!),
-            );
+        await bloc.addConversation(addResult.conversation!);
       } else {
-        GetIt.I.get<ConversationsBloc>().add(
-              ConversationsUpdatedEvent(addResult.conversation!),
-            );
+        await bloc.updateConversation(addResult.conversation!);
       }
     }
 

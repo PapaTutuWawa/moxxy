@@ -85,8 +85,8 @@ class JoinGroupchatBloc extends Bloc<JoinGroupchatEvent, JoinGroupchatState> {
     await _onPageReset(PageResetEvent(), emit);
     final joinEvent = result! as JoinGroupchatResult;
 
-    GetIt.I.get<ConversationsBloc>().add(
-          ConversationsAddedEvent(joinEvent.conversation),
+    await GetIt.I.get<ConversationsCubit>().addConversation(
+          joinEvent.conversation,
         );
 
     GetIt.I.get<ConversationBloc>().add(

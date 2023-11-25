@@ -44,10 +44,14 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
     GetIt.I.get<UIDataService>().processPreStartDoneEvent(result);
 
     // Set up the BLoCs
+    await GetIt.I.get<ConversationsCubit>().init(
+          result.conversations!,
+        );
     GetIt.I.get<ConversationsBloc>().add(
           ConversationsInitEvent(
             result.displayName!,
             result.jid!,
+            // TODO: Remove
             result.conversations!,
             avatarUrl: result.avatarUrl,
           ),

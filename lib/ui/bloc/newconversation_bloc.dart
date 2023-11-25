@@ -39,7 +39,7 @@ class NewConversationBloc
     NewConversationAddedEvent event,
     Emitter<NewConversationState> emit,
   ) async {
-    final conversations = GetIt.I.get<ConversationsBloc>();
+    final conversations = GetIt.I.get<ConversationsCubit>();
 
     final result = await getForegroundService().send(
       AddConversationCommand(
@@ -54,9 +54,9 @@ class NewConversationBloc
     if (result is NoConversationModifiedEvent) {
       // Fall through
     } else if (result is ConversationUpdatedEvent) {
-      conversations.add(ConversationsUpdatedEvent(result.conversation));
+      await conversations.updateConversation(result.conversation!);
     } else if (result is ConversationAddedEvent) {
-      conversations.add(ConversationsAddedEvent(result.conversation));
+      await conversations.addConversation(result.conversation!);
     }
 
     GetIt.I.get<conversation.ConversationBloc>().add(

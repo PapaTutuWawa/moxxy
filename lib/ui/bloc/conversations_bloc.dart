@@ -2,22 +2,110 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:collection/collection.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:get_it/get_it.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:synchronized/synchronized.dart';
 
 part 'conversations_bloc.freezed.dart';
 part 'conversations_event.dart';
 part 'conversations_state.dart';
 
+/// A BLoC that handles changes to the conversations list. This included adding
+/// conversations, updating conversations, and handling different changes, like
+/// closing a conversation.
+// TODO: Move into a new file.
+class ConversationsCubit extends Cubit<List<Conversation>> {
+  ConversationsCubit() : super([]);
+
+  // TODO(Unknown): This pattern is used so often that it should become its own thing in moxlib
+  bool _initialized = false;
+  final Lock _lock = Lock();
+  final List<Completer<void>> _completers = List.empty(growable: true);
+
+  /// Asynchronously blocks until a ConversationsInitEvent has been triggered and
+  /// processed. Useful to ensure that accessing the BLoC's state outside of
+  /// a BlocBuilder causes a NPE.
+  Future<void> waitUntilInitialized() async {
+    final comp = await _lock.synchronized(() {
+      if (!_initialized) {
+        final completer = Completer<void>();
+        _completers.add(completer);
+        return completer;
+      }
+
+      return null;
+    });
+
+    if (comp != null) await comp.future;
+  }
+
+  /// Initialize the conversations list.
+  Future<void> init(List<Conversation> conversations) async {
+    emit(conversations);
+
+    await _lock.synchronized(() {
+      _initialized = true;
+
+      for (final completer in _completers) {
+        completer.complete();
+      }
+
+      _completers.clear();
+    });
+  }
+
+  /// Add [conversation] to the state.
+  Future<void> addConversation(Conversation conversation) async {
+    emit(
+      List.from(
+        <Conversation>[...state, conversation]..sort(compareConversation),
+      ),
+    );
+  }
+
+  /// Update a conversation by replacing it with [newConversation].
+  Future<void> updateConversation(Conversation newConversation) async {
+    await waitUntilInitialized();
+
+    emit(
+      List.from(
+        state.map((c) {
+          if (c.jid == newConversation.jid &&
+              c.accountJid == newConversation.accountJid) {
+            return newConversation;
+          }
+
+          return c;
+        }).toList()
+          ..sort(compareConversation),
+      ),
+    );
+  }
+
+  /// Marks a conversation with JID [jid] and accountJid [accountJid] as closed.
+  Future<void> closeConversation(String jid, String accountJid) async {
+    await waitUntilInitialized();
+
+    await getForegroundService().send(
+      CloseConversationCommand(
+        jid: jid,
+        // TODO
+        // accountJid: accountJid,
+      ),
+    );
+
+    emit(
+      List<Conversation>.from(
+        state.where((c) => c.jid != jid && c.accountJid != accountJid).toList(),
+      ),
+    );
+  }
+}
+
 class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
   ConversationsBloc() : super(ConversationsState()) {
     on<ConversationsInitEvent>(_onInit);
-    on<ConversationsAddedEvent>(_onConversationsAdded);
-    on<ConversationsUpdatedEvent>(_onConversationsUpdated);
     on<AvatarChangedEvent>(_onAvatarChanged);
     on<ConversationClosedEvent>(_onConversationClosed);
     on<ConversationMarkedAsReadEvent>(_onConversationMarkedAsRead);
@@ -81,49 +169,6 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
       ),
       awaitable: false,
     );
-  }
-
-  Future<void> _onConversationsAdded(
-    ConversationsAddedEvent event,
-    Emitter<ConversationsState> emit,
-  ) async {
-    // TODO(Unknown): Should we guard against adding the same conversation multiple times?
-    emit(
-      state.copyWith(
-        conversations: List.from(
-          <Conversation>[...state.conversations, event.conversation]
-            ..sort(compareConversation),
-        ),
-      ),
-    );
-
-    // TODO(Unknown): Doing it from here feels absolutely not clean. Maybe change that.
-    GetIt.I.get<ShareSelectionBloc>().add(
-          ConversationsModified(state.conversations),
-        );
-  }
-
-  Future<void> _onConversationsUpdated(
-    ConversationsUpdatedEvent event,
-    Emitter<ConversationsState> emit,
-  ) async {
-    emit(
-      state.copyWith(
-        conversations: List.from(
-          state.conversations.map((c) {
-            if (c.jid == event.conversation.jid) return event.conversation;
-
-            return c;
-          }).toList()
-            ..sort(compareConversation),
-        ),
-      ),
-    );
-
-    // TODO(Unknown): Doing it from here feels absolutely not clean. Maybe change that.
-    GetIt.I.get<ShareSelectionBloc>().add(
-          ConversationsModified(state.conversations),
-        );
   }
 
   Future<void> _onAvatarChanged(

@@ -80,8 +80,8 @@ Future<void> onConversationAdded(
   ConversationAddedEvent event, {
   dynamic extra,
 }) async {
-  GetIt.I.get<conversations.ConversationsBloc>().add(
-        conversations.ConversationsAddedEvent(event.conversation),
+  await GetIt.I.get<conversations.ConversationsCubit>().addConversation(
+        event.conversation,
       );
 }
 
@@ -89,8 +89,8 @@ Future<void> onConversationUpdated(
   ConversationUpdatedEvent event, {
   dynamic extra,
 }) async {
-  GetIt.I.get<conversations.ConversationsBloc>().add(
-        conversations.ConversationsUpdatedEvent(event.conversation),
+  await GetIt.I.get<conversations.ConversationsCubit>().updateConversation(
+        event.conversation,
       );
   GetIt.I.get<conversation.ConversationBloc>().add(
         conversation.ConversationUpdatedEvent(event.conversation),

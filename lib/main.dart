@@ -122,6 +122,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<StickerPackBloc>(StickerPackBloc());
   GetIt.I.registerSingleton<RequestBloc>(RequestBloc());
   GetIt.I.registerSingleton<JoinGroupchatBloc>(JoinGroupchatBloc());
+  GetIt.I.registerSingleton<ConversationsCubit>(ConversationsCubit());
 }
 
 void main() async {
@@ -148,6 +149,9 @@ void main() async {
         ),
         BlocProvider<ConversationsBloc>(
           create: (_) => GetIt.I.get<ConversationsBloc>(),
+        ),
+        BlocProvider<ConversationsCubit>(
+          create: (_) => GetIt.I.get<ConversationsCubit>(),
         ),
         BlocProvider<NewConversationBloc>(
           create: (_) => GetIt.I.get<NewConversationBloc>(),
@@ -327,9 +331,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
               case settingsRoute:
                 return PageTransition<dynamic>(
                   type: PageTransitionType.rightToLeft,
-                  child: SettingsPage(),
+                  child: const SettingsPage(),
                 );
-                return SettingsPage.route;
               case aboutRoute:
                 return SettingsAboutPage.route;
               case licensesRoute:
