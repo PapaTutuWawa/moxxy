@@ -163,13 +163,13 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
   void initState() {
     super.initState();
 
-    //widget.controller.addListener(_onTextFieldChanged);
+    widget.controller.addListener(_onTextFieldChanged);
     widget.searchOpenNotifier.addListener(_onSearchOpenChanged);
   }
 
   @override
   void dispose() {
-    //widget.controller.removeListener(_onTextFieldChanged);
+    widget.controller.removeListener(_onTextFieldChanged);
     widget.searchOpenNotifier.removeListener(_onSearchOpenChanged);
 
     super.dispose();
@@ -181,7 +181,6 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
     );
   }
 
-  // TODO: This did not always trigger
   void _onTextFieldChanged() {
     if (widget.controller.text.isEmpty && _searchFieldHasData) {
       setState(() => _searchFieldHasData = false);
@@ -199,6 +198,14 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
 
     widget.searchOpenNotifier.value = value;
     setState(() {});
+  }
+
+  /// Called when the search is submitted. [value] is the content of the TextField.
+  void _onSubmitted(BuildContext context, String value) {
+    showNotImplementedDialog(
+      'search',
+      context,
+    );
   }
 
   @override
@@ -277,13 +284,16 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
                                           hintText: 'Search...',
                                         ),
                                         style: TextStyle(
-                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
                                           fontWeight: FontWeight.w400,
                                         ),
                                         controller: widget.controller,
-                                        onChanged: (_) {
-                                          _onTextFieldChanged();
-                                        },
+                                        onSubmitted: (value) => _onSubmitted(
+                                          context,
+                                          value,
+                                        ),
                                       ),
                                     ),
                                     Padding(
@@ -304,10 +314,8 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
                                             _onTextFieldChanged();
                                           } else if (widget
                                               .controller.text.isNotEmpty) {
-                                            showNotImplementedDialog(
-                                              'search',
-                                              context,
-                                            );
+                                            _onSubmitted(context,
+                                                widget.controller.text);
                                           }
                                         },
                                       ),
@@ -419,7 +427,11 @@ class ConversationsPageState extends State<ConversationsPage>
   /// The required offset from the top of the stack for the context menu.
   double _topStackOffset = 0;
 
+  /// Tracks whether the search bar is open or not.
   final ValueNotifier<bool> isSearchOpen = ValueNotifier(false);
+
+  /// The controller for the search TextField.
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -443,6 +455,8 @@ class ConversationsPageState extends State<ConversationsPage>
   @override
   void dispose() {
     _contextMenuController.dispose();
+    _searchController.dispose();
+
     super.dispose();
   }
 
@@ -591,7 +605,7 @@ class ConversationsPageState extends State<ConversationsPage>
           appBar: ConversationsHomeAppBar(
             foregroundColor: Theme.of(context).colorScheme.onSurface,
             backgroundColor: Theme.of(context).colorScheme.surface,
-            controller: TextEditingController(),
+            controller: _searchController,
             searchOpenNotifier: isSearchOpen,
             //automaticallyImplyLeading: false,
             //elevation: 0,
