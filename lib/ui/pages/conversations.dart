@@ -276,6 +276,10 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
                                           // TODO: i18n
                                           hintText: 'Search...',
                                         ),
+                                        style: TextStyle(
+                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                          fontWeight: FontWeight.w400,
+                                        ),
                                         controller: widget.controller,
                                         onChanged: (_) {
                                           _onTextFieldChanged();
