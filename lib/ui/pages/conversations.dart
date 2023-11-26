@@ -202,6 +202,7 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
 
   /// Called when the search is submitted. [value] is the content of the TextField.
   void _onSubmitted(BuildContext context, String value) {
+    // TODO
     showNotImplementedDialog(
       'search',
       context,
