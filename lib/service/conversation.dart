@@ -77,23 +77,90 @@ class ConversationService {
     });
   }
 
-  /// Loads all conversations from the database and adds them to the state and cache.
-  Future<List<Conversation>> loadConversations(String accountJid,
-      {String? extraFilter, List<String>? extraArgs}) async {
+  /// Search for conversations associated with the account [accountJid],
+  /// where the title or the last message's body contains [text].
+  Future<List<Conversation>> searchConversations(
+    String accountJid,
+    String text,
+  ) async {
+    // TODO(Unknown): Optimize so that we don't have to do a second query (last message)$
+    //                for the matching conversations.
     final db = GetIt.I.get<DatabaseService>().database;
     final gs = GetIt.I.get<GroupchatService>();
-    final extra = extraFilter != null ? ' $extraFilter' : '';
 
-    final args = List<String>.from([
-      accountJid,
-    ]);
-    if (extraArgs != null) {
-      args.addAll(extraArgs);
+    final textQuery = "%${text}%";
+    final conversationsRaw = await db.rawQuery(
+      '''
+SELECT
+  *
+FROM
+  $conversationsTable AS conversations
+LEFT JOIN
+  $messagesTable lm ON lm.id = conversations.lastMessageId
+WHERE
+  conversations.accountJid = ? AND (
+    conversations.title LIKE ? OR lm.body LIKE ?
+  )
+ORDER BY
+  lastChangeTimestamp DESC''',
+      [
+        accountJid,
+        textQuery,
+        textQuery,
+      ],
+    );
+    _log.finest(
+      'Conversation search returned ${conversationsRaw.length} conversations',
+    );
+
+    final tmp = List<Conversation>.empty(growable: true);
+    for (final c in conversationsRaw) {
+      final jid = c['jid']! as String;
+      final rosterItem = await GetIt.I
+          .get<RosterService>()
+          .getRosterItemByJid(jid, accountJid);
+
+      Message? lastMessage;
+      if (c['lastMessageId'] != null) {
+        lastMessage = await GetIt.I.get<MessageService>().getMessageById(
+              c['lastMessageId']! as String,
+              accountJid,
+              queryReactionPreview: false,
+            );
+      }
+
+      GroupchatDetails? groupchatDetails;
+      if (c['type'] == ConversationType.groupchat.value) {
+        groupchatDetails = await gs.getGroupchatDetailsByJid(
+          c['jid']! as String,
+          accountJid,
+        );
+      }
+
+      tmp.add(
+        Conversation.fromDatabaseJson(
+          c,
+          rosterItem?.showAddToRosterButton ?? true,
+          lastMessage,
+          groupchatDetails,
+        ),
+      );
     }
+
+    return tmp;
+  }
+
+  /// Loads all conversations from the database and adds them to the state and cache.
+  Future<List<Conversation>> loadConversations(String accountJid) async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final gs = GetIt.I.get<GroupchatService>();
+
     final conversationsRaw = await db.query(
       conversationsTable,
-      where: 'accountJid = ?$extra',
-      whereArgs: args,
+      where: 'accountJid = ?',
+      whereArgs: [
+        accountJid,
+      ],
       orderBy: 'lastChangeTimestamp DESC',
     );
 

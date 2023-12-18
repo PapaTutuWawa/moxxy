@@ -306,6 +306,10 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
                                         if (_searchFieldHasData) {
                                           widget.controller.text = '';
                                           _onTextFieldChanged();
+
+                                          // Reset the search results
+                                          widget.searchResultNotifier.value =
+                                              null;
                                         } else if (widget
                                             .controller.text.isNotEmpty) {
                                           _onSubmitted(

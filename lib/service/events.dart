@@ -1776,14 +1776,7 @@ Future<void> performConversationSearch(
   sendEvent(
     ConversationSearchResult(
       // TODO: Replace with an extra search method of ConversationService
-      results: await cs.loadConversations(
-        accountJid!,
-        // TODO(Unknown): Somehow integrate searching the last message body
-        extraFilter: 'AND (title LIKE ?)',
-        extraArgs: [
-          '%${command.text}%',
-        ],
-      ),
+      results: await cs.searchConversations(accountJid!, command.text),
     ),
     id: extra as String,
   );
