@@ -78,13 +78,22 @@ class ConversationService {
   }
 
   /// Loads all conversations from the database and adds them to the state and cache.
-  Future<List<Conversation>> loadConversations(String accountJid) async {
+  Future<List<Conversation>> loadConversations(String accountJid,
+      {String? extraFilter, List<String>? extraArgs}) async {
     final db = GetIt.I.get<DatabaseService>().database;
     final gs = GetIt.I.get<GroupchatService>();
+    final extra = extraFilter != null ? ' $extraFilter' : '';
+
+    final args = List<String>.from([
+      accountJid,
+    ]);
+    if (extraArgs != null) {
+      args.addAll(extraArgs);
+    }
     final conversationsRaw = await db.query(
       conversationsTable,
-      where: 'accountJid = ?',
-      whereArgs: [accountJid],
+      where: 'accountJid = ?$extra',
+      whereArgs: args,
       orderBy: 'lastChangeTimestamp DESC',
     );
 

@@ -546,3 +546,10 @@ void shareMessage(Message message) {
     );
   }
 }
+
+/// Computes the size in logical pixels based on the size in physical
+/// "design" pixels @px.
+double pxToLp(int px) => px * (3 / 8);
+
+/// Computes the font size based on the "design" pt size @pt.
+double ptToFontSize(int pt) => pt * (5 / 8);

@@ -363,6 +363,14 @@ files:
           members:
             type: List<GroupchatMember>
             deserialise: true
+      - name: ConversationSearchResult
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          results:
+            type: List<Conversation>
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -728,6 +736,12 @@ files:
           - JsonImplementation
         attributes:
           jid: String
+      - name: PerformConversationSearch
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          text: String
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

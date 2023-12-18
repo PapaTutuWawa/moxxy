@@ -5,6 +5,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
@@ -39,10 +40,10 @@ class _RowIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(right: 8),
+      padding: EdgeInsets.only(right: pxToLp(8)),
       child: Icon(
         icon,
-        size: 20,
+        size: pxToLp(48),
         color: color ?? Theme.of(context).colorScheme.outline,
       ),
     );
@@ -156,7 +157,7 @@ class ConversationCard extends StatelessWidget {
           Text(
             '${t.messages.you}: ',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: ptToFontSize(32),
               color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
@@ -166,7 +167,7 @@ class ConversationCard extends StatelessWidget {
         Text(
           body,
           style: TextStyle(
-            fontSize: 20,
+            fontSize: ptToFontSize(32),
             color: Theme.of(context).colorScheme.onSurface,
           ),
           overflow: TextOverflow.ellipsis,
@@ -184,17 +185,20 @@ class ConversationCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: SizedBox(
-          height: 85,
+          height: pxToLp(192),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: EdgeInsets.symmetric(
+              horizontal: pxToLp(48),
+            ),
             child: Row(
               children: [
                 Padding(
                   padding: const EdgeInsets.only(right: 12),
                   child: SquircleCachingXMPPAvatar(
                     jid: conversation.jid,
-                    size: 64,
-                    borderRadius: 12,
+                    size: pxToLp(144),
+                    // TODO: Constant
+                    borderRadius: pxToLp(144 ~/ 4),
                     hasContactId: conversation.contactId != null,
                     isGroupchat: conversation.isGroupchat,
                     path: conversation.avatarPath,
@@ -205,6 +209,7 @@ class ConversationCard extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Expanded(
                         child: Row(
@@ -222,8 +227,8 @@ class ConversationCard extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 conversation.titleWithOptionalContact,
-                                style: const TextStyle(
-                                  fontSize: 20,
+                                style: TextStyle(
+                                  fontSize: ptToFontSize(32),
                                   fontWeight: FontWeight.w600,
                                 ),
                                 overflow: TextOverflow.ellipsis,
@@ -233,15 +238,17 @@ class ConversationCard extends StatelessWidget {
                             Offstage(
                               offstage: !conversation.hasUnreads,
                               child: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 8,
-                                  right: 14,
+                                padding: EdgeInsets.only(
+                                  left: pxToLp(12),
+                                  right: pxToLp(24),
                                 ),
                                 child: badges.Badge(
                                   badgeStyle: badges.BadgeStyle(
                                     badgeColor:
                                         Theme.of(context).colorScheme.primary,
-                                    padding: const EdgeInsets.all(8),
+                                    padding: EdgeInsets.all(
+                                      pxToLp(16),
+                                    ),
                                   ),
                                   badgeContent: Text(
                                     conversation.unreadsString,
@@ -249,7 +256,7 @@ class ConversationCard extends StatelessWidget {
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onPrimary,
-                                      fontSize: 16,
+                                      fontSize: ptToFontSize(24),
                                     ),
                                   ),
                                 ),
@@ -262,7 +269,7 @@ class ConversationCard extends StatelessWidget {
                                 DateTime.now().millisecondsSinceEpoch,
                               ),
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: ptToFontSize(24),
                                 color: conversation.hasUnreads
                                     ? Theme.of(context).colorScheme.primary
                                     : Theme.of(context).colorScheme.outline,

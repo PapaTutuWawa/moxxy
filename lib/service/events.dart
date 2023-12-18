@@ -119,6 +119,7 @@ void setupBackgroundEventHandler() {
       ),
       EventTypeMatcher<ExitConversationCommand>(performConversationExited),
       EventTypeMatcher<GetMembersForGroupchatCommand>(performGetMembers),
+      EventTypeMatcher<PerformConversationSearch>(performConversationSearch),
     ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -1759,6 +1760,29 @@ Future<void> performGetMembers(
       members: await gs.getMembers(
         JID.fromString(command.jid),
         accountJid!,
+      ),
+    ),
+    id: extra as String,
+  );
+}
+
+Future<void> performConversationSearch(
+  PerformConversationSearch command, {
+  dynamic extra,
+}) async {
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
+  final cs = GetIt.I.get<ConversationService>();
+
+  sendEvent(
+    ConversationSearchResult(
+      // TODO: Replace with an extra search method of ConversationService
+      results: await cs.loadConversations(
+        accountJid!,
+        // TODO(Unknown): Somehow integrate searching the last message body
+        extraFilter: 'AND (title LIKE ?)',
+        extraArgs: [
+          '%${command.text}%',
+        ],
       ),
     ),
     id: extra as String,
