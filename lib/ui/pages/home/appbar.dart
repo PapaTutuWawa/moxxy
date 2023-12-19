@@ -1,4 +1,3 @@
-
 // TODO: Handle the underscroll color change
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
