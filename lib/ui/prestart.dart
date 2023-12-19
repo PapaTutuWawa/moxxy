@@ -99,7 +99,7 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
     GetIt.I.get<Logger>().finest('Navigating to conversations');
     GetIt.I.get<NavigationBloc>().add(
           PushedNamedAndRemoveUntilEvent(
-            const NavigationDestination(conversationsRoute),
+            const NavigationDestination(homeRoute),
             (_) => false,
           ),
         );

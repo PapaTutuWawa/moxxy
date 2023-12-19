@@ -128,7 +128,7 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
       navEvent = PoppedRouteEvent();
     } else {
       navEvent = PushedNamedAndRemoveUntilEvent(
-        const NavigationDestination(conversationsRoute),
+        const NavigationDestination(homeRoute),
         (_) => false,
       );
     }

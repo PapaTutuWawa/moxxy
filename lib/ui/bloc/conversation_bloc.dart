@@ -68,7 +68,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
               conversationRoute,
               arguments: arguments,
             ),
-            ModalRoute.withName(conversationsRoute),
+            ModalRoute.withName(homeRoute),
           ))
         : (PushedNamedEvent(
             NavigationDestination(

@@ -52,7 +52,7 @@ class ShareSelectionPage extends StatelessWidget {
         // Navigate to the conversations page...
         GetIt.I.get<navigation.NavigationBloc>().add(
               navigation.PushedNamedAndRemoveUntilEvent(
-                const navigation.NavigationDestination(conversationsRoute),
+                const navigation.NavigationDestination(homeRoute),
                 (_) => false,
               ),
             );

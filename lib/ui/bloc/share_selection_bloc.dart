@@ -214,7 +214,7 @@ class ShareSelectionBloc
       // Navigate to the conversations page...
       GetIt.I.get<NavigationBloc>().add(
             PushedNamedAndRemoveUntilEvent(
-              const NavigationDestination(conversationsRoute),
+              const NavigationDestination(homeRoute),
               (_) => false,
             ),
           );

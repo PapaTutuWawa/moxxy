@@ -41,7 +41,7 @@ import "package:moxxyv2/ui/pages/postregister/postregister.dart";
 */
 import 'package:moxxyv2/ui/pages/blocklist.dart';
 import 'package:moxxyv2/ui/pages/conversation/conversation.dart';
-import 'package:moxxyv2/ui/pages/conversations.dart';
+import 'package:moxxyv2/ui/pages/home/home.dart';
 import 'package:moxxyv2/ui/pages/crop.dart';
 import 'package:moxxyv2/ui/pages/intro.dart';
 import 'package:moxxyv2/ui/pages/login.dart';
@@ -304,7 +304,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 return Intro.route;
               case loginRoute:
                 return Login.route;
-              case conversationsRoute:
+              case homeRoute:
                 return ConversationsPage.route;
               case newConversationRoute:
                 return NewConversationPage.route;

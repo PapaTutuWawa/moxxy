@@ -104,7 +104,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       GetIt.I.get<NavigationBloc>().add(
             PushedNamedAndRemoveUntilEvent(
               const NavigationDestination(
-                conversationsRoute,
+                homeRoute,
               ),
               (_) => false,
             ),
