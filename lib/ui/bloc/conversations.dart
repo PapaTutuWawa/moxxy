@@ -1,17 +1,38 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:collection/collection.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:synchronized/synchronized.dart';
+
+part 'conversations.freezed.dart';
+
+@freezed
+class ConversationsState with _$ConversationsState {
+  factory ConversationsState({
+    /// The conversations to display.
+    @Default([]) List<Conversation> conversations,
+
+    /// The search results for a search, if performed. Otherwise null.
+    @Default(null) List<Conversation>? searchResults,
+
+    /// Flag indicating whether the search is open or not.
+    @Default(false) bool searchOpen,
+
+    /// The text inside the search box.
+    @Default('') String searchText,
+  }) = _ConversationsState;
+}
 
 /// A BLoC that handles changes to the conversations list. This included adding
 /// conversations, updating conversations, and handling different changes, like
 /// closing a conversation.
 // TODO: Move into a new file.
-class ConversationsCubit extends Cubit<List<Conversation>> {
-  ConversationsCubit() : super([]);
+class ConversationsCubit extends Cubit<ConversationsState> {
+  ConversationsCubit() : super(ConversationsState());
 
   // TODO(Unknown): This pattern is used so often that it should become its own thing in moxlib
   bool _initialized = false;
@@ -37,7 +58,11 @@ class ConversationsCubit extends Cubit<List<Conversation>> {
 
   /// Sets the conversations list.
   Future<void> setConversations(List<Conversation> conversations) async {
-    emit(conversations);
+    emit(
+      state.copyWith(
+        conversations: conversations,
+      ),
+    );
 
     await _lock.synchronized(() {
       _initialized = true;
@@ -53,8 +78,11 @@ class ConversationsCubit extends Cubit<List<Conversation>> {
   /// Add [conversation] to the state.
   Future<void> addConversation(Conversation conversation) async {
     emit(
-      List.from(
-        <Conversation>[...state, conversation]..sort(compareConversation),
+      state.copyWith(
+        conversations: List.from(
+          <Conversation>[...state.conversations, conversation]
+            ..sort(compareConversation),
+        ),
       ),
     );
   }
@@ -64,16 +92,18 @@ class ConversationsCubit extends Cubit<List<Conversation>> {
     await waitUntilInitialized();
 
     emit(
-      List.from(
-        state.map((c) {
-          if (c.jid == newConversation.jid &&
-              c.accountJid == newConversation.accountJid) {
-            return newConversation;
-          }
+      state.copyWith(
+        conversations: List.from(
+          state.conversations.map((c) {
+            if (c.jid == newConversation.jid &&
+                c.accountJid == newConversation.accountJid) {
+              return newConversation;
+            }
 
-          return c;
-        }).toList()
-          ..sort(compareConversation),
+            return c;
+          }).toList()
+            ..sort(compareConversation),
+        ),
       ),
     );
   }
@@ -91,8 +121,12 @@ class ConversationsCubit extends Cubit<List<Conversation>> {
     );
 
     emit(
-      List<Conversation>.from(
-        state.where((c) => c.jid != jid && c.accountJid != accountJid).toList(),
+      state.copyWith(
+        conversations: List<Conversation>.from(
+          state.conversations
+              .where((c) => c.jid != jid && c.accountJid != accountJid)
+              .toList(),
+        ),
       ),
     );
   }
@@ -110,6 +144,41 @@ class ConversationsCubit extends Cubit<List<Conversation>> {
   /// Returns null, if the conversation does not exist.
   Conversation? getConversationByJid(String jid) {
     // TODO: Consider the accountJid
-    return state.firstWhereOrNull((c) => c.jid == jid);
+    return state.conversations.firstWhereOrNull((c) => c.jid == jid);
+  }
+
+  /// Sets the searchOpen attribute to [value].
+  void setSearchOpen(bool value) {
+    emit(
+      state.copyWith(searchOpen: value),
+    );
+  }
+
+  /// Sets the searchResults attribute to null.
+  void resetSearchResults() {
+    emit(state.copyWith(searchResults: null));
+  }
+
+  /// Sets the searchText to [value].
+  void setSearchText(String value) {
+    emit(state.copyWith(searchText: value));
+  }
+
+  /// Performs the search provided by the header bar. The attribute is just so that
+  /// the method can be used directly as a callback.
+  Future<void> performSearch(dynamic _) async {
+    // Don't search if there is nothing to search for.
+    if (state.searchText.isEmpty) {
+      return;
+    }
+
+    final result = await getForegroundService().send(
+      PerformConversationSearch(text: state.searchText),
+    );
+    emit(
+      state.copyWith(
+        searchResults: (result! as ConversationSearchResult).results,
+      ),
+    );
   }
 }

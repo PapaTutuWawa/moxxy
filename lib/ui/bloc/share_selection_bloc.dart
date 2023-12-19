@@ -192,7 +192,7 @@ class ShareSelectionBloc
     Emitter<ShareSelectionState> emit,
   ) async {
     _updateItems(
-      GetIt.I.get<ConversationsCubit>().state,
+      GetIt.I.get<ConversationsCubit>().state.conversations,
       event.rosterItems,
       emit,
     );

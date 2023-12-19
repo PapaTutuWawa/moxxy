@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/shared/commands.dart';
-import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
@@ -129,8 +126,6 @@ class ConversationsHomeAppBar extends StatefulWidget
     required this.title,
     required this.actions,
     required this.controller,
-    required this.searchOpenNotifier,
-    required this.searchResultNotifier,
     super.key,
   });
 
@@ -149,11 +144,6 @@ class ConversationsHomeAppBar extends StatefulWidget
   /// The controller for the search TextField.
   final TextEditingController controller;
 
-  /// Value notifier for controlling the visibility of the search.
-  final ValueNotifier<bool> searchOpenNotifier;
-
-  final ValueNotifier<List<Conversation>?> searchResultNotifier;
-
   @override
   Size get preferredSize => Size.fromHeight(
         pxToLp(168),
@@ -164,58 +154,22 @@ class ConversationsHomeAppBar extends StatefulWidget
 }
 
 class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
-  /// Flag containing whether the search TextField contains some text.
-  bool _searchFieldHasData = false;
-
   @override
   void initState() {
     super.initState();
 
     widget.controller.addListener(_onTextFieldChanged);
-    widget.searchOpenNotifier.addListener(_onSearchOpenChanged);
   }
 
   @override
   void dispose() {
     widget.controller.removeListener(_onTextFieldChanged);
-    widget.searchOpenNotifier.removeListener(_onSearchOpenChanged);
 
     super.dispose();
   }
 
-  void _onSearchOpenChanged() {
-    _setSearchFieldOpen(
-      widget.searchOpenNotifier.value,
-    );
-  }
-
   void _onTextFieldChanged() {
-    if (widget.controller.text.isEmpty && _searchFieldHasData) {
-      setState(() => _searchFieldHasData = false);
-    } else if (widget.controller.text.isNotEmpty && !_searchFieldHasData) {
-      setState(() => _searchFieldHasData = true);
-    }
-  }
-
-  void _setSearchFieldOpen(bool value) {
-    // Reset the TextField if we close the search.
-    if (!value) {
-      widget.controller.text = '';
-      _onTextFieldChanged();
-    }
-
-    widget.searchOpenNotifier.value = value;
-    setState(() {});
-  }
-
-  /// Called when the search is submitted. [value] is the content of the TextField.
-  Future<void> _onSubmitted(BuildContext context, String value) async {
-    // TODO: Maybe move this into a Cubit?
-    final result = await getForegroundService().send(
-      PerformConversationSearch(text: widget.controller.text),
-    );
-    widget.searchResultNotifier.value =
-        (result as ConversationSearchResult).results;
+    GetIt.I.get<ConversationsCubit>().setSearchText(widget.controller.text);
   }
 
   @override
@@ -231,114 +185,75 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
               data: Theme.of(context).iconTheme.copyWith(
                     color: widget.foregroundColor,
                   ),
-              child: AnimatedCrossFade(
-                duration: const Duration(milliseconds: 250),
-                crossFadeState: widget.searchOpenNotifier.value
-                    ? CrossFadeState.showSecond
-                    : CrossFadeState.showFirst,
-                firstChild: Row(
-                  children: [
-                    // NOTE: Ensures that the row is as tall as the second child
-                    SizedBox(height: widget.preferredSize.height),
+              child: BlocBuilder<ConversationsCubit, ConversationsState>(
+                builder: (context, state) => AnimatedCrossFade(
+                  duration: const Duration(milliseconds: 250),
+                  crossFadeState: state.searchOpen
+                      ? CrossFadeState.showSecond
+                      : CrossFadeState.showFirst,
+                  firstChild: Row(
+                    children: [
+                      // NOTE: Ensures that the row is as tall as the second child
+                      SizedBox(height: widget.preferredSize.height),
 
-                    Expanded(child: widget.title),
-                    IconButton(
-                      icon: Icon(
-                        Icons.search,
-                        size: pxToLp(72),
+                      Expanded(child: widget.title),
+                      IconButton(
+                        icon: Icon(
+                          Icons.search,
+                          size: pxToLp(72),
+                        ),
+                        onPressed: () {
+                          // Open the search.
+                          context
+                              .read<ConversationsCubit>()
+                              .setSearchOpen(true);
+                        },
                       ),
-                      onPressed: () {
-                        // Open the search.
-                        _setSearchFieldOpen(true);
-                      },
-                    ),
-                    ...widget.actions,
-                  ],
-                ),
-                secondChild: Row(
-                  children: [
-                    // NOTE: Ensures that the row is as tall as the second child
-                    SizedBox(height: widget.preferredSize.height),
+                      ...widget.actions,
+                    ],
+                  ),
+                  secondChild: Row(
+                    children: [
+                      // NOTE: Ensures that the row is as tall as the second child
+                      SizedBox(height: widget.preferredSize.height),
 
-                    IconButton(
-                      icon: Icon(
-                        Icons.arrow_back,
-                        size: pxToLp(72),
+                      IconButton(
+                        icon: Icon(
+                          Icons.arrow_back,
+                          size: pxToLp(72),
+                        ),
+                        onPressed: () {
+                          // Close the search and reset the search.
+                          context.read<ConversationsCubit>()
+                            ..setSearchOpen(false)
+                            ..resetSearchResults();
+                        },
                       ),
-                      onPressed: () {
-                        // Close the search.
-                        _setSearchFieldOpen(false);
-                        widget.searchResultNotifier.value = null;
-                      },
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(left: pxToLp(24)),
-                        child: SizedBox(
-                          height: pxToLp(104),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(40),
-                            child: Material(
-                              color:
-                                  Theme.of(context).colorScheme.surfaceVariant,
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: pxToLp(48),
-                                ),
-                                // TODO: The text is not centered
-                                child: TextField(
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    // TODO: i18n
-                                    hintText: 'Search...',
-                                    contentPadding: EdgeInsets.zero,
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        _searchFieldHasData
-                                            ? Icons.close
-                                            : Icons.search,
-                                        size: pxToLp(72),
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface,
-                                      ),
-                                      onPressed: () {
-                                        if (_searchFieldHasData) {
-                                          widget.controller.text = '';
-                                          _onTextFieldChanged();
-
-                                          // Reset the search results
-                                          widget.searchResultNotifier.value =
-                                              null;
-                                        } else if (widget
-                                            .controller.text.isNotEmpty) {
-                                          _onSubmitted(
-                                            context,
-                                            widget.controller.text,
-                                          );
-                                        }
-                                      },
-                                    ),
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: pxToLp(24)),
+                          child: SizedBox(
+                            height: pxToLp(104),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(40),
+                              child: Material(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .surfaceVariant,
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: pxToLp(48),
                                   ),
-                                  style: TextStyle(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: ptToFontSize(32),
-                                  ),
-                                  textAlignVertical: TextAlignVertical.center,
-                                  controller: widget.controller,
-                                  onSubmitted: (value) => _onSubmitted(
-                                    context,
-                                    value,
-                                  ),
-                                ),
-                                /*Padding(
-                                      padding: EdgeInsets.only(left: pxToLp(35)),
-                                      child: InkResponse(
-                                        child: Icon(
-                                          _searchFieldHasData
+                                  // TODO: The text is not centered
+                                  child: TextField(
+                                    decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      // TODO: i18n
+                                      hintText: 'Search...',
+                                      contentPadding: EdgeInsets.zero,
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          state.searchText.isNotEmpty
                                               ? Icons.close
                                               : Icons.search,
                                           size: pxToLp(72),
@@ -346,28 +261,40 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
                                               .colorScheme
                                               .onSurface,
                                         ),
-                                        onTap: () {
-                                          if (_searchFieldHasData) {
+                                        onPressed: () {
+                                          final cubit = context
+                                              .read<ConversationsCubit>();
+                                          if (state.searchText.isNotEmpty) {
                                             widget.controller.text = '';
-                                            _onTextFieldChanged();
-                                          } else if (widget
-                                              .controller.text.isNotEmpty) {
-                                            _onSubmitted(context,
-                                              widget.controller.text,
-                                            );
+                                            cubit
+                                              ..setSearchText('')
+                                              // Reset the search results
+                                              ..resetSearchResults();
                                           }
                                         },
                                       ),
-                                    ),*/
-                                //  ],
-                                //),
+                                    ),
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: ptToFontSize(32),
+                                    ),
+                                    textAlignVertical: TextAlignVertical.center,
+                                    controller: widget.controller,
+                                    onSubmitted: context
+                                        .read<ConversationsCubit>()
+                                        .performSearch,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -463,17 +390,11 @@ class ConversationsPageState extends State<ConversationsPage>
   late final Animation<double> _contextMenuAnimation;
   final Map<String, GlobalKey> _conversationKeys = {};
 
+  /// Controller for the search bar.
+  final TextEditingController _searchController = TextEditingController();
+
   /// The required offset from the top of the stack for the context menu.
   double _topStackOffset = 0;
-
-  /// Tracks whether the search bar is open or not.
-  final ValueNotifier<bool> isSearchOpen = ValueNotifier(false);
-
-  /// Tracks search results.
-  final ValueNotifier<List<Conversation>?> _searchResults = ValueNotifier(null);
-
-  /// The controller for the search TextField.
-  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -492,21 +413,13 @@ class ConversationsPageState extends State<ConversationsPage>
         curve: Curves.easeInOutCubic,
       ),
     );
-
-    _searchResults.addListener(_searchResultsChanged);
   }
 
   @override
   void dispose() {
     _contextMenuController.dispose();
-    _searchController.dispose();
-    _searchResults.removeListener(_searchResultsChanged);
 
     super.dispose();
-  }
-
-  void _searchResultsChanged() {
-    setState(() {});
   }
 
   void dismissContextMenu() {
@@ -552,7 +465,7 @@ class ConversationsPageState extends State<ConversationsPage>
             conversation: item,
             onTap: () {
               // Reset the search first.
-              _searchResults.value = null;
+              context.read<ConversationsCubit>().resetSearchResults();
 
               // Then request the conversation.
               GetIt.I.get<ConversationBloc>().add(
@@ -637,9 +550,12 @@ class ConversationsPageState extends State<ConversationsPage>
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        if (isSearchOpen.value) {
-          isSearchOpen.value = false;
-          _searchResults.value = null;
+        final cubit = context.read<ConversationsCubit>();
+        if (cubit.state.searchOpen) {
+          cubit
+            ..setSearchOpen(false)
+            ..resetSearchResults()
+            ..setSearchText('');
           return false;
         }
 
@@ -661,8 +577,6 @@ class ConversationsPageState extends State<ConversationsPage>
             foregroundColor: Theme.of(context).colorScheme.onSurface,
             backgroundColor: Theme.of(context).colorScheme.surface,
             controller: _searchController,
-            searchOpenNotifier: isSearchOpen,
-            searchResultNotifier: _searchResults,
             //automaticallyImplyLeading: false,
             //elevation: 0,
             //toolbarHeight: 70,
@@ -804,13 +718,13 @@ class ConversationsPageState extends State<ConversationsPage>
               Material(
                 color: Theme.of(context).colorScheme.surface,
                 surfaceTintColor: Theme.of(context).colorScheme.surfaceTint,
-                child: BlocBuilder<ConversationsCubit, List<Conversation>>(
+                child: BlocBuilder<ConversationsCubit, ConversationsState>(
                   builder: (context, state) {
                     return _listWrapper(
                       context,
-                      _searchResults.value != null
-                          ? _searchResults.value!
-                          : state,
+                      state.searchResults != null
+                          ? state.searchResults!
+                          : state.conversations,
                     );
                   },
                 ),
