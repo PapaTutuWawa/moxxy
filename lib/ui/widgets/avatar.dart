@@ -5,7 +5,6 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
-import 'package:moxxyv2/ui/bloc/state/account.dart';
 import 'package:moxxyv2/ui/service/avatars.dart';
 import 'package:moxxyv2/ui/theme.dart';
 
@@ -29,16 +28,16 @@ class CachingXMPPAvatar extends StatefulWidget {
     VoidCallback? onTap,
   }) {
     return BlocBuilder<AccountCubit, AccountState>(
-      buildWhen: (prev, next) => prev.avatarPath != next.avatarPath,
-      builder: (context, account) {
+      buildWhen: (prev, next) => prev.account.avatarPath != next.account.avatarPath,
+      builder: (context, state) {
         return CachingXMPPAvatar(
           radius: radius,
-          path: account.avatarPath,
-          hash: account.avatarHash,
+          path: state.account.avatarPath,
+          hash: state.account.avatarHash,
           altIcon: Icons.person,
           hasContactId: false,
           isGroupchat: false,
-          jid: account.jid,
+          jid: state.account.jid,
           ownAvatar: true,
           onTap: onTap,
         );
@@ -206,17 +205,17 @@ class SquircleCachingXMPPAvatar extends StatefulWidget {
     VoidCallback? onTap,
   }) {
     return BlocBuilder<AccountCubit, AccountState>(
-      buildWhen: (prev, next) => prev.avatarPath != next.avatarPath,
-      builder: (context, account) {
+      buildWhen: (prev, next) => prev.account.avatarPath != next.account.avatarPath,
+      builder: (context, state) {
         return SquircleCachingXMPPAvatar(
           size: size,
           borderRadius: borderRadius,
-          path: account.avatarPath,
-          hash: account.avatarHash,
+          path: state.account.avatarPath,
+          hash: state.account.avatarHash,
           altIcon: Icons.person,
           hasContactId: false,
           isGroupchat: false,
-          jid: account.jid,
+          jid: state.account.jid,
           ownAvatar: true,
           onTap: onTap,
         );

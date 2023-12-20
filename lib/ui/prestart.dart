@@ -12,7 +12,6 @@ import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/bloc/request_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
-import 'package:moxxyv2/ui/bloc/state/account.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/events.dart';
 import 'package:moxxyv2/ui/service/data.dart';
@@ -49,14 +48,17 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
     await GetIt.I.get<ConversationsCubit>().setConversations(
           result.conversations!,
         );
-    GetIt.I.get<AccountCubit>().setAccount(
-          AccountState(
-            displayName: result.displayName!,
-            avatarPath: result.avatarUrl,
-            avatarHash: result.avatarHash,
-            jid: result.jid!,
-          ),
-        );
+    GetIt.I.get<AccountCubit>().setAccounts(
+      [
+        Account(
+          displayName: result.displayName!,
+          avatarPath: result.avatarUrl,
+          avatarHash: result.avatarHash,
+          jid: result.jid!,
+        ),
+      ],
+      0,
+    );
     GetIt.I.get<NewConversationBloc>().add(
           NewConversationInitEvent(
             result.roster!,

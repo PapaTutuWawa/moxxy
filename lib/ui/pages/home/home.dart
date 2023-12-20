@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
@@ -9,7 +8,6 @@ import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/request_bloc.dart';
-import 'package:moxxyv2/ui/bloc/state/account.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/home/accounts.dart';
@@ -313,7 +311,7 @@ class ConversationsPageState extends State<ConversationsPage>
 
                 BlocBuilder<AccountCubit, AccountState>(
                   builder: (context, account) => Text(
-                    account.displayName,
+                    account.account.displayName,
                     style: TextStyle(
                       fontSize: ptToFontSize(32),
                       fontWeight: FontWeight.w600,

@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
-import 'package:moxxyv2/ui/bloc/state/account.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 
 const double _accountListTileVerticalPadding = 8;
@@ -108,23 +107,35 @@ class AccountListTile extends StatelessWidget {
 class AccountsBottomModal extends StatelessWidget {
   const AccountsBottomModal({
     required this.extent,
+    required this.tiles,
     super.key,
   });
 
   /// The extent of the bottom modal.
   final double extent;
 
+  final List<AccountListTile> tiles;
+
   static void show(BuildContext context) {
     final mq = MediaQuery.of(context);
-    // TODO: Pull this value from somewhere.
-    const numberAccounts = 3;
+    final cubit = context.read<AccountCubit>();
+    final accounts = cubit.state.accounts;
     final extent = clampDouble(
       // TODO: Update to 3.16 and use mq.textScaler.scale(20) to get the logical size?
-      (numberAccounts * AccountListTile.height + 80) / mq.size.height,
+      (accounts.length * AccountListTile.height + 80) / mq.size.height,
       0,
       0.9,
     );
 
+    final tiles = accounts
+        .map(
+          (account) => AccountListTile(
+            displayName: account.displayName,
+            jid: account.jid,
+            active: account.jid == cubit.state.account.jid,
+          ),
+        )
+        .toList();
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -135,76 +146,61 @@ class AccountsBottomModal extends StatelessWidget {
           topRight: Radius.circular(28),
         ),
       ),
-      builder: (context) => AccountsBottomModal(extent: extent),
+      builder: (context) => AccountsBottomModal(extent: extent, tiles: tiles),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      expand: false,
-      snap: true,
-      minChildSize: extent,
-      initialChildSize: extent,
-      maxChildSize: extent,
-      builder: (context, scrollController) => ListView(
-        controller: scrollController,
-        // Disable scrolling when we don't "fill" the screen.
-        physics: extent < 0.9 ? const NeverScrollableScrollPhysics() : null,
-        children: [
-          // TODO: Actually load the accounts from somewhere
-          BlocBuilder<AccountCubit, AccountState>(
-            builder: (context, account) => AccountListTile(
-              displayName: account.displayName,
-              jid: account.jid,
-              active: true,
-            ),
-          ),
-          // TODO: Remove
-          const AccountListTile(
-            displayName: 'User-chan',
-            jid: 'user@example.com',
-            active: false,
-          ),
-          // TODO: Remove
-          const AccountListTile(
-            displayName: 'Alt-tan',
-            jid: 'alt@server.net',
-            active: false,
-          ),
-          InkWell(
-            onTap: () {},
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.add,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.onSurface,
+    return BlocBuilder<AccountCubit, AccountState>(
+      builder: (context, state) {
+        return DraggableScrollableSheet(
+          expand: false,
+          snap: true,
+          minChildSize: extent,
+          initialChildSize: extent,
+          maxChildSize: extent,
+          builder: (context, scrollController) => ListView(
+            controller: scrollController,
+            // Disable scrolling when we don't "fill" the screen.
+            physics: extent < 0.9 ? const NeverScrollableScrollPhysics() : null,
+            children: [
+              ...tiles,
+              InkWell(
+                onTap: () {},
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 12),
-                    child: Text(
-                      // TODO: i18n
-                      'Add another account',
-                      style: TextStyle(
-                        fontSize: 20,
-                        height: 2,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.inverseSurface,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.add,
+                        size: 20,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
-                    ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 12),
+                        child: Text(
+                          // TODO: i18n
+                          'Add another account',
+                          style: TextStyle(
+                            fontSize: 20,
+                            height: 2,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.inverseSurface,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

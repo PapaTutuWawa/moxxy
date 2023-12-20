@@ -8,7 +8,6 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/request_bloc.dart';
-import 'package:moxxyv2/ui/bloc/state/account.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 
@@ -93,14 +92,17 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       GetIt.I.get<UIDataService>().processPreStartDoneEvent(result.preStart);
 
       // Set up BLoCs
-      GetIt.I.get<AccountCubit>().setAccount(
-            AccountState(
-              displayName: result.preStart.displayName!,
-              avatarPath: result.preStart.avatarUrl,
-              avatarHash: result.preStart.avatarHash,
-              jid: result.preStart.jid!,
-            ),
-          );
+      GetIt.I.get<AccountCubit>().setAccounts(
+        [
+          Account(
+            displayName: result.preStart.displayName!,
+            avatarPath: result.preStart.avatarUrl,
+            avatarHash: result.preStart.avatarHash,
+            jid: result.preStart.jid!,
+          ),
+        ],
+        0,
+      );
       GetIt.I.get<NavigationBloc>().add(
             PushedNamedAndRemoveUntilEvent(
               const NavigationDestination(
