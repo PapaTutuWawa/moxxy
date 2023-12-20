@@ -153,13 +153,20 @@ class ConversationsCubit extends Cubit<ConversationsState> {
   /// Sets the searchOpen attribute to [value].
   void setSearchOpen(bool value) {
     emit(
-      state.copyWith(searchOpen: value),
+      state.copyWith(
+        searchOpen: value,
+      ),
     );
   }
 
   /// Sets the searchResults attribute to null.
   void resetSearchResults() {
-    emit(state.copyWith(searchResults: null));
+    emit(
+      state.copyWith(
+        searchResults: null,
+        isSearching: false,
+      ),
+    );
   }
 
   /// Sets the searchText to [value].
@@ -179,6 +186,12 @@ class ConversationsCubit extends Cubit<ConversationsState> {
     final result = await getForegroundService().send(
       PerformConversationSearch(text: state.searchText),
     );
+
+    // In case the user closed the search before it's done, do not update
+    // the UI.
+    if (!state.searchOpen) {
+      return;
+    }
     emit(
       state.copyWith(
         searchResults: (result! as ConversationSearchResult).results,
