@@ -23,9 +23,6 @@ class ConversationsState with _$ConversationsState {
     /// Flag indicating whether the search is open or not.
     @Default(false) bool searchOpen,
 
-    /// The text inside the search box.
-    @Default('') String searchText,
-
     /// Flag indicating whether we're currently performing a search or not.
     @Default(false) bool isSearching,
   }) = _ConversationsState;

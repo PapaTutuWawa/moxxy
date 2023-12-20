@@ -141,7 +141,7 @@ class ConversationsPageState extends State<ConversationsPage>
 
   Widget _listWrapper(BuildContext context, List<Conversation> state) {
     if (state.isNotEmpty) {
-      final highlightWord = context.read<ConversationsCubit>().state.searchText;
+      final highlightWord = context.read<ConversationsCubit>().searchBarController.text;
       return ListView.builder(
         itemCount: state.length,
         itemBuilder: (context, index) {
