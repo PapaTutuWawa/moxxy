@@ -110,10 +110,14 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
                           size: pxToLp(72),
                         ),
                         onPressed: () {
+                          // Reset the search text.
+                          widget.controller.text = '';
+
                           // Close the search and reset the search.
                           context.read<ConversationsCubit>()
                             ..setSearchOpen(false)
-                            ..resetSearchResults();
+                            ..resetSearchResults()
+                            ..setSearchText('');
                         },
                       ),
                       Expanded(

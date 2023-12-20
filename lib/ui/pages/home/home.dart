@@ -265,6 +265,7 @@ class ConversationsPageState extends State<ConversationsPage>
       onWillPop: () async {
         final cubit = context.read<ConversationsCubit>();
         if (cubit.state.searchOpen) {
+          _searchController.text = '';
           cubit
             ..setSearchOpen(false)
             ..resetSearchResults()
