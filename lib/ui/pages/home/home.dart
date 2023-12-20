@@ -103,9 +103,6 @@ class ConversationsPageState extends State<ConversationsPage>
   late final Animation<double> _contextMenuAnimation;
   final Map<String, GlobalKey> _conversationKeys = {};
 
-  /// Controller for the search bar.
-  final TextEditingController _searchController = TextEditingController();
-
   /// The required offset from the top of the stack for the context menu.
   double _topStackOffset = 0;
 
@@ -180,7 +177,7 @@ class ConversationsPageState extends State<ConversationsPage>
             highlightWord: highlightWord,
             onTap: () {
               // Reset the search first.
-              context.read<ConversationsCubit>().resetSearchResults();
+              context.read<ConversationsCubit>().closeSearchBar();
 
               // Then request the conversation.
               GetIt.I.get<ConversationBloc>().add(
@@ -280,11 +277,7 @@ class ConversationsPageState extends State<ConversationsPage>
       onWillPop: () async {
         final cubit = context.read<ConversationsCubit>();
         if (cubit.state.searchOpen) {
-          _searchController.text = '';
-          cubit
-            ..setSearchOpen(false)
-            ..resetSearchResults()
-            ..setSearchText('');
+          cubit.closeSearchBar();
           return false;
         }
 
@@ -305,7 +298,6 @@ class ConversationsPageState extends State<ConversationsPage>
           appBar: ConversationsHomeAppBar(
             foregroundColor: Theme.of(context).colorScheme.onSurface,
             backgroundColor: Theme.of(context).colorScheme.surface,
-            controller: _searchController,
             //automaticallyImplyLeading: false,
             //elevation: 0,
             //toolbarHeight: 70,

@@ -1,7 +1,6 @@
 // TODO: Handle the underscroll color change
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 
@@ -12,7 +11,6 @@ class ConversationsHomeAppBar extends StatefulWidget
     required this.backgroundColor,
     required this.title,
     required this.actions,
-    required this.controller,
     super.key,
   });
 
@@ -28,9 +26,6 @@ class ConversationsHomeAppBar extends StatefulWidget
   /// The actions that are outside of the search.
   final List<Widget> actions;
 
-  /// The controller for the search TextField.
-  final TextEditingController controller;
-
   @override
   Size get preferredSize => Size.fromHeight(
         pxToLp(168),
@@ -41,24 +36,6 @@ class ConversationsHomeAppBar extends StatefulWidget
 }
 
 class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
-  @override
-  void initState() {
-    super.initState();
-
-    widget.controller.addListener(_onTextFieldChanged);
-  }
-
-  @override
-  void dispose() {
-    widget.controller.removeListener(_onTextFieldChanged);
-
-    super.dispose();
-  }
-
-  void _onTextFieldChanged() {
-    GetIt.I.get<ConversationsCubit>().setSearchText(widget.controller.text);
-  }
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -109,16 +86,8 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
                           Icons.arrow_back,
                           size: pxToLp(72),
                         ),
-                        onPressed: () {
-                          // Reset the search text.
-                          widget.controller.text = '';
-
-                          // Close the search and reset the search.
-                          context.read<ConversationsCubit>()
-                            ..setSearchOpen(false)
-                            ..resetSearchResults()
-                            ..setSearchText('');
-                        },
+                        onPressed:
+                            context.read<ConversationsCubit>().closeSearchBar,
                       ),
                       Expanded(
                         child: Padding(
@@ -155,12 +124,9 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
                                         onPressed: () {
                                           final cubit = context
                                               .read<ConversationsCubit>();
-                                          if (state.searchText.isNotEmpty) {
-                                            widget.controller.text = '';
-                                            cubit
-                                              ..setSearchText('')
-                                              // Reset the search results
-                                              ..resetSearchResults();
+                                          if (cubit.searchBarController.text
+                                              .isNotEmpty) {
+                                            cubit.resetSearchText();
                                           }
                                         },
                                       ),
@@ -173,7 +139,9 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
                                       fontSize: ptToFontSize(32),
                                     ),
                                     textAlignVertical: TextAlignVertical.center,
-                                    controller: widget.controller,
+                                    controller: context
+                                        .read<ConversationsCubit>()
+                                        .searchBarController,
                                     onSubmitted: context
                                         .read<ConversationsCubit>()
                                         .performSearch,

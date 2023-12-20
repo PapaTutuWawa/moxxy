@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -36,6 +37,9 @@ class ConversationsState with _$ConversationsState {
 // TODO: Move into a new file.
 class ConversationsCubit extends Cubit<ConversationsState> {
   ConversationsCubit() : super(ConversationsState());
+
+  /// Controller for the search header's [TextField].
+  final TextEditingController searchBarController = TextEditingController();
 
   // TODO(Unknown): This pattern is used so often that it should become its own thing in moxlib
   bool _initialized = false;
@@ -160,7 +164,8 @@ class ConversationsCubit extends Cubit<ConversationsState> {
   }
 
   /// Sets the searchResults attribute to null.
-  void resetSearchResults() {
+  void resetSearchText() {
+    searchBarController.text = '';
     emit(
       state.copyWith(
         searchResults: null,
@@ -169,22 +174,28 @@ class ConversationsCubit extends Cubit<ConversationsState> {
     );
   }
 
-  /// Sets the searchText to [value].
-  void setSearchText(String value) {
-    emit(state.copyWith(searchText: value));
+  void closeSearchBar() {
+    searchBarController.text = '';
+    emit(
+      state.copyWith(
+        searchResults: null,
+        isSearching: false,
+        searchOpen: false,
+      ),
+    );
   }
 
   /// Performs the search provided by the header bar. The attribute is just so that
   /// the method can be used directly as a callback.
   Future<void> performSearch(dynamic _) async {
     // Don't search if there is nothing to search for.
-    if (state.searchText.isEmpty) {
+    if (searchBarController.text.isEmpty) {
       return;
     }
 
     emit(state.copyWith(isSearching: true));
     final result = await getForegroundService().send(
-      PerformConversationSearch(text: state.searchText),
+      PerformConversationSearch(text: searchBarController.text),
     );
 
     // In case the user closed the search before it's done, do not update
