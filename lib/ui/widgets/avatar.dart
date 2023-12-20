@@ -28,7 +28,8 @@ class CachingXMPPAvatar extends StatefulWidget {
     VoidCallback? onTap,
   }) {
     return BlocBuilder<AccountCubit, AccountState>(
-      buildWhen: (prev, next) => prev.account.avatarPath != next.account.avatarPath,
+      buildWhen: (prev, next) =>
+          prev.account.avatarPath != next.account.avatarPath,
       builder: (context, state) {
         return CachingXMPPAvatar(
           radius: radius,
@@ -205,7 +206,8 @@ class SquircleCachingXMPPAvatar extends StatefulWidget {
     VoidCallback? onTap,
   }) {
     return BlocBuilder<AccountCubit, AccountState>(
-      buildWhen: (prev, next) => prev.account.avatarPath != next.account.avatarPath,
+      buildWhen: (prev, next) =>
+          prev.account.avatarPath != next.account.avatarPath,
       builder: (context, state) {
         return SquircleCachingXMPPAvatar(
           size: size,

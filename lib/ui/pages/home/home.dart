@@ -333,6 +333,7 @@ class ConversationsPageState extends State<ConversationsPage>
               ),
             ],
           ),
+          // TODO: Replace the stack by an Overlay
           body: Stack(
             children: [
               Material(
@@ -346,6 +347,22 @@ class ConversationsPageState extends State<ConversationsPage>
                           ? state.searchResults!
                           : state.conversations,
                     );
+                  },
+                ),
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: BlocBuilder<ConversationsCubit, ConversationsState>(
+                  buildWhen: (prev, next) =>
+                      prev.isSearching != next.isSearching,
+                  builder: (context, state) {
+                    if (!state.isSearching) {
+                      return SizedBox();
+                    }
+
+                    return LinearProgressIndicator();
                   },
                 ),
               ),

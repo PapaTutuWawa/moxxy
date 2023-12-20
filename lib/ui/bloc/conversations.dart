@@ -24,6 +24,9 @@ class ConversationsState with _$ConversationsState {
 
     /// The text inside the search box.
     @Default('') String searchText,
+
+    /// Flag indicating whether we're currently performing a search or not.
+    @Default(false) bool isSearching,
   }) = _ConversationsState;
 }
 
@@ -172,12 +175,14 @@ class ConversationsCubit extends Cubit<ConversationsState> {
       return;
     }
 
+    emit(state.copyWith(isSearching: true));
     final result = await getForegroundService().send(
       PerformConversationSearch(text: state.searchText),
     );
     emit(
       state.copyWith(
         searchResults: (result! as ConversationSearchResult).results,
+        isSearching: false,
       ),
     );
   }

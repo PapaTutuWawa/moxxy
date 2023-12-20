@@ -53,12 +53,12 @@ class AccountCubit extends Cubit<AccountState> {
     final newList = List<Account>.from(state.accounts)
       ..removeAt(state.currentAccount)
       ..insert(
-      state.currentAccount,
-      state.account.copyWith(
-        avatarPath: path,
-        avatarHash: hash,
-      ),
-    );
+        state.currentAccount,
+        state.account.copyWith(
+          avatarPath: path,
+          avatarHash: hash,
+        ),
+      );
     emit(
       state.copyWith(
         accounts: newList,
