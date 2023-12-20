@@ -5,6 +5,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
@@ -50,16 +51,99 @@ class _RowIcon extends StatelessWidget {
   }
 }
 
+/// A widget that allows highlighting parts of some text.
+class HighlightWord extends StatelessWidget {
+  const HighlightWord({
+    required this.text,
+    required this.style,
+    this.overflow = TextOverflow.ellipsis,
+    this.word,
+    super.key,
+  });
+
+  /// Overflow behaviour. Defaults to [TextOverflow.ellipsis].
+  final TextOverflow overflow;
+
+  /// The text to display.
+  final String text;
+
+  /// The word to highlight. If null or '', this widget is equivalent
+  /// to [Text].
+  final String? word;
+
+  /// The base style to apply to the text.
+  final TextStyle style;
+
+  /// Compute a list of [TextSpan]'s that applies the app's
+  /// primary color to parts of the occurences of [word] in [text].
+  List<TextSpan> _highlightWord() {
+    final buffer = List<TextSpan>.empty(growable: true);
+    var textBuffer = text.toLowerCase();
+    var originalBuffer = text;
+    final searchWord = word!.toLowerCase();
+    while (textBuffer.isNotEmpty) {
+      final occurence = textBuffer.indexOf(searchWord);
+      if (occurence == -1) {
+        buffer.add(
+          TextSpan(text: originalBuffer),
+        );
+        textBuffer = '';
+      } else {
+        buffer
+          ..add(
+            TextSpan(
+              text: originalBuffer.substring(0, occurence),
+            ),
+          )
+          ..add(
+            TextSpan(
+              text:
+                  originalBuffer.substring(occurence, occurence + word!.length),
+              style: const TextStyle(color: primaryColor),
+            ),
+          );
+        textBuffer = textBuffer.substring(occurence + word!.length);
+        originalBuffer = originalBuffer.substring(occurence + word!.length);
+      }
+    }
+
+    return buffer;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if ((word ?? '').isEmpty) {
+      return Text(
+        text,
+        style: style,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+
+    return RichText(
+      text: TextSpan(
+        style: style,
+        children: _highlightWord(),
+      ),
+      overflow: overflow,
+    );
+  }
+}
+
 // A replacement widget for the "legacy" Conversation widget
 class ConversationCard extends StatelessWidget {
   const ConversationCard({
     required this.conversation,
     required this.onTap,
+    this.highlightWord,
     super.key,
   });
 
   /// The conversation to display.
   final Conversation conversation;
+
+  /// An optional word to highlight.
+  final String? highlightWord;
 
   /// Callback for when the conversation card has been tapped.
   final void Function() onTap;
@@ -164,13 +248,13 @@ class ConversationCard extends StatelessWidget {
 
         if (message.isMedia) _buildLastMessagePreview(),
 
-        Text(
-          body,
+        HighlightWord(
+          text: body,
+          word: highlightWord,
           style: TextStyle(
             fontSize: ptToFontSize(32),
             color: Theme.of(context).colorScheme.onSurface,
           ),
-          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
@@ -225,16 +309,23 @@ class ConversationCard extends StatelessWidget {
                               const _RowIcon(Icons.notifications_off),
 
                             Expanded(
-                              child: Text(
+                              /*child: Text(
                                 conversation.titleWithOptionalContact,
                                 style: TextStyle(
                                   fontSize: ptToFontSize(32),
                                   fontWeight: FontWeight.w600,
                                 ),
                                 overflow: TextOverflow.ellipsis,
+                              ),*/
+                              child: HighlightWord(
+                                text: conversation.titleWithOptionalContact,
+                                word: highlightWord,
+                                style: TextStyle(
+                                  fontSize: ptToFontSize(32),
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
-
                             Offstage(
                               offstage: !conversation.hasUnreads,
                               child: Padding(

@@ -144,6 +144,7 @@ class ConversationsPageState extends State<ConversationsPage>
 
   Widget _listWrapper(BuildContext context, List<Conversation> state) {
     if (state.isNotEmpty) {
+      final highlightWord = context.read<ConversationsCubit>().state.searchText;
       return ListView.builder(
         itemCount: state.length,
         itemBuilder: (context, index) {
@@ -176,6 +177,7 @@ class ConversationsPageState extends State<ConversationsPage>
           );*/
           final row = ConversationCard(
             conversation: item,
+            highlightWord: highlightWord,
             onTap: () {
               // Reset the search first.
               context.read<ConversationsCubit>().resetSearchResults();
@@ -354,6 +356,9 @@ class ConversationsPageState extends State<ConversationsPage>
                 color: Theme.of(context).colorScheme.surface,
                 surfaceTintColor: Theme.of(context).colorScheme.surfaceTint,
                 child: BlocBuilder<ConversationsCubit, ConversationsState>(
+                  buildWhen: (prev, next) =>
+                      prev.searchResults != next.searchResults ||
+                      prev.conversations != next.conversations,
                   builder: (context, state) {
                     return _listWrapper(
                       context,
