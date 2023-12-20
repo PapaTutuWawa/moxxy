@@ -113,7 +113,11 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
                                       contentPadding: EdgeInsets.zero,
                                       suffixIcon: IconButton(
                                         icon: Icon(
-                                          context.read<ConversationsCubit>().searchBarController.text.isNotEmpty
+                                          context
+                                                  .read<ConversationsCubit>()
+                                                  .searchBarController
+                                                  .text
+                                                  .isNotEmpty
                                               ? Icons.close
                                               : Icons.search,
                                           size: pxToLp(72),

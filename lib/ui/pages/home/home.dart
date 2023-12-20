@@ -106,6 +106,9 @@ class ConversationsPageState extends State<ConversationsPage>
   /// The required offset from the top of the stack for the context menu.
   double _topStackOffset = 0;
 
+  /// The overlay entry of the context menu.
+  OverlayEntry? _overlayEntry;
+
   @override
   void initState() {
     super.initState();
@@ -128,8 +131,105 @@ class ConversationsPageState extends State<ConversationsPage>
   @override
   void dispose() {
     _contextMenuController.dispose();
+    _dismissOverlay();
 
     super.dispose();
+  }
+
+  void _dismissOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry?.dispose();
+    _overlayEntry = null;
+  }
+
+  Future<void> _showContextMenu(BuildContext context) async {
+    _dismissOverlay();
+    _overlayEntry = OverlayEntry(
+      builder: (context) {
+        return SafeArea(
+          child: Stack(
+            children: [
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: GestureDetector(
+                  onTap: dismissContextMenu,
+                  // NOTE: We must set the color to Colors.transparent because the container
+                  // would otherwise not span the entire screen (or Scaffold body to be
+                  // more precise).
+                  child: const ColoredBox(
+                    color: Colors.transparent,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: _topStackOffset,
+                left: 8,
+                child: AnimatedBuilder(
+                  animation: _contextMenuAnimation,
+                  builder: (context, child) => IgnorePointer(
+                    ignoring: _selectedConversation == null,
+                    child: Opacity(
+                      opacity: _contextMenuAnimation.value,
+                      child: child,
+                    ),
+                  ),
+                  child: ContextMenu(
+                    children: [
+                      if ((_selectedConversation?.unreadCounter ?? 0) > 0)
+                        ContextMenuItem(
+                          icon: Icons.done_all,
+                          text: t.pages.conversations.markAsRead,
+                          onPressed: () {
+                            // TODO: Fix
+                            /*context.read<OldConversationsBloc>().add(
+                                  ConversationMarkedAsReadEvent(
+                                    _selectedConversation!.jid,
+                                  ),
+                                );*/
+                            dismissContextMenu();
+                          },
+                        ),
+                      ContextMenuItem(
+                        icon: Icons.close,
+                        text: t.pages.conversations.closeChat,
+                        onPressed: () async {
+                          // ignore: use_build_context_synchronously
+                          final result = await showConfirmationDialog(
+                            t.pages.conversations.closeChat,
+                            t.pages.conversations.closeChatBody(
+                              conversationTitle:
+                                  _selectedConversation?.title ?? '',
+                            ),
+                            context,
+                          );
+
+                          if (result) {
+                            // TODO(Unknown): Show a snackbar allowing the user to revert the action
+                            // TODO: Fix
+                            // ignore: use_build_context_synchronously
+                            /*context.read<OldConversationsBloc>().add(
+                                  ConversationClosedEvent(
+                                    _selectedConversation!.jid,
+                                  ),
+                                );*/
+                            dismissContextMenu();
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    Overlay.of(context).insert(_overlayEntry!);
+    await _contextMenuController.forward();
   }
 
   void dismissContextMenu() {
@@ -137,11 +237,13 @@ class ConversationsPageState extends State<ConversationsPage>
     setState(() {
       _selectedConversation = null;
     });
+    _dismissOverlay();
   }
 
   Widget _listWrapper(BuildContext context, List<Conversation> state) {
     if (state.isNotEmpty) {
-      final highlightWord = context.read<ConversationsCubit>().searchBarController.text;
+      final highlightWord =
+          context.read<ConversationsCubit>().searchBarController.text;
       return ListView.builder(
         itemCount: state.length,
         itemBuilder: (context, index) {
@@ -226,7 +328,7 @@ class ConversationsPageState extends State<ConversationsPage>
                   }
                 });
 
-                await _contextMenuController.forward();
+                await _showContextMenu(context);
               },
               child: row,
             ),
@@ -275,6 +377,11 @@ class ConversationsPageState extends State<ConversationsPage>
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
+        if (_overlayEntry != null) {
+          _dismissOverlay();
+          return false;
+        }
+
         final cubit = context.read<ConversationsCubit>();
         if (cubit.state.searchOpen) {
           cubit.closeSearchBar();
@@ -341,114 +448,34 @@ class ConversationsPageState extends State<ConversationsPage>
               ),
             ],
           ),
-          // TODO: Replace the stack by an Overlay
-          body: Stack(
+          body: Column(
             children: [
-              Material(
-                color: Theme.of(context).colorScheme.surface,
-                surfaceTintColor: Theme.of(context).colorScheme.surfaceTint,
-                child: BlocBuilder<ConversationsCubit, ConversationsState>(
-                  buildWhen: (prev, next) =>
-                      prev.searchResults != next.searchResults ||
-                      prev.conversations != next.conversations,
-                  builder: (context, state) {
-                    return _listWrapper(
-                      context,
-                      state.searchResults != null
-                          ? state.searchResults!
-                          : state.conversations,
-                    );
-                  },
-                ),
-              ),
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: BlocBuilder<ConversationsCubit, ConversationsState>(
-                  buildWhen: (prev, next) =>
-                      prev.isSearching != next.isSearching,
-                  builder: (context, state) {
-                    if (!state.isSearching) {
-                      return const SizedBox();
-                    }
+              BlocBuilder<ConversationsCubit, ConversationsState>(
+                buildWhen: (prev, next) => prev.isSearching != next.isSearching,
+                builder: (context, state) {
+                  if (!state.isSearching) {
+                    return const SizedBox();
+                  }
 
-                    return const LinearProgressIndicator();
-                  },
-                ),
+                  return const LinearProgressIndicator();
+                },
               ),
-              if (_selectedConversation != null)
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: GestureDetector(
-                    onTap: dismissContextMenu,
-                    // NOTE: We must set the color to Colors.transparent because the container
-                    // would otherwise not span the entire screen (or Scaffold body to be
-                    // more precise).
-                    child: const ColoredBox(
-                      color: Colors.transparent,
-                    ),
-                  ),
-                ),
-              Positioned(
-                top: _topStackOffset,
-                left: 8,
-                child: AnimatedBuilder(
-                  animation: _contextMenuAnimation,
-                  builder: (context, child) => IgnorePointer(
-                    ignoring: _selectedConversation == null,
-                    child: Opacity(
-                      opacity: _contextMenuAnimation.value,
-                      child: child,
-                    ),
-                  ),
-                  child: ContextMenu(
-                    children: [
-                      if ((_selectedConversation?.unreadCounter ?? 0) > 0)
-                        ContextMenuItem(
-                          icon: Icons.done_all,
-                          text: t.pages.conversations.markAsRead,
-                          onPressed: () {
-                            // TODO: Fix
-                            /*context.read<OldConversationsBloc>().add(
-                                  ConversationMarkedAsReadEvent(
-                                    _selectedConversation!.jid,
-                                  ),
-                                );*/
-                            dismissContextMenu();
-                          },
-                        ),
-                      ContextMenuItem(
-                        icon: Icons.close,
-                        text: t.pages.conversations.closeChat,
-                        onPressed: () async {
-                          // ignore: use_build_context_synchronously
-                          final result = await showConfirmationDialog(
-                            t.pages.conversations.closeChat,
-                            t.pages.conversations.closeChatBody(
-                              conversationTitle:
-                                  _selectedConversation?.title ?? '',
-                            ),
-                            context,
-                          );
-
-                          if (result) {
-                            // TODO(Unknown): Show a snackbar allowing the user to revert the action
-                            // TODO: Fix
-                            // ignore: use_build_context_synchronously
-                            /*context.read<OldConversationsBloc>().add(
-                                  ConversationClosedEvent(
-                                    _selectedConversation!.jid,
-                                  ),
-                                );*/
-                            dismissContextMenu();
-                          }
-                        },
-                      ),
-                    ],
+              Expanded(
+                child: Material(
+                  color: Theme.of(context).colorScheme.surface,
+                  surfaceTintColor: Theme.of(context).colorScheme.surfaceTint,
+                  child: BlocBuilder<ConversationsCubit, ConversationsState>(
+                    buildWhen: (prev, next) =>
+                        prev.searchResults != next.searchResults ||
+                        prev.conversations != next.conversations,
+                    builder: (context, state) {
+                      return _listWrapper(
+                        context,
+                        state.searchResults != null
+                            ? state.searchResults!
+                            : state.conversations,
+                      );
+                    },
                   ),
                 ),
               ),
