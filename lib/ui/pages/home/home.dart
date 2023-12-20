@@ -359,10 +359,10 @@ class ConversationsPageState extends State<ConversationsPage>
                       prev.isSearching != next.isSearching,
                   builder: (context, state) {
                     if (!state.isSearching) {
-                      return SizedBox();
+                      return const SizedBox();
                     }
 
-                    return LinearProgressIndicator();
+                    return const LinearProgressIndicator();
                   },
                 ),
               ),
