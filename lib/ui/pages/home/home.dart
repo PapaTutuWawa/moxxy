@@ -236,7 +236,8 @@ class ConversationsPageState extends State<ConversationsPage>
       );
     }
 
-    // TODO: Render something else if _searchResults.value == null.
+    final hasSearchResults =
+        context.read<ConversationsCubit>().state.searchResults != null;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
       child: Column(
@@ -244,16 +245,28 @@ class ConversationsPageState extends State<ConversationsPage>
           Padding(
             padding: const EdgeInsets.only(top: 8),
             // TODO(Unknown): Maybe somehow render the svg
-            child: Image.asset('assets/images/begin_chat.png'),
+            child: Image.asset(
+              hasSearchResults
+                  ? 'assets/images/empty.png'
+                  : 'assets/images/begin_chat.png',
+            ),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: Text(t.pages.conversations.noOpenChats),
+            child: Text(
+              hasSearchResults
+                  ?
+                  // TODO: i18n
+                  'No search results...'
+                  : t.pages.conversations.noOpenChats,
+            ),
           ),
-          TextButton(
-            child: Text(t.pages.conversations.startChat),
-            onPressed: () => Navigator.pushNamed(context, newConversationRoute),
-          ),
+          if (!hasSearchResults)
+            TextButton(
+              child: Text(t.pages.conversations.startChat),
+              onPressed: () =>
+                  Navigator.pushNamed(context, newConversationRoute),
+            ),
         ],
       ),
     );
