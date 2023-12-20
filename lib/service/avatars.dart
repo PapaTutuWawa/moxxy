@@ -78,7 +78,8 @@ class AvatarService {
     final usageConversation = result.first['usage_conversation']! as int;
     final usageGroupchat = result.first['usage_members']! as int;
     _log.finest(
-        'Avatar usage for $path: $usageConversation (conversations) + $usageGroupchat (groupchat)');
+      'Avatar usage for $path: $usageConversation (conversations) + $usageGroupchat (groupchat)',
+    );
     return usageConversation + usageGroupchat + ownModifier == 0;
   }
 

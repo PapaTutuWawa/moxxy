@@ -88,7 +88,7 @@ class ConversationService {
     final db = GetIt.I.get<DatabaseService>().database;
     final gs = GetIt.I.get<GroupchatService>();
 
-    final textQuery = "%${text}%";
+    final textQuery = '%$text%';
     final conversationsRaw = await db.rawQuery(
       '''
 SELECT
