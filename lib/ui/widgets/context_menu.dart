@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 
 /// A item in the context menu [ContextMenu].
 class ContextMenuItem extends StatelessWidget {
@@ -27,14 +28,21 @@ class ContextMenuItem extends StatelessWidget {
     return InkWell(
       onTap: onPressed,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.symmetric(
+          horizontal: pxToLp(48),
+          // NOTE: 96px / 2
+          vertical: pxToLp(48),
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon),
-            Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: Text(text),
+            Text(
+              text,
+              style: TextStyle(
+                fontSize: ptToFontSize(32),
+                fontWeight: FontWeight.normal,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -53,18 +61,30 @@ class ContextMenu extends StatelessWidget {
   /// A list of [ContextMenuItem]s to display.
   final List<Widget> children;
 
+  /// Computes the height of the context menu, given the number of items.
+  static double computeHeight(int numberItems) {
+    // TODO: Use the new font API here to get the fontHeight
+    return 2 * pxToLp(24) + numberItems * (pxToLp(48) + pxToLp(32));
+  }
+
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: const BorderRadius.all(radiusLarge),
       child: Material(
-        color: contextMenuBackgroundColor,
-        child: IntrinsicHeight(
-          child: IntrinsicWidth(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: children,
+        color: Theme.of(context).colorScheme.surfaceVariant,
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            // 72px - 48px (Padding)
+            vertical: pxToLp(24),
+          ),
+          child: IntrinsicHeight(
+            child: IntrinsicWidth(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: children,
+              ),
             ),
           ),
         ),
