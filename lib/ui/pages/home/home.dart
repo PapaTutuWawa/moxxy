@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
@@ -104,7 +106,8 @@ class ConversationsPageState extends State<ConversationsPage>
   final Map<String, GlobalKey> _conversationKeys = {};
 
   /// The required offset from the top of the stack for the context menu.
-  double _topStackOffset = 0;
+  double? _topStackOffset;
+  double? _bottomStackOffset;
 
   /// The overlay entry of the context menu.
   OverlayEntry? _overlayEntry;
@@ -146,85 +149,83 @@ class ConversationsPageState extends State<ConversationsPage>
     _dismissOverlay();
     _overlayEntry = OverlayEntry(
       builder: (context) {
-        return SafeArea(
-          child: Stack(
-            children: [
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: GestureDetector(
-                  onTap: dismissContextMenu,
-                  // NOTE: We must set the color to Colors.transparent because the container
-                  // would otherwise not span the entire screen (or Scaffold body to be
-                  // more precise).
-                  child: const ColoredBox(
-                    color: Colors.transparent,
-                  ),
+        return Stack(
+          children: [
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: GestureDetector(
+                onTap: dismissContextMenu,
+                // NOTE: We must set the color to Colors.transparent because the container
+                // would otherwise not span the entire screen (or Scaffold body to be
+                // more precise).
+                child: const ColoredBox(
+                  color: Colors.transparent,
                 ),
               ),
-              Positioned(
-                top: _topStackOffset,
-                right: pxToLp(48),
-                child: AnimatedBuilder(
-                  animation: _contextMenuAnimation,
-                  builder: (context, child) => IgnorePointer(
-                    ignoring: _selectedConversation == null,
-                    child: Opacity(
-                      opacity: _contextMenuAnimation.value,
-                      child: child,
-                    ),
+            ),
+            Positioned(
+              top: _topStackOffset,
+              bottom: _bottomStackOffset,
+              right: pxToLp(48),
+              child: AnimatedBuilder(
+                animation: _contextMenuAnimation,
+                builder: (context, child) => IgnorePointer(
+                  ignoring: _selectedConversation == null,
+                  child: Opacity(
+                    opacity: _contextMenuAnimation.value,
+                    child: child,
                   ),
-                  child: ContextMenu(
-                    children: [
-                      if ((_selectedConversation?.unreadCounter ?? 0) > 0)
-                        ContextMenuItem(
-                          icon: Icons.done_all,
-                          text: t.pages.conversations.markAsRead,
-                          onPressed: () {
-                            // TODO: Fix
-                            /*context.read<OldConversationsBloc>().add(
-                                  ConversationMarkedAsReadEvent(
-                                    _selectedConversation!.jid,
-                                  ),
-                                );*/
-                            dismissContextMenu();
-                          },
-                        ),
+                ),
+                child: ContextMenu(
+                  children: [
+                    if ((_selectedConversation?.unreadCounter ?? 0) > 0)
                       ContextMenuItem(
-                        icon: Icons.close,
-                        text: t.pages.conversations.closeChat,
+                        icon: Icons.done_all,
+                        text: t.pages.conversations.markAsRead,
                         onPressed: () async {
-                          // ignore: use_build_context_synchronously
-                          final result = await showConfirmationDialog(
-                            t.pages.conversations.closeChat,
-                            t.pages.conversations.closeChatBody(
-                              conversationTitle:
-                                  _selectedConversation?.title ?? '',
-                            ),
-                            context,
-                          );
+                          await context
+                              .read<ConversationsCubit>()
+                              .markConversationAsRead(
+                                _selectedConversation!.jid,
+                              );
+                          dismissContextMenu();
+                        },
+                      ),
+                    ContextMenuItem(
+                      icon: Icons.close,
+                      text: t.pages.conversations.closeChat,
+                      onPressed: () async {
+                        // ignore: use_build_context_synchronously
+                        final result = await showConfirmationDialog(
+                          t.pages.conversations.closeChat,
+                          t.pages.conversations.closeChatBody(
+                            conversationTitle:
+                                _selectedConversation?.title ?? '',
+                          ),
+                          context,
+                        );
 
-                          if (result) {
-                            // TODO(Unknown): Show a snackbar allowing the user to revert the action
-                            // TODO: Fix
-                            // ignore: use_build_context_synchronously
-                            /*context.read<OldConversationsBloc>().add(
+                        if (result) {
+                          // TODO(Unknown): Show a snackbar allowing the user to revert the action
+                          // TODO: Fix
+                          // ignore: use_build_context_synchronously
+                          /*context.read<OldConversationsBloc>().add(
                                   ConversationClosedEvent(
                                     _selectedConversation!.jid,
                                   ),
                                 );*/
-                            dismissContextMenu();
-                          }
-                        },
-                      ),
-                    ],
-                  ),
+                          dismissContextMenu();
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
@@ -299,6 +300,7 @@ class ConversationsPageState extends State<ConversationsPage>
               onLongPressStart: (event) async {
                 Vibrate.feedback(FeedbackType.medium);
 
+                // TODO: Move this into the ContextMenu class as a static method.
                 final widgetRect = getWidgetPositionOnScreen(key);
                 final height = MediaQuery.of(context).size.height;
 
@@ -306,26 +308,16 @@ class ConversationsPageState extends State<ConversationsPage>
                   _selectedConversation = item;
 
                   final numberOptions = item.numberContextMenuOptions;
-                  if (height - widgetRect.bottom >
-                      40 + numberOptions * ContextMenuItem.height) {
-                    // In this case, we have enough space below the conversation item,
-                    // so we say that the top of the context menu is
-                    // widgetRect.bottom (Bottom y coordinate of the conversation item)
-                    // minus 20 (padding so we're not directly against the conversation
-                    // item) - the height of the top bar.
-                    _topStackOffset =
-                        widgetRect.bottom - pxToLp(192);
+                  if (height - widgetRect.bottom - pxToLp(96) >
+                      ContextMenu.computeHeight(numberOptions)) {
+                    // We have enough space to fit all items below the conversation.
+                    // Note: 96 is half the height of the conversation cards.
+                    _topStackOffset = widgetRect.top + pxToLp(96);
+                    _bottomStackOffset = null;
                   } else {
-                    // In this case we don't have sufficient space below the conversation
-                    // item, so we place the context menu above it.
-                    // The computation is the same as in the above branch, but now
-                    // we position the context menu above and thus also substract the
-                    // height of the context menu
-                    // (numberOptions * ContextMenuItem.height).
-                    _topStackOffset = widgetRect.top -
-                        20 -
-                        numberOptions * ContextMenuItem.height -
-                        pxToLp(192);
+                    // We don't have enough space below.
+                    _topStackOffset = null;
+                    _bottomStackOffset = widgetRect.bottom - pxToLp(96);
                   }
                 });
 

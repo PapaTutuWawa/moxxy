@@ -112,6 +112,16 @@ class ConversationsCubit extends Cubit<ConversationsState> {
     );
   }
 
+  /// Marks the conversation with JID [jid] as read.
+  Future<void> markConversationAsRead(String jid) async {
+    await waitUntilInitialized();
+
+    await getForegroundService().send(
+      MarkConversationAsReadCommand(conversationJid: jid),
+      awaitable: false,
+    );
+  }
+
   /// Marks a conversation with JID [jid] and accountJid [accountJid] as closed.
   Future<void> closeConversation(String jid, String accountJid) async {
     await waitUntilInitialized();
