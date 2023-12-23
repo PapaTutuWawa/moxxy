@@ -1,8 +1,66 @@
 // TODO: Handle the underscroll color change
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+
+/// A wrapper around IconButton where the icon is controlled by whether
+/// the [TextField] has text in it or not.
+class SearchFieldIconButton extends StatefulWidget {
+  const SearchFieldIconButton({super.key});
+
+  @override
+  SearchFieldIconButtonState createState() => SearchFieldIconButtonState();
+}
+
+class SearchFieldIconButtonState extends State<SearchFieldIconButton> {
+  bool _hasText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final controller = GetIt.I.get<ConversationsCubit>().searchBarController;
+    _hasText = controller.text.isNotEmpty;
+    controller.addListener(_onTextChanged);
+  }
+
+  @override
+  void dispose() {
+    GetIt.I
+        .get<ConversationsCubit>()
+        .searchBarController
+        .removeListener(_onTextChanged);
+    super.dispose();
+  }
+
+  void _onTextChanged() {
+    final hasText =
+        GetIt.I.get<ConversationsCubit>().searchBarController.text.isNotEmpty;
+    if (hasText != _hasText) {
+      setState(() {
+        _hasText = hasText;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: Icon(
+        _hasText ? Icons.close : Icons.search,
+        size: pxToLp(72),
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+      onPressed: () {
+        final cubit = context.read<ConversationsCubit>();
+        if (_hasText) {
+          cubit.resetSearchText();
+        }
+      },
+    );
+  }
+}
 
 class ConversationsHomeAppBar extends StatefulWidget
     implements PreferredSizeWidget {
@@ -95,45 +153,22 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
                           child: SizedBox(
                             height: pxToLp(104),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(40),
+                              borderRadius: BorderRadius.circular(pxToLp(52)),
                               child: Material(
                                 color: Theme.of(context)
                                     .colorScheme
                                     .surfaceVariant,
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: pxToLp(48),
-                                  ),
-                                  // TODO: The text is not centered
+                                child: Align(
                                   child: TextField(
                                     decoration: InputDecoration(
                                       border: InputBorder.none,
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: pxToLp(42),
+                                      ),
+                                      isDense: true,
                                       // TODO: i18n
                                       hintText: 'Search...',
-                                      contentPadding: EdgeInsets.zero,
-                                      suffixIcon: IconButton(
-                                        icon: Icon(
-                                          context
-                                                  .read<ConversationsCubit>()
-                                                  .searchBarController
-                                                  .text
-                                                  .isNotEmpty
-                                              ? Icons.close
-                                              : Icons.search,
-                                          size: pxToLp(72),
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                        ),
-                                        onPressed: () {
-                                          final cubit = context
-                                              .read<ConversationsCubit>();
-                                          if (cubit.searchBarController.text
-                                              .isNotEmpty) {
-                                            cubit.resetSearchText();
-                                          }
-                                        },
-                                      ),
+                                      suffixIcon: const SearchFieldIconButton(),
                                     ),
                                     style: TextStyle(
                                       color: Theme.of(context)
