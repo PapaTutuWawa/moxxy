@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:path/path.dart';
 
 /// A item in the context menu [ContextMenu].
 class ContextMenuItem extends StatelessWidget {
@@ -62,9 +63,9 @@ class ContextMenu extends StatelessWidget {
   final List<Widget> children;
 
   /// Computes the height of the context menu, given the number of items.
-  static double computeHeight(int numberItems) {
+  static double computeHeight(BuildContext context, int numberItems) {
     // TODO: Use the new font API here to get the fontHeight
-    return 2 * pxToLp(24) + numberItems * (pxToLp(48) + pxToLp(32));
+    return 2 * pxToLp(24) + numberItems * (pxToLp(48) + MediaQuery.of(context).textScaler.scale(32));
   }
 
   @override

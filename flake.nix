@@ -29,7 +29,7 @@
       build-tools-34-0-0
       platform-tools
       emulator
-      patcher-v4
+      #patcher-v4
       platforms-android-28
       platforms-android-29
       platforms-android-30
@@ -38,10 +38,10 @@
 
       # For flutter_zxing
       cmake-3-18-1
-      #ndk-21-4-7075529
-      (ndk-21-4-7075529.overrideAttrs (old: {
-         buildInputs = old.buildInputs ++ [ pkgs.python27 ];
-      }))
+      ndk-21-4-7075529
+      # (ndk-21-4-7075529.overrideAttrs (old: {
+      #    buildInputs = old.buildInputs ++ [ pkgs.python27 ];
+      # }))
     ]);
     lib = pkgs.lib;
     babPkgs = bab.packages."${system}";

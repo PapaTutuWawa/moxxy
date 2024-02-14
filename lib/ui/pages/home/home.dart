@@ -309,7 +309,7 @@ class ConversationsPageState extends State<ConversationsPage>
 
                   final numberOptions = item.numberContextMenuOptions;
                   if (height - widgetRect.bottom - pxToLp(96) >
-                      ContextMenu.computeHeight(numberOptions)) {
+                      ContextMenu.computeHeight(context, numberOptions)) {
                     // We have enough space to fit all items below the conversation.
                     // Note: 96 is half the height of the conversation cards.
                     _topStackOffset = widgetRect.top + pxToLp(96);
