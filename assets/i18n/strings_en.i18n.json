@@ -173,6 +173,9 @@
             "createAccount": "Create account on server",
             "login": "Login"
         },
+        "home": {
+            "addAccount": "Add new account"
+        },
         "conversations": {
             "speeddialNewChat": "New chat",
             "speeddialJoinGroupchat": "Join groupchat",

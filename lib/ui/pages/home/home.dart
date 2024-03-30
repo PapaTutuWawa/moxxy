@@ -368,20 +368,19 @@ class ConversationsPageState extends State<ConversationsPage>
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    final cubit = context.read<ConversationsCubit>();
+    return PopScope(
+      canPop: _overlayEntry == null || !cubit.state.searchOpen,
+      onPopInvoked: (_) {
         if (_overlayEntry != null) {
           _dismissOverlay();
-          return false;
+          return;
         }
 
-        final cubit = context.read<ConversationsCubit>();
         if (cubit.state.searchOpen) {
           cubit.closeSearchBar();
-          return false;
+          return;
         }
-
-        return true;
       },
       child: PostBuildWidget(
         postBuild: () async {

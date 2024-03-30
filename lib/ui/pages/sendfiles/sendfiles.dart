@@ -177,10 +177,9 @@ class SendFilesPage extends StatelessWidget {
     const barPadding = 8.0;
 
     // TODO(Unknown): Fix the typography
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      onPopInvoked: (_) {
         _maybeRemoveTemporaryFiles();
-        return true;
       },
       child: SafeArea(
         child: Scaffold(

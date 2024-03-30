@@ -17,8 +17,8 @@ class Login extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<LoginBloc, LoginState>(
-      builder: (BuildContext context, LoginState state) => WillPopScope(
-        onWillPop: () async => !state.working,
+      builder: (BuildContext context, LoginState state) => PopScope(
+        canPop: !state.working,
         child: Scaffold(
           appBar: AppBar(
             title: Text(t.pages.login.title),

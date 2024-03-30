@@ -366,21 +366,23 @@ class ConversationPageState extends State<ConversationPage>
   @override
   Widget build(BuildContext context) {
     final maxWidth = MediaQuery.of(context).size.width * 0.6;
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: !_keyboardController.currentData.visible && !_keyboardController.currentData.showWidget && !_conversationController.messagingController.isRecordingNotifier.value,
+      onPopInvoked: (didPop) {
         if (_keyboardController.currentData.visible) {
           // If the keyboard is open, dismiss it.
           dismissSoftKeyboard(context);
-          return false;
+          return;
         } else if (_keyboardController.currentData.showWidget) {
           // If the emoji/sticker picker is open, dismiss it.
           _keyboardController.hideWidget();
           _textfieldFocusNode.unfocus();
-          return false;
+          return;
         } else if (_conversationController
             .messagingController.isRecordingNotifier.value) {
+          // TODO: How are we handling this?
           // If we are recording a voice message, ask if we should continue or discard it.
-          final result = await showConfirmationDialog(
+          /*final result = await showConfirmationDialog(
             t.pages.conversation.voiceRecording.leaveConfirmation.title,
             t.pages.conversation.voiceRecording.leaveConfirmation.body,
             context,
@@ -391,7 +393,7 @@ class ConversationPageState extends State<ConversationPage>
           );
           if (!result) {
             return false;
-          }
+          }*/
 
           // Cancel the recording
           _conversationController.messagingController.cancelRecording();
@@ -404,7 +406,6 @@ class ConversationPageState extends State<ConversationPage>
         GetIt.I.get<ConversationsCubit>().exitConversation(
               widget.conversationType,
             );
-        return true;
       },
       child: KeyboardReplacerScaffold(
         controller: _keyboardController,

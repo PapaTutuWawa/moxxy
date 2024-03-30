@@ -89,12 +89,12 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
   Widget build(BuildContext context) {
     return BlocBuilder<CropBackgroundBloc, CropBackgroundState>(
       builder: (BuildContext context, CropBackgroundState state) {
-        return WillPopScope(
-          onWillPop: () async {
-            if (state.isWorking) return false;
-
-            context.read<CropBackgroundBloc>().add(CropBackgroundResetEvent());
-            return true;
+        return PopScope(
+          canPop: !state.isWorking,
+          onPopInvoked: (didPop) {
+            if (didPop) {
+              context.read<CropBackgroundBloc>().add(CropBackgroundResetEvent());
+            }
           },
           child: SafeArea(
             child: Stack(

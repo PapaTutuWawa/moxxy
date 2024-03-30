@@ -79,11 +79,10 @@ class CropPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<CropBloc, CropState>(
       builder: (context, state) {
-        return WillPopScope(
-          onWillPop: () async {
+        return PopScope(
+          onPopInvoked: (_) {
             context.read<CropBloc>().add(ResetImageEvent());
-            return true;
-          },
+          }, 
           child: SafeArea(
             child: state.image != null
                 ? _buildImageBody(context, state)

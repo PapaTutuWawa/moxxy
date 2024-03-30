@@ -25,16 +25,14 @@ class StartChatPageState extends State<StartChatPage> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<StartChatBloc, StartChatState>(
-      builder: (context, state) => WillPopScope(
-        onWillPop: () async {
-          if (state.isWorking) {
-            return false;
+      builder: (context, state) => PopScope(
+        canPop: !state.isWorking,
+        onPopInvoked: (didPop) {
+          if (didPop) {
+            context.read<StartChatBloc>().add(
+                  PageResetEvent(),
+                );
           }
-
-          context.read<StartChatBloc>().add(
-                PageResetEvent(),
-              );
-          return true;
         },
         child: Scaffold(
           appBar: AppBar(

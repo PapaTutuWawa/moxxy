@@ -45,8 +45,8 @@ class ShareSelectionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      onPopInvoked: (_) {
         GetIt.I.get<ShareSelectionBloc>().add(ResetEvent());
 
         // Navigate to the conversations page...
@@ -57,9 +57,7 @@ class ShareSelectionPage extends StatelessWidget {
               ),
             );
         // ...and put the app back into the background
-        await MoveToBackground.moveTaskToBack();
-
-        return false;
+        MoveToBackground.moveTaskToBack();
       },
       child: BlocBuilder<ShareSelectionBloc, ShareSelectionState>(
         buildWhen: _buildWhen,

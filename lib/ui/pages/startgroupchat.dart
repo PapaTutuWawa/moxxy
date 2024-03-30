@@ -36,17 +36,15 @@ class JoinGroupchatPageState extends State<JoinGroupchatPage> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<JoinGroupchatBloc, JoinGroupchatState>(
-      builder: (context, state) => WillPopScope(
-        onWillPop: () async {
-          if (state.isWorking) {
-            return false;
+      builder: (context, state) => PopScope(
+        onPopInvoked: (didPop) {
+          if (didPop) {
+            context.read<JoinGroupchatBloc>().add(
+                  PageResetEvent(),
+                );
           }
-
-          context.read<JoinGroupchatBloc>().add(
-                PageResetEvent(),
-              );
-          return true;
         },
+        canPop: !state.isWorking,
         child: Scaffold(
           appBar: AppBar(
             title: Text(t.pages.newconversation.enterNickname),

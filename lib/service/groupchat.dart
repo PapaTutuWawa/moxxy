@@ -168,6 +168,10 @@ class GroupchatService {
   /// details.
   Future<List<MUCRoomJoin>> getRoomsToJoin() async {
     final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
+    if (accountJid == null) {
+      return [];
+    }
+
     final results = await GetIt.I.get<DatabaseService>().database.rawQuery('''
       SELECT
         c.jid as roomJid,

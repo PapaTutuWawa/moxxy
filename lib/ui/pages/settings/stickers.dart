@@ -22,10 +22,8 @@ class StickersSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<StickersBloc, StickersState>(
-      builder: (_, stickersState) => WillPopScope(
-        onWillPop: () async {
-          return !stickersState.isImportRunning;
-        },
+      builder: (_, stickersState) => PopScope(
+        canPop: !stickersState.isImportRunning,
         child: Stack(
           children: [
             Positioned(

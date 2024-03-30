@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 
+import 'package:moxxyv2/i18n/strings.g.dart';
+
 const double _accountListTileVerticalPadding = 8;
 const double _accountListTilePictureHeight = 58;
 
@@ -121,7 +123,7 @@ class AccountsBottomModal extends StatelessWidget {
     final cubit = context.read<AccountCubit>();
     final accounts = cubit.state.accounts;
     final extent = clampDouble(
-      (accounts.length * AccountListTile.height + mq.textScaler.scale(20)) / mq.size.height,
+      ((accounts.length + 1) * AccountListTile.height + mq.textScaler.scale(20)) / mq.size.height,
       0,
       0.9,
     );
@@ -182,12 +184,10 @@ class AccountsBottomModal extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(left: 12),
                         child: Text(
-                          // TODO: i18n
-                          'Add another account',
+                          t.pages.home.addAccount,
                           style: TextStyle(
                             fontSize: 20,
                             height: 2,
-                            fontWeight: FontWeight.w600,
                             color: Theme.of(context).colorScheme.inverseSurface,
                           ),
                         ),
