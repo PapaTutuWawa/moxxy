@@ -16,6 +16,7 @@ import 'package:moxxyv2/ui/pages/home/accounts.dart';
 import 'package:moxxyv2/ui/pages/home/appbar.dart';
 import 'package:moxxyv2/ui/post_build.dart';
 import 'package:moxxyv2/ui/request_dialog.dart';
+import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/context_menu.dart';
 import 'package:moxxyv2/ui/widgets/conversation_card.dart';
@@ -44,12 +45,14 @@ class ConversationsRowDismissibleState
   Widget build(BuildContext context) {
     return Dismissible(
       key: ValueKey('conversation;${widget.item}'),
-      // TODO(Unknown): Show a snackbar allowing the user to revert the action
-      // TODO: Fix
-      onDismissed: (direction) {},
-      /*context.read<OldConversationsBloc>().add(
-            ConversationClosedEvent(widget.item.jid),
-          ),*/
+      onDismissed: (direction) {
+        // TODO(Unknown): Show a snackbar allowing the user to revert the action
+        // TODO(Unknown): Switch this to another Cubit that tracks the current account JID.
+        GetIt.I.get<ConversationsCubit>().closeConversation(
+          GetIt.I.get<UIDataService>().ownJid!,
+          widget.item.jid,
+        );
+      },
       onUpdate: (details) {
         if (details.direction != direction) {
           setState(() {
@@ -210,13 +213,11 @@ class ConversationsPageState extends State<ConversationsPage>
 
                         if (result) {
                           // TODO(Unknown): Show a snackbar allowing the user to revert the action
-                          // TODO: Fix
-                          // ignore: use_build_context_synchronously
-                          /*context.read<OldConversationsBloc>().add(
-                                  ConversationClosedEvent(
-                                    _selectedConversation!.jid,
-                                  ),
-                                );*/
+                          // TODO(Unknown): Switch this to another Cubit that tracks the current account JID.
+                          await GetIt.I.get<ConversationsCubit>().closeConversation(
+                            GetIt.I.get<UIDataService>().ownJid!,
+                            _selectedConversation!.jid,
+                          );
                           dismissContextMenu();
                         }
                       },

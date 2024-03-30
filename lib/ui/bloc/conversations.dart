@@ -129,8 +129,7 @@ class ConversationsCubit extends Cubit<ConversationsState> {
     await getForegroundService().send(
       CloseConversationCommand(
         jid: jid,
-        // TODO
-        // accountJid: accountJid,
+        accountJid: accountJid,
       ),
     );
 

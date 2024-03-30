@@ -497,6 +497,7 @@ files:
           - JsonImplementation
         attributes:
           jid: String
+          accountJid: String
       - name: ExitConversationCommand
         extends: BackgroundCommand
         implements:
