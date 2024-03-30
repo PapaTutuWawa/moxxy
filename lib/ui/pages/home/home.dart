@@ -258,23 +258,6 @@ class ConversationsPageState extends State<ConversationsPage>
             _conversationKeys[item.jid] = key;
           }
 
-          // TODO: Port the rest
-          /*final row = ConversationsListRow(
-            item,
-            true,
-            enableAvatarOnTap: true,
-            isSelected: _selectedConversation?.jid == item.jid,
-            onPressed: () {
-              GetIt.I.get<ConversationBloc>().add(
-                    RequestedConversationEvent(
-                      item.jid,
-                      item.title,
-                      item.avatarPath,
-                    ),
-                  );
-            },
-            key: key,
-          );*/
           final row = ConversationCard(
             conversation: item,
             highlightWord: highlightWord,
@@ -350,8 +333,7 @@ class ConversationsPageState extends State<ConversationsPage>
             child: Text(
               hasSearchResults
                   ?
-                  // TODO: i18n
-                  'No search results...'
+                  t.pages.home.searchNoResults
                   : t.pages.conversations.noOpenChats,
             ),
           ),
@@ -475,8 +457,7 @@ class ConversationsPageState extends State<ConversationsPage>
           ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => Navigator.pushNamed(context, newConversationRoute),
-            // TODO: i18n
-            label: const Text('Chat'),
+            label: Text(t.pages.home.chat),
             icon: const Icon(Icons.chat_outlined),
             backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
             foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
