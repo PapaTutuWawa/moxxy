@@ -2,10 +2,9 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
-
-import 'package:moxxyv2/i18n/strings.g.dart';
 
 const double _accountListTileVerticalPadding = 8;
 const double _accountListTilePictureHeight = 58;
@@ -15,6 +14,7 @@ class AccountListTile extends StatelessWidget {
     required this.displayName,
     required this.jid,
     required this.active,
+    required this.showDelete,
     super.key,
   });
 
@@ -26,6 +26,9 @@ class AccountListTile extends StatelessWidget {
 
   /// Flag indicating whether the account is currently active.
   final bool active;
+
+  /// Flag indicating whether to show the delete button or not.
+  final bool showDelete;
 
   static double get height =>
       _accountListTileVerticalPadding * 2 + _accountListTilePictureHeight;
@@ -88,17 +91,18 @@ class AccountListTile extends StatelessWidget {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 24),
-              child: IconButton(
-                icon: Icon(
-                  Icons.delete_outline,
-                  size: 30,
-                  color: Theme.of(context).colorScheme.onSurface,
+            if (showDelete)
+              Padding(
+                padding: const EdgeInsets.only(left: 24),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.delete_outline,
+                    size: 30,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  onPressed: () {},
                 ),
-                onPressed: () {},
               ),
-            ),
           ],
         ),
       ),
@@ -136,6 +140,7 @@ class AccountsBottomModal extends StatelessWidget {
             displayName: account.displayName,
             jid: account.jid,
             active: account.jid == cubit.state.account.jid,
+            showDelete: accounts.length > 1,
           ),
         )
         .toList();
