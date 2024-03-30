@@ -7,8 +7,8 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
@@ -364,7 +364,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
         widget.conversation.lastChangeTimestamp != timestampNever &&
             widget.showTimestamp;
     final sentBySelf = widget.conversation.lastMessage?.sender ==
-        GetIt.I.get<UIDataService>().ownJid!;
+        GetIt.I.get<AccountCubit>().state.account.jid;
 
     final showBadge = widget.conversation.unreadCounter > 0;
 

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/own_devices_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/profile/widgets.dart';
-import 'package:moxxyv2/ui/service/data.dart';
 
 enum OwnDevicesOptions {
   recreateSessions,
@@ -28,7 +28,7 @@ class OwnDevicesPage extends StatelessWidget {
     int deviceId,
     String fingerprint,
   ) async {
-    final jid = GetIt.I.get<UIDataService>().ownJid;
+    final jid = GetIt.I.get<AccountCubit>().state.account.jid;
     showQrCode(
       context,
       'xmpp:$jid?omemo2-sid-$deviceId=$fingerprint',

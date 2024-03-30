@@ -14,7 +14,6 @@ import 'package:moxxyv2/ui/bloc/request_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/events.dart';
-import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/sharing.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -41,9 +40,6 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
   }
 
   if (result.state == preStartLoggedInState) {
-    // Set up the data service
-    GetIt.I.get<UIDataService>().processPreStartDoneEvent(result);
-
     // Set up the BLoCs
     await GetIt.I.get<ConversationsCubit>().setConversations(
           result.conversations!,
@@ -123,9 +119,6 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
       );
     }
   } else if (result.state == preStartNotLoggedInState) {
-    // Set UI data
-    GetIt.I.get<UIDataService>().isLoggedIn = false;
-
     // Clear shared media data
     await GetIt.I.get<UISharingService>().clearSharedMedia();
 

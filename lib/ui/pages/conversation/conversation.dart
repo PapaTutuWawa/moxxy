@@ -13,6 +13,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
@@ -22,7 +23,6 @@ import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/keyboard_dodging.dart';
 import 'package:moxxyv2/ui/pages/conversation/selected_message.dart';
 import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
-import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/read.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/bubbles.dart';
@@ -270,7 +270,7 @@ class ConversationPageState extends State<ConversationPage>
       );
     }
 
-    final ownJid = GetIt.I.get<UIDataService>().ownJid!;
+    final ownJid = GetIt.I.get<AccountCubit>().state.account.jid;
     final start = index - 1 < 0
         ? true
         : isSent(messages[index - 1], ownJid) != isSent(item, ownJid);

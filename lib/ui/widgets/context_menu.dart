@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
-import 'package:path/path.dart';
 
 /// A item in the context menu [ContextMenu].
 class ContextMenuItem extends StatelessWidget {

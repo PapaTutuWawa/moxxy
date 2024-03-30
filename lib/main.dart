@@ -73,7 +73,6 @@ import 'package:moxxyv2/ui/pages/sticker_pack.dart';
 import 'package:moxxyv2/ui/pages/util/qrcode.dart';
 import 'package:moxxyv2/ui/service/avatars.dart';
 import 'package:moxxyv2/ui/service/connectivity.dart';
-import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
 import 'package:moxxyv2/ui/service/read.dart';
 import 'package:moxxyv2/ui/service/sharing.dart';
@@ -93,7 +92,6 @@ void setupLogging() {
 
 Future<void> setupUIServices() async {
   GetIt.I.registerSingleton<UIProgressService>(UIProgressService());
-  GetIt.I.registerSingleton<UIDataService>(UIDataService());
   GetIt.I.registerSingleton<UIAvatarsService>(UIAvatarsService());
   GetIt.I.registerSingleton<UISharingService>(UISharingService());
   GetIt.I.registerSingleton<UIConnectivityService>(UIConnectivityService());

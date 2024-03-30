@@ -5,9 +5,9 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/reaction_group.dart';
+import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/helpers.dart';
-import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/reactions/row.dart';
 
@@ -60,7 +60,7 @@ class ReactionList extends StatelessWidget {
 
         final reactionsRaw =
             (snapshot.data! as ReactionsForMessageResult).reactions;
-        final ownJid = GetIt.I.get<UIDataService>().ownJid!;
+        final ownJid = GetIt.I.get<AccountCubit>().state.account.jid;
 
         // Ensure that our own reaction is always at index 0. If we have no reactions,
         // insert a "pseudo" entry so that we can add new reactions.

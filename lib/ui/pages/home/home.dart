@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
@@ -16,7 +14,6 @@ import 'package:moxxyv2/ui/pages/home/accounts.dart';
 import 'package:moxxyv2/ui/pages/home/appbar.dart';
 import 'package:moxxyv2/ui/post_build.dart';
 import 'package:moxxyv2/ui/request_dialog.dart';
-import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/context_menu.dart';
 import 'package:moxxyv2/ui/widgets/conversation_card.dart';
@@ -47,9 +44,8 @@ class ConversationsRowDismissibleState
       key: ValueKey('conversation;${widget.item}'),
       onDismissed: (direction) {
         // TODO(Unknown): Show a snackbar allowing the user to revert the action
-        // TODO(Unknown): Switch this to another Cubit that tracks the current account JID.
         GetIt.I.get<ConversationsCubit>().closeConversation(
-          GetIt.I.get<UIDataService>().ownJid!,
+          GetIt.I.get<AccountCubit>().state.account.jid,
           widget.item.jid,
         );
       },
@@ -213,9 +209,8 @@ class ConversationsPageState extends State<ConversationsPage>
 
                         if (result) {
                           // TODO(Unknown): Show a snackbar allowing the user to revert the action
-                          // TODO(Unknown): Switch this to another Cubit that tracks the current account JID.
                           await GetIt.I.get<ConversationsCubit>().closeConversation(
-                            GetIt.I.get<UIDataService>().ownJid!,
+                            GetIt.I.get<AccountCubit>().state.account.jid,
                             _selectedConversation!.jid,
                           );
                           dismissContextMenu();

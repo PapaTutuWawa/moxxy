@@ -1,10 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/shared/constants.dart';
+import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
-import 'package:moxxyv2/ui/service/data.dart';
 import 'package:share_handler/share_handler.dart';
 
 /// This service is responsible for storing a sharing request and or executing it.
@@ -117,7 +117,7 @@ class UISharingService {
 
     ShareHandlerPlatform.instance.sharedMediaStream
         .listen((SharedMedia media) async {
-      if (GetIt.I.get<UIDataService>().isLoggedIn) {
+      if (GetIt.I.get<AccountCubit>().hasActiveAccount()) {
         _log.finest('stream: Handle shared media via stream');
         await _handleSharedMedia(media);
       }

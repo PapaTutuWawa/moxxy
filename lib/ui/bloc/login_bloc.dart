@@ -9,7 +9,6 @@ import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/request_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/service/data.dart';
 
 part 'login_bloc.freezed.dart';
 part 'login_event.dart';
@@ -88,10 +87,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     if (result is LoginSuccessfulEvent) {
       emit(state.copyWith(working: false));
 
-      // Update the UIDataService
-      GetIt.I.get<UIDataService>().processPreStartDoneEvent(result.preStart);
-
       // Set up BLoCs
+      // TODO(Unknown): Use addAccount?
       GetIt.I.get<AccountCubit>().setAccounts(
         [
           Account(
@@ -122,7 +119,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
             ),
           );
     } else if (result is LoginFailureEvent) {
-      GetIt.I.get<UIDataService>().isLoggedIn = false;
       return emit(
         state.copyWith(
           working: false,

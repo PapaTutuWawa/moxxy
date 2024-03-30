@@ -5,9 +5,9 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
-import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
@@ -263,7 +263,7 @@ class ConversationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sentBySelf = conversation.lastMessage?.sender ==
-        GetIt.I.get<UIDataService>().ownJid!;
+        GetIt.I.get<AccountCubit>().state.account.jid;
     return Material(
       color: Colors.transparent,
       child: InkWell(

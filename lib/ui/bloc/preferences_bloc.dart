@@ -9,10 +9,10 @@ import 'package:logging/logging.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
+import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/service/data.dart';
 
 part 'preferences_event.dart';
 
@@ -58,8 +58,8 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
     SignedOutEvent event,
     Emitter<PreferencesState> emit,
   ) async {
-    GetIt.I.get<UIDataService>().isLoggedIn = false;
-
+    // TODO(Unknown): Only remove the current account
+    GetIt.I.get<AccountCubit>().clearAccounts();
     await getForegroundService().send(
       SignOutCommand(),
     );

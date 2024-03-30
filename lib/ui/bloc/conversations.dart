@@ -35,6 +35,7 @@ class ConversationsState with _$ConversationsState {
 class ConversationsCubit extends Cubit<ConversationsState> {
   ConversationsCubit() : super(ConversationsState());
 
+  // ignore: comment_references
   /// Controller for the search header's [TextField].
   final TextEditingController searchBarController = TextEditingController();
 

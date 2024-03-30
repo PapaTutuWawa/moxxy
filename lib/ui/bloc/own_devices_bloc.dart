@@ -5,10 +5,10 @@ import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart';
+import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
-import 'package:moxxyv2/ui/service/data.dart';
 
 part 'own_devices_bloc.freezed.dart';
 part 'own_devices_event.dart';
@@ -58,7 +58,7 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     // ignore: cast_nullable_to_non_nullable
     await getForegroundService().send(
       SetOmemoDeviceEnabledCommand(
-        jid: GetIt.I.get<UIDataService>().ownJid!,
+        jid: GetIt.I.get<AccountCubit>().state.account.jid,
         deviceId: event.deviceId,
         enabled: event.enabled,
       ),
@@ -84,7 +84,9 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
   ) async {
     // ignore: cast_nullable_to_non_nullable
     await getForegroundService().send(
-      RecreateSessionsCommand(jid: GetIt.I.get<UIDataService>().ownJid!),
+      RecreateSessionsCommand(
+        jid: GetIt.I.get<AccountCubit>().state.account.jid,
+      ),
       awaitable: false,
     );
 
@@ -135,7 +137,7 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     DeviceVerifiedEvent event,
     Emitter<OwnDevicesState> emit,
   ) async {
-    final ownJid = GetIt.I.get<UIDataService>().ownJid!;
+    final ownJid = GetIt.I.get<AccountCubit>().state.account.jid;
     final result = isVerificationUriValid(
       state.keys,
       event.uri,
