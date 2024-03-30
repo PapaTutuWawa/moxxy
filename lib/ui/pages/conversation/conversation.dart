@@ -367,7 +367,10 @@ class ConversationPageState extends State<ConversationPage>
   Widget build(BuildContext context) {
     final maxWidth = MediaQuery.of(context).size.width * 0.6;
     return PopScope(
-      canPop: !_keyboardController.currentData.visible && !_keyboardController.currentData.showWidget && !_conversationController.messagingController.isRecordingNotifier.value,
+      canPop: !_keyboardController.currentData.visible &&
+          !_keyboardController.currentData.showWidget &&
+          !_conversationController
+              .messagingController.isRecordingNotifier.value,
       onPopInvoked: (didPop) {
         if (_keyboardController.currentData.visible) {
           // If the keyboard is open, dismiss it.

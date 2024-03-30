@@ -64,7 +64,9 @@ class ContextMenu extends StatelessWidget {
 
   /// Computes the height of the context menu, given the number of items.
   static double computeHeight(BuildContext context, int numberItems) {
-    return 2 * pxToLp(24) + numberItems * (pxToLp(48) + MediaQuery.of(context).textScaler.scale(32));
+    return 2 * pxToLp(24) +
+        numberItems *
+            (pxToLp(48) + MediaQuery.of(context).textScaler.scale(32));
   }
 
   @override

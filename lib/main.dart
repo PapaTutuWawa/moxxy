@@ -77,6 +77,7 @@ import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
 import 'package:moxxyv2/ui/service/read.dart';
 import 'package:moxxyv2/ui/service/sharing.dart';
+import 'package:moxxyv2/ui/theme.dart';
 import 'package:page_transition/page_transition.dart';
 
 void setupLogging() {
@@ -293,9 +294,15 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           title: 'Moxxy',
           theme: ThemeData(
             colorScheme: light,
+            extensions: [
+              getMoxxyThemeData(Brightness.light),
+            ],
           ),
           darkTheme: ThemeData(
             colorScheme: dark,
+            extensions: [
+              getMoxxyThemeData(Brightness.dark),
+            ],
           ),
           navigatorKey: widget.navigationKey,
           onGenerateRoute: (settings) {

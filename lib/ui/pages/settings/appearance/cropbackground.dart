@@ -93,7 +93,9 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
           canPop: !state.isWorking,
           onPopInvoked: (didPop) {
             if (didPop) {
-              context.read<CropBackgroundBloc>().add(CropBackgroundResetEvent());
+              context
+                  .read<CropBackgroundBloc>()
+                  .add(CropBackgroundResetEvent());
             }
           },
           child: SafeArea(

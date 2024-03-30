@@ -123,7 +123,9 @@ class AccountsBottomModal extends StatelessWidget {
     final cubit = context.read<AccountCubit>();
     final accounts = cubit.state.accounts;
     final extent = clampDouble(
-      ((accounts.length + 1) * AccountListTile.height + mq.textScaler.scale(20)) / mq.size.height,
+      ((accounts.length + 1) * AccountListTile.height +
+              mq.textScaler.scale(20)) /
+          mq.size.height,
       0,
       0.9,
     );
