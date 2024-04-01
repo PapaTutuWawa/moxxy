@@ -8,7 +8,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -99,13 +99,11 @@ class StartChatCubit extends Cubit<StartChatState> {
       addResult.conversation != null,
       'RequestedConversationEvent must contain a not null conversation',
     );
-    GetIt.I.get<ConversationBloc>().add(
-          RequestedConversationEvent(
-            addResult.conversation!.jid,
-            addResult.conversation!.title,
-            addResult.conversation!.avatarPath,
-            removeUntilConversations: true,
-          ),
+    await GetIt.I.get<ConversationCubit>().request(
+          addResult.conversation!.jid,
+          addResult.conversation!.title,
+          addResult.conversation!.avatarPath,
+          removeUntilConversations: true,
         );
   }
 

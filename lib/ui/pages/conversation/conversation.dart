@@ -14,7 +14,7 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles.dart';
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
@@ -220,9 +220,7 @@ class ConversationPageState extends State<ConversationPage>
 
                   if (result) {
                     // ignore: use_build_context_synchronously
-                    context.read<ConversationBloc>().add(
-                          JidAddedEvent(jid),
-                        );
+                    await context.read<ConversationCubit>().add(jid);
                   }
                 },
               ),
@@ -493,7 +491,7 @@ class ConversationPageState extends State<ConversationPage>
             conversationController: _conversationController,
           ),
         ],
-        background: BlocBuilder<ConversationBloc, ConversationState>(
+        background: BlocBuilder<ConversationCubit, ConversationState>(
           buildWhen: (prev, next) => prev.backgroundPath != next.backgroundPath,
           builder: (context, state) {
             final query = MediaQuery.of(context);
@@ -517,7 +515,7 @@ class ConversationPageState extends State<ConversationPage>
           },
         ),
         children: [
-          BlocBuilder<ConversationBloc, ConversationState>(
+          BlocBuilder<ConversationCubit, ConversationState>(
             buildWhen: (prev, next) =>
                 prev.conversation?.showAddToRoster !=
                 next.conversation?.showAddToRoster,
@@ -567,7 +565,7 @@ class ConversationPageState extends State<ConversationPage>
                           ),
                           indexedItemBuilder: (context, message, index) =>
                               _renderBubble(
-                            context.read<ConversationBloc>().state,
+                            context.read<ConversationCubit>().state,
                             message,
                             snapshot.data!,
                             index,
@@ -610,7 +608,7 @@ class ConversationPageState extends State<ConversationPage>
               ],
             ),
           ),
-          BlocBuilder<ConversationBloc, ConversationState>(
+          BlocBuilder<ConversationCubit, ConversationState>(
             buildWhen: (prev, next) =>
                 prev.conversation?.chatState != next.conversation?.chatState,
             builder: (context, state) {
@@ -620,7 +618,7 @@ class ConversationPageState extends State<ConversationPage>
               );
             },
           ),
-          BlocBuilder<ConversationBloc, ConversationState>(
+          BlocBuilder<ConversationCubit, ConversationState>(
             buildWhen: (prev, next) =>
                 prev.conversation?.encrypted != next.conversation?.encrypted,
             builder: (context, state) => MobileMessagingTextField(

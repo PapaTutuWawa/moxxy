@@ -7,7 +7,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
+import 'package:moxxyv2/ui/bloc/conversation.dart' as conversation;
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/share_selection.dart';
 
@@ -59,13 +59,11 @@ class NewConversationCubit extends Cubit<NewConversationState> {
       await conversations.addConversation(result.conversation);
     }
 
-    GetIt.I.get<conversation.ConversationBloc>().add(
-          conversation.RequestedConversationEvent(
-            jid,
-            title,
-            avatarUrl,
-            removeUntilConversations: true,
-          ),
+    await GetIt.I.get<conversation.ConversationCubit>().request(
+          jid,
+          title,
+          avatarUrl,
+          removeUntilConversations: true,
         );
   }
 

@@ -9,7 +9,7 @@ import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
 import 'package:moxxyv2/ui/bloc/blocklist.dart' as blocklist;
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
+import 'package:moxxyv2/ui/bloc/conversation.dart' as conversation;
 import 'package:moxxyv2/ui/bloc/conversations.dart' as conversations;
 import 'package:moxxyv2/ui/bloc/newconversation.dart' as new_conversation;
 import 'package:moxxyv2/ui/bloc/profile.dart' as profile;
@@ -92,9 +92,7 @@ Future<void> onConversationUpdated(
   await GetIt.I.get<conversations.ConversationsCubit>().updateConversation(
         event.conversation,
       );
-  GetIt.I.get<conversation.ConversationBloc>().add(
-        conversation.ConversationUpdatedEvent(event.conversation),
-      );
+  GetIt.I.get<conversation.ConversationCubit>().update(event.conversation);
   return GetIt.I.get<profile.ProfileCubit>().updateConversation(
         event.conversation,
       );
@@ -163,12 +161,10 @@ Future<void> onNotificationTappend(
   MessageNotificationTappedEvent event, {
   dynamic extra,
 }) async {
-  GetIt.I.get<conversation.ConversationBloc>().add(
-        conversation.RequestedConversationEvent(
-          event.conversationJid,
-          event.title,
-          event.avatarPath,
-        ),
+  await GetIt.I.get<conversation.ConversationCubit>().request(
+        event.conversationJid,
+        event.title,
+        event.avatarPath,
       );
 }
 

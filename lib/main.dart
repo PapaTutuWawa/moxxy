@@ -13,7 +13,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/blocklist.dart';
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/crop.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground.dart';
@@ -105,7 +105,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I
       .registerSingleton<NavigationBloc>(NavigationBloc(navigationKey: navKey));
   GetIt.I.registerSingleton<NewConversationCubit>(NewConversationCubit());
-  GetIt.I.registerSingleton<ConversationBloc>(ConversationBloc());
+  GetIt.I.registerSingleton<ConversationCubit>(ConversationCubit());
   GetIt.I.registerSingleton<BlocklistCubit>(BlocklistCubit());
   GetIt.I.registerSingleton<ProfileCubit>(ProfileCubit());
   GetIt.I.registerSingleton<PreferencesCubit>(PreferencesCubit());
@@ -153,8 +153,8 @@ void main() async {
         BlocProvider<NewConversationCubit>(
           create: (_) => GetIt.I.get<NewConversationCubit>(),
         ),
-        BlocProvider<ConversationBloc>(
-          create: (_) => GetIt.I.get<ConversationBloc>(),
+        BlocProvider<ConversationCubit>(
+          create: (_) => GetIt.I.get<ConversationCubit>(),
         ),
         BlocProvider<BlocklistCubit>(
           create: (_) => GetIt.I.get<BlocklistCubit>(),

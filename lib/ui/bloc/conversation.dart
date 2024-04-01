@@ -12,42 +12,61 @@ import 'package:moxxyv2/ui/bloc/sendfiles.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/conversation/conversation.dart';
 
-part 'conversation_bloc.freezed.dart';
-part 'conversation_event.dart';
-part 'conversation_state.dart';
+part 'conversation.freezed.dart';
 
-class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
-  ConversationBloc() : super(ConversationState()) {
-    on<RequestedConversationEvent>(_onRequestedConversation);
-    on<InitConversationEvent>(_onInit);
-    on<JidBlockedEvent>(_onJidBlocked);
-    on<JidAddedEvent>(_onJidAdded);
-    on<CurrentConversationResetEvent>(_onCurrentConversationReset);
-    on<ConversationUpdatedEvent>(_onConversationUpdated);
-    on<BackgroundChangedEvent>(_onBackgroundChanged);
-    on<ImagePickerRequestedEvent>(_onImagePickerRequested);
-    on<FilePickerRequestedEvent>(_onFilePickerRequested);
-    on<OmemoSetEvent>(_onOmemoSet);
-  }
+enum SendButtonState {
+  /// Open the speed dial when tapped.
+  multi,
+
+  /// Send the current message when tapped.
+  send,
+
+  /// Send the currently recorded voice message,
+  sendVoiceMessage,
+
+  /// Cancel the current correction when tapped.
+  cancelCorrection,
+}
+
+const defaultSendButtonState = SendButtonState.multi;
+
+@freezed
+class ConversationState with _$ConversationState {
+  factory ConversationState({
+    @Default(null) Conversation? conversation,
+    // TODO(Unknown): Just replace this with a separate BlocBuilder
+    String? backgroundPath,
+
+    // For recording
+    @Default(false) bool isDragging,
+    @Default(false) bool isLocked,
+    @Default(false) bool isRecording,
+  }) = _ConversationState;
+}
+
+class ConversationCubit extends Cubit<ConversationState> {
+  ConversationCubit() : super(ConversationState());
 
   bool _isSameConversation(String jid) => jid == state.conversation?.jid;
 
-  Future<void> _onInit(
-    InitConversationEvent event,
-    Emitter<ConversationState> emit,
+  Future<void> init(
+    String backgroundPath,
   ) async {
     emit(
-      state.copyWith(backgroundPath: event.backgroundPath),
+      state.copyWith(backgroundPath: backgroundPath),
     );
   }
 
-  Future<void> _onRequestedConversation(
-    RequestedConversationEvent event,
-    Emitter<ConversationState> emit,
-  ) async {
+  Future<void> request(
+    String jid,
+    String title,
+    String? avatarUrl, {
+    bool removeUntilConversations = false,
+    String? initialText,
+  }) async {
     final cb = GetIt.I.get<ConversationsCubit>();
     await cb.waitUntilInitialized();
-    final conversation = cb.getConversationByJid(event.jid)!;
+    final conversation = cb.getConversationByJid(jid)!;
     emit(
       state.copyWith(
         conversation: conversation,
@@ -58,11 +77,11 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     );
 
     final arguments = ConversationPageArguments(
-      event.jid,
-      event.initialText,
+      jid,
+      initialText,
       conversation.type,
     );
-    final navEvent = event.removeUntilConversations
+    final navEvent = removeUntilConversations
         ? (PushedNamedAndRemoveUntilEvent(
             NavigationDestination(
               conversationRoute,
@@ -80,25 +99,19 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     GetIt.I.get<NavigationBloc>().add(navEvent);
 
     await getForegroundService().send(
-      SetOpenConversationCommand(jid: event.jid),
+      SetOpenConversationCommand(jid: jid),
       awaitable: false,
     );
   }
 
-  Future<void> _onJidBlocked(
-    JidBlockedEvent event,
-    Emitter<ConversationState> emit,
-  ) async {
+  Future<void> block(String jid) async {
     // TODO(Unknown): Maybe have some state here
     await getForegroundService().send(
       BlockJidCommand(jid: state.conversation!.jid),
     );
   }
 
-  Future<void> _onJidAdded(
-    JidAddedEvent event,
-    Emitter<ConversationState> emit,
-  ) async {
+  Future<void> add(String jid) async {
     // Just update the state here. If it does not work, then the next conversation
     // update will fix it.
     emit(
@@ -114,36 +127,24 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     );
   }
 
-  Future<void> _onCurrentConversationReset(
-    CurrentConversationResetEvent event,
-    Emitter<ConversationState> emit,
-  ) async {
+  Future<void> reset() async {
     await getForegroundService().send(
       SetOpenConversationCommand(),
       awaitable: false,
     );
   }
 
-  Future<void> _onConversationUpdated(
-    ConversationUpdatedEvent event,
-    Emitter<ConversationState> emit,
-  ) async {
-    if (!_isSameConversation(event.conversation.jid)) return;
+  void update(Conversation newConversation) {
+    if (!_isSameConversation(newConversation.jid)) return;
 
-    emit(state.copyWith(conversation: event.conversation));
+    emit(state.copyWith(conversation: newConversation));
   }
 
-  Future<void> _onBackgroundChanged(
-    BackgroundChangedEvent event,
-    Emitter<ConversationState> emit,
-  ) async {
-    return emit(state.copyWith(backgroundPath: event.backgroundPath));
+  void onBackgroundChanged(String? backgroundPath) {
+    return emit(state.copyWith(backgroundPath: backgroundPath));
   }
 
-  Future<void> _onImagePickerRequested(
-    ImagePickerRequestedEvent event,
-    Emitter<ConversationState> emit,
-  ) async {
+  Future<void> requestImagePicker() async {
     return GetIt.I.get<SendFilesCubit>().request(
       [
         SendFilesRecipient(
@@ -158,10 +159,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     );
   }
 
-  Future<void> _onFilePickerRequested(
-    FilePickerRequestedEvent event,
-    Emitter<ConversationState> emit,
-  ) async {
+  Future<void> requestFilePicker() async {
     return GetIt.I.get<SendFilesCubit>().request(
       [
         SendFilesRecipient(
@@ -176,21 +174,18 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     );
   }
 
-  Future<void> _onOmemoSet(
-    OmemoSetEvent event,
-    Emitter<ConversationState> emit,
-  ) async {
+  Future<void> setOmemo(bool enabled) async {
     emit(
       state.copyWith(
         conversation: state.conversation!.copyWith(
-          encrypted: event.enabled,
+          encrypted: enabled,
         ),
       ),
     );
 
     await getForegroundService().send(
       SetOmemoEnabledCommand(
-        enabled: event.enabled,
+        enabled: enabled,
         jid: state.conversation!.jid,
       ),
       awaitable: false,

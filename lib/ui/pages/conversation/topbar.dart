@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile.dart' as profile;
@@ -89,7 +89,7 @@ class ConversationTopbar extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ConversationBloc, ConversationState>(
+    return BlocBuilder<ConversationCubit, ConversationState>(
       buildWhen: _shouldRebuild,
       builder: (context, state) {
         final chatState = state.conversation?.chatState ?? ChatState.gone;
@@ -177,10 +177,10 @@ class ConversationTopbar extends StatelessWidget
                 onSelected: (result) {
                   if (result == EncryptionOption.omemo &&
                       state.conversation!.encrypted == false) {
-                    context.read<ConversationBloc>().add(OmemoSetEvent(true));
+                    context.read<ConversationCubit>().setOmemo(true);
                   } else if (result == EncryptionOption.none &&
                       state.conversation!.encrypted == true) {
-                    context.read<ConversationBloc>().add(OmemoSetEvent(false));
+                    context.read<ConversationCubit>().setOmemo(false);
                   }
                 },
                 icon: (state.conversation?.encrypted ?? false)

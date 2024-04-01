@@ -5,7 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/request.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -264,12 +264,10 @@ class ConversationsPageState extends State<ConversationsPage>
               context.read<ConversationsCubit>().closeSearchBar();
 
               // Then request the conversation.
-              GetIt.I.get<ConversationBloc>().add(
-                    RequestedConversationEvent(
-                      item.jid,
-                      item.title,
-                      item.avatarPath,
-                    ),
+              GetIt.I.get<ConversationCubit>().request(
+                    item.jid,
+                    item.title,
+                    item.avatarPath,
                   );
             },
             key: key,

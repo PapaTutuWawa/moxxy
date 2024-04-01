@@ -2,7 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversation.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles.dart';
 import 'package:moxxyv2/ui/bloc/share_selection.dart';
 import 'package:share_handler/share_handler.dart';
@@ -38,14 +38,12 @@ class UISharingService {
 
       // Handle direct shares
       if (media.content != null) {
-        GetIt.I.get<ConversationBloc>().add(
-              RequestedConversationEvent(
-                conversationJid!,
-                '',
-                null,
-                removeUntilConversations: true,
-                initialText: media.content,
-              ),
+        await GetIt.I.get<ConversationCubit>().request(
+              conversationJid!,
+              '',
+              null,
+              removeUntilConversations: true,
+              initialText: media.content,
             );
       } else {
         final isMedia = attachments.every(

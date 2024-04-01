@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversation.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 
 /// Sends a block command to the service to block [jid].
@@ -13,7 +13,7 @@ Future<void> blockJid(String jid, BuildContext context) async {
 
   if (result) {
     // ignore: use_build_context_synchronously
-    context.read<ConversationBloc>().add(JidBlockedEvent(jid));
+    await context.read<ConversationCubit>().block(jid);
 
     // ignore: use_build_context_synchronously
     Navigator.of(context).pop();

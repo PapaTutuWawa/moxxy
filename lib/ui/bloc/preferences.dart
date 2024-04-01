@@ -10,7 +10,7 @@ import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversation.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
@@ -35,9 +35,9 @@ class PreferencesCubit extends Cubit<PreferencesState> {
 
     // Notify the conversation UI if we changed the background
     if (preferences.backgroundPath != state.backgroundPath) {
-      GetIt.I.get<ConversationBloc>().add(
-            BackgroundChangedEvent(preferences.backgroundPath),
-          );
+      GetIt.I
+          .get<ConversationCubit>()
+          .onBackgroundChanged(preferences.backgroundPath);
     }
 
     if (!kDebugMode) {
