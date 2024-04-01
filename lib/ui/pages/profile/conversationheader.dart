@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
-import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
+import 'package:moxxyv2/ui/bloc/profile.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/contact_helper.dart';
 import 'package:moxxyv2/ui/widgets/profile/options.dart';
@@ -53,7 +53,7 @@ class ConversationProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ProfileBloc, ProfileState>(
+    return BlocBuilder<ProfileCubit, ProfileState>(
       builder: (context, state) {
         final conversation = state.conversation!;
         return Column(
@@ -116,11 +116,9 @@ class ConversationProfileHeader extends StatelessWidget {
                           ? t.pages.profile.conversation.notificationsMuted
                           : t.pages.profile.conversation.notificationsEnabled,
                       onTap: () {
-                        context.read<ProfileBloc>().add(
-                              MuteStateSetEvent(
-                                conversation.jid,
-                                !conversation.muted,
-                              ),
+                        context.read<ProfileCubit>().setMuteState(
+                              conversation.jid,
+                              !conversation.muted,
                             );
                       },
                     ),

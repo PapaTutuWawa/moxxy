@@ -12,7 +12,7 @@ import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart' as blocklist;
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
 import 'package:moxxyv2/ui/bloc/conversations.dart' as conversations;
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart' as new_conversation;
-import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
+import 'package:moxxyv2/ui/bloc/profile.dart' as profile;
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/prestart.dart';
 import 'package:moxxyv2/ui/service/avatars.dart';
@@ -95,8 +95,8 @@ Future<void> onConversationUpdated(
   GetIt.I.get<conversation.ConversationBloc>().add(
         conversation.ConversationUpdatedEvent(event.conversation),
       );
-  GetIt.I.get<profile.ProfileBloc>().add(
-        profile.ConversationUpdatedEvent(event.conversation),
+  return GetIt.I.get<profile.ProfileCubit>().updateConversation(
+        event.conversation,
       );
 }
 
@@ -146,8 +146,10 @@ Future<void> onSelfAvatarChanged(
   SelfAvatarChangedEvent event, {
   dynamic extra,
 }) async {
-  GetIt.I.get<profile.ProfileBloc>().add(
-        profile.AvatarSetEvent(event.path, event.hash, false),
+  return GetIt.I.get<profile.ProfileCubit>().setAvatar(
+        event.path,
+        event.hash,
+        false,
       );
 }
 

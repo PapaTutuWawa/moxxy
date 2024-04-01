@@ -45,9 +45,9 @@ class ConversationsRowDismissibleState
       onDismissed: (direction) {
         // TODO(Unknown): Show a snackbar allowing the user to revert the action
         GetIt.I.get<ConversationsCubit>().closeConversation(
-          GetIt.I.get<AccountCubit>().state.account.jid,
-          widget.item.jid,
-        );
+              GetIt.I.get<AccountCubit>().state.account.jid,
+              widget.item.jid,
+            );
       },
       onUpdate: (details) {
         if (details.direction != direction) {
@@ -209,10 +209,12 @@ class ConversationsPageState extends State<ConversationsPage>
 
                         if (result) {
                           // TODO(Unknown): Show a snackbar allowing the user to revert the action
-                          await GetIt.I.get<ConversationsCubit>().closeConversation(
-                            GetIt.I.get<AccountCubit>().state.account.jid,
-                            _selectedConversation!.jid,
-                          );
+                          await GetIt.I
+                              .get<ConversationsCubit>()
+                              .closeConversation(
+                                GetIt.I.get<AccountCubit>().state.account.jid,
+                                _selectedConversation!.jid,
+                              );
                           dismissContextMenu();
                         }
                       },
@@ -328,8 +330,7 @@ class ConversationsPageState extends State<ConversationsPage>
             padding: const EdgeInsets.only(top: 8),
             child: Text(
               hasSearchResults
-                  ?
-                  t.pages.home.searchNoResults
+                  ? t.pages.home.searchNoResults
                   : t.pages.conversations.noOpenChats,
             ),
           ),

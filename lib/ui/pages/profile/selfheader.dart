@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/own_devices_bloc.dart';
-import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
+import 'package:moxxyv2/ui/bloc/profile.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/profile/profile.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
@@ -19,15 +19,17 @@ class SelfProfileHeader extends StatelessWidget {
       final (avatarPath, avatarHash) = result;
 
       // ignore: use_build_context_synchronously
-      context.read<ProfileBloc>().add(
-            AvatarSetEvent(avatarPath, avatarHash, true),
+      await context.read<ProfileCubit>().setAvatar(
+            avatarPath,
+            avatarHash,
+            true,
           );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ProfileBloc, ProfileState>(
+    return BlocBuilder<ProfileCubit, ProfileState>(
       builder: (context, state) {
         return Column(
           children: [

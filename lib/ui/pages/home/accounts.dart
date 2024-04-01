@@ -2,8 +2,10 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
+import 'package:moxxyv2/ui/bloc/profile.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 
 const double _accountListTileVerticalPadding = 8;
@@ -37,8 +39,16 @@ class AccountListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return InkWell(
-      // TODO: OnTap
-      onTap: () {},
+      onTap: () {
+        // TODO(Unknown): Request the specific profile
+        final account = GetIt.I.get<AccountCubit>().state.account;
+        GetIt.I.get<ProfileCubit>().requestProfile(
+              true,
+              jid: account.jid,
+              avatarUrl: account.avatarPath,
+              displayName: account.displayName,
+            );
+      },
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: 12,

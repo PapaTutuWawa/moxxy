@@ -6,7 +6,7 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
+import 'package:moxxyv2/ui/bloc/profile.dart' as profile;
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
@@ -81,11 +81,9 @@ class ConversationTopbar extends StatelessWidget
 
   /// Summon the profile page of the currently open conversation
   void _openProfile(BuildContext context, ConversationState state) {
-    context.read<profile.ProfileBloc>().add(
-          profile.ProfilePageRequestedEvent(
-            false,
-            conversation: state.conversation,
-          ),
+    context.read<profile.ProfileCubit>().requestProfile(
+          false,
+          conversation: state.conversation,
         );
   }
 

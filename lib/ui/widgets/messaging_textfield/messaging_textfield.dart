@@ -176,7 +176,11 @@ class MobileMessagingTextFieldState extends State<MobileMessagingTextField>
                                   snapshot.data!.quotedMessage!,
                                   isSent(
                                     snapshot.data!.quotedMessage!,
-                                    GetIt.I.get<AccountCubit>().state.account.jid,
+                                    GetIt.I
+                                        .get<AccountCubit>()
+                                        .state
+                                        .account
+                                        .jid,
                                   ),
                                   widget.conversationController
                                           .conversationType ==
