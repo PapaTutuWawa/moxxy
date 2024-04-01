@@ -75,7 +75,7 @@ class ConversationCubit extends Cubit<ConversationState> {
       ),
     );
 
-    final cubit = GetIt.I.get<NavigationCubit>();
+    final cubit = GetIt.I.get<Navigation>();
     final destination = NavigationDestination(
       conversationRoute,
       arguments: ConversationPageArguments(

@@ -63,7 +63,7 @@ class StartChatCubit extends Cubit<StartChatState> {
       return;
     } else if (result is JidIsGroupchatEvent) {
       if (kDebugMode) {
-        await GetIt.I.get<NavigationCubit>().pushNamedAndRemoveUntil(
+        await GetIt.I.get<Navigation>().pushNamedAndRemoveUntil(
               NavigationDestination(
                 joinGroupchatRoute,
                 arguments: JoinGroupchatArguments(result.jid),

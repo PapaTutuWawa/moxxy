@@ -28,7 +28,7 @@ class OwnDevicesCubit extends Cubit<OwnDevicesState> {
   Future<void> request() async {
     emit(state.copyWith(working: true));
 
-    await GetIt.I.get<NavigationCubit>().pushNamed(
+    await GetIt.I.get<Navigation>().pushNamed(
           const NavigationDestination(ownDevicesRoute),
         );
 
@@ -83,7 +83,7 @@ class OwnDevicesCubit extends Cubit<OwnDevicesState> {
       awaitable: false,
     );
 
-    GetIt.I.get<NavigationCubit>().pop();
+    GetIt.I.get<Navigation>().pop();
   }
 
   Future<void> removeDevice(int deviceId) async {

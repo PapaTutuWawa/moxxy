@@ -87,7 +87,7 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
     }
 
     GetIt.I.get<Logger>().finest('Navigating to conversations');
-    await GetIt.I.get<NavigationCubit>().pushNamedAndRemoveUntil(
+    await GetIt.I.get<Navigation>().pushNamedAndRemoveUntil(
           const NavigationDestination(homeRoute),
           (_) => false,
         );
@@ -114,7 +114,7 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
 
     // Navigate to the intro page
     GetIt.I.get<Logger>().finest('Navigating to intro');
-    await GetIt.I.get<NavigationCubit>().pushNamedAndRemoveUntil(
+    await GetIt.I.get<Navigation>().pushNamedAndRemoveUntil(
           const NavigationDestination(introRoute),
           (_) => false,
         );

@@ -34,7 +34,7 @@ class StickerPackCubit extends Cubit<StickerPackState> {
     );
 
     // Navigate
-    await GetIt.I.get<NavigationCubit>().pushNamed(
+    await GetIt.I.get<Navigation>().pushNamed(
           const NavigationDestination(stickerPackRoute),
         );
 
@@ -69,7 +69,7 @@ class StickerPackCubit extends Cubit<StickerPackState> {
     );
 
     // Leave the page
-    GetIt.I.get<NavigationCubit>().pop();
+    GetIt.I.get<Navigation>().pop();
 
     // Remove the sticker pack
     await GetIt.I.get<stickers.StickersCubit>().remove(stickerPackId);
@@ -91,7 +91,7 @@ class StickerPackCubit extends Cubit<StickerPackState> {
     }
 
     // Navigate
-    await GetIt.I.get<NavigationCubit>().pushNamed(
+    await GetIt.I.get<Navigation>().pushNamed(
           const NavigationDestination(stickerPackRoute),
         );
 
@@ -112,7 +112,7 @@ class StickerPackCubit extends Cubit<StickerPackState> {
         );
       } else {
         // Leave the page
-        GetIt.I.get<NavigationCubit>().pop();
+        GetIt.I.get<Navigation>().pop();
       }
     }
   }
@@ -138,7 +138,7 @@ class StickerPackCubit extends Cubit<StickerPackState> {
     );
 
     // Leave the page
-    GetIt.I.get<NavigationCubit>().pop();
+    GetIt.I.get<Navigation>().pop();
 
     // Notify on failure
     if (result is! StickerPackInstallSuccessEvent) {

@@ -102,7 +102,7 @@ class SendFilesCubit extends Cubit<SendFilesState> {
       ),
     );
 
-    final cubit = GetIt.I.get<NavigationCubit>();
+    final cubit = GetIt.I.get<Navigation>();
     const destination = NavigationDestination(sendFilesRoute);
     if (popEntireStack) {
       await cubit.pushNamedAndRemoveUntil(
@@ -141,7 +141,7 @@ class SendFilesCubit extends Cubit<SendFilesState> {
     _shouldIgnoreDeletionRequest = true;
 
     // Return to the last page
-    final cubit = GetIt.I.get<NavigationCubit>();
+    final cubit = GetIt.I.get<Navigation>();
     final canPop = cubit.canPop();
     if (canPop) {
       cubit.pop();
@@ -158,7 +158,7 @@ class SendFilesCubit extends Cubit<SendFilesState> {
   void remove(int index) {
     // Go to the last page if we would otherwise remove the last item on the
     if (state.files.length == 1) {
-      GetIt.I.get<NavigationCubit>().pop();
+      GetIt.I.get<Navigation>().pop();
       return;
     }
 

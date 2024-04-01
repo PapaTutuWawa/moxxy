@@ -261,7 +261,7 @@ class SendFilesPage extends StatelessWidget {
                           // By using `SystemNavigator.pop`, we can tell the Flutter to "pop the
                           // entire app".
                           context
-                              .read<NavigationCubit>()
+                              .read<Navigation>()
                               .popWithSystemNavigator();
                         },
                       ),

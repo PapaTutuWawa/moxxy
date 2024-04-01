@@ -111,7 +111,7 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                     child: CancelButton(
                       onPressed: () {
                         context.read<CropBackgroundCubit>().reset();
-                        context.read<NavigationCubit>().pop();
+                        context.read<Navigation>().pop();
                       },
                     ),
                   ),

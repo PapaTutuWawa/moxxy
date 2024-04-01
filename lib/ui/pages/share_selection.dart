@@ -50,7 +50,7 @@ class ShareSelectionPage extends StatelessWidget {
         GetIt.I.get<ShareSelectionCubit>().reset();
 
         // Navigate to the conversations page...
-        GetIt.I.get<navigation.NavigationCubit>().pushNamedAndRemoveUntil(
+        GetIt.I.get<navigation.Navigation>().pushNamedAndRemoveUntil(
               const navigation.NavigationDestination(homeRoute),
               (_) => false,
             );

@@ -36,7 +36,7 @@ class CropCubit extends Cubit<CropState> {
     );
     _completer.complete(bytes);
 
-    GetIt.I.get<NavigationCubit>().pop();
+    GetIt.I.get<Navigation>().pop();
 
     await resetImage();
   }
@@ -75,7 +75,7 @@ class CropCubit extends Cubit<CropState> {
     _completer = Completer();
 
     resetImage();
-    GetIt.I.get<NavigationCubit>().pushNamed(
+    GetIt.I.get<Navigation>().pushNamed(
           const NavigationDestination(cropRoute),
         );
     _performCropping(path);
@@ -89,7 +89,7 @@ class CropCubit extends Cubit<CropState> {
   Future<Uint8List?> cropImageWithData(Uint8List data) {
     _completer = Completer();
 
-    GetIt.I.get<NavigationCubit>().pushNamed(
+    GetIt.I.get<Navigation>().pushNamed(
           const NavigationDestination(cropRoute),
         );
 

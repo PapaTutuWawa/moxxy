@@ -26,7 +26,7 @@ class DevicesCubit extends Cubit<DevicesState> {
   Future<void> request(String jid) async {
     emit(state.copyWith(working: true, jid: jid));
 
-    await GetIt.I.get<NavigationCubit>().pushNamed(
+    await GetIt.I.get<Navigation>().pushNamed(
           const NavigationDestination(devicesRoute),
         );
 
@@ -68,7 +68,7 @@ class DevicesCubit extends Cubit<DevicesState> {
     );
     emit(state.copyWith(devices: <OmemoDevice>[]));
 
-    GetIt.I.get<NavigationCubit>().pop();
+    GetIt.I.get<Navigation>().pop();
   }
 
   Future<void> verifyDevice(

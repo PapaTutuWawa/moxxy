@@ -136,7 +136,7 @@ class ProfilePageState extends State<ProfilePage> {
               color: Colors.transparent,
               child: IconButton(
                 icon: const Icon(Icons.close),
-                onPressed: context.read<NavigationCubit>().pop,
+                onPressed: context.read<Navigation>().pop,
               ),
             ),
           ),

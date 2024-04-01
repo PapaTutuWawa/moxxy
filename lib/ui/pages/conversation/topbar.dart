@@ -220,7 +220,7 @@ class ConversationTopbar extends StatelessWidget
 
                       // Navigate back
                       // ignore: use_build_context_synchronously
-                      context.read<NavigationCubit>().pop();
+                      context.read<Navigation>().pop();
                     }
                   case ConversationOption.block:
                     // ignore: use_build_context_synchronously

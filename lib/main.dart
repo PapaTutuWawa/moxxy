@@ -102,8 +102,8 @@ Future<void> setupUIServices() async {
 }
 
 void setupBlocs(GlobalKey<NavigatorState> navKey) {
-  GetIt.I.registerSingleton<NavigationCubit>(
-    NavigationCubit(navigationKey: navKey),
+  GetIt.I.registerSingleton<Navigation>(
+    Navigation(navigationKey: navKey),
   );
   GetIt.I.registerSingleton<NewConversationCubit>(NewConversationCubit());
   GetIt.I.registerSingleton<ConversationCubit>(ConversationCubit());
@@ -142,9 +142,6 @@ void main() async {
   runApp(
     MultiBlocProvider(
       providers: [
-        BlocProvider<NavigationCubit>(
-          create: (_) => GetIt.I.get<NavigationCubit>(),
-        ),
         BlocProvider<LoginCubit>(
           create: (_) => LoginCubit(),
         ),

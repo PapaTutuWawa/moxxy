@@ -99,7 +99,7 @@ class LoginCubit extends Cubit<LoginState> {
         ],
         0,
       );
-      await GetIt.I.get<NavigationCubit>().pushNamedAndRemoveUntil(
+      await GetIt.I.get<Navigation>().pushNamedAndRemoveUntil(
             const NavigationDestination(
               homeRoute,
             ),

@@ -27,7 +27,7 @@ class ServerInfoCubit extends Cubit<ServerInfoState> {
   Future<void> request() async {
     emit(state.copyWith(working: true));
 
-    await GetIt.I.get<NavigationCubit>().pushNamed(
+    await GetIt.I.get<Navigation>().pushNamed(
           const NavigationDestination(serverInfoRoute),
         );
 

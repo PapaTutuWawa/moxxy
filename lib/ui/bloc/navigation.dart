@@ -1,9 +1,5 @@
-import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'navigation.freezed.dart';
 
 class NavigationDestination {
   const NavigationDestination(
@@ -14,22 +10,8 @@ class NavigationDestination {
   final Object? arguments;
 }
 
-enum NavigationStatus {
-  splashscreen,
-  intro,
-  login
-//  conversations
-}
-
-@freezed
-class NavigationState with _$NavigationState {
-  factory NavigationState({
-    @Default(NavigationStatus.intro) NavigationStatus status,
-  }) = _NavigationState;
-}
-
-class NavigationCubit extends Cubit<NavigationState> {
-  NavigationCubit({required this.navigationKey}) : super(NavigationState());
+class Navigation {
+  Navigation({required this.navigationKey});
 
   final GlobalKey<NavigatorState> navigationKey;
 

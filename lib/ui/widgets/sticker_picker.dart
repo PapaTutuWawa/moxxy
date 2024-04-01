@@ -100,7 +100,7 @@ class StickerPickerState extends State<StickerPicker> {
                         ),
                         TextButton(
                           onPressed: () {
-                            context.read<nav.NavigationCubit>().pushNamed(
+                            context.read<nav.Navigation>().pushNamed(
                                   const nav.NavigationDestination(
                                     stickersRoute,
                                   ),

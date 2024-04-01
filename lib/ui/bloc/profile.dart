@@ -48,7 +48,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       );
     }
 
-    GetIt.I.get<NavigationCubit>().pushNamed(
+    GetIt.I.get<Navigation>().pushNamed(
           NavigationDestination(
             profileRoute,
             arguments: ProfileArguments(

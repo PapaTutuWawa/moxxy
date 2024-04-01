@@ -173,7 +173,7 @@ class ShareSelectionCubit extends Cubit<ShareSelectionState> {
       ),
     );
 
-    GetIt.I.get<NavigationCubit>().pushNamedAndRemoveUntil(
+    GetIt.I.get<Navigation>().pushNamedAndRemoveUntil(
           const NavigationDestination(shareSelectionRoute),
           (_) => false,
         );
@@ -208,7 +208,7 @@ class ShareSelectionCubit extends Cubit<ShareSelectionState> {
       );
 
       // Navigate to the conversations page...
-      await GetIt.I.get<NavigationCubit>().pushNamedAndRemoveUntil(
+      await GetIt.I.get<Navigation>().pushNamedAndRemoveUntil(
             const NavigationDestination(homeRoute),
             (_) => false,
           );
