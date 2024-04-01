@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
@@ -219,8 +220,7 @@ class ConversationTopbar extends StatelessWidget
                           );
 
                       // Navigate back
-                      // ignore: use_build_context_synchronously
-                      context.read<Navigation>().pop();
+                      GetIt.I.get<Navigation>().pop();
                     }
                   case ConversationOption.block:
                     // ignore: use_build_context_synchronously

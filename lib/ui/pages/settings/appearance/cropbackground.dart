@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground.dart';
 import 'package:moxxyv2/ui/bloc/navigation.dart';
@@ -110,8 +111,8 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                     color: const Color.fromRGBO(0, 0, 0, 0),
                     child: CancelButton(
                       onPressed: () {
-                        context.read<CropBackgroundCubit>().reset();
-                        context.read<Navigation>().pop();
+                        GetIt.I.get<CropBackgroundCubit>().reset();
+                        GetIt.I.get<Navigation>().pop();
                       },
                     ),
                   ),
