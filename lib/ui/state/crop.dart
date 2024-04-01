@@ -6,7 +6,7 @@ import 'package:cropperx/cropperx.dart';
 import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxxyv2/ui/bloc/navigation.dart';
+import 'package:moxxyv2/ui/state/navigation.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
 part 'crop.freezed.dart';

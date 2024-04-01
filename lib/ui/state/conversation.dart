@@ -5,9 +5,9 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:moxxyv2/ui/bloc/conversations.dart';
-import 'package:moxxyv2/ui/bloc/navigation.dart';
-import 'package:moxxyv2/ui/bloc/sendfiles.dart';
+import 'package:moxxyv2/ui/state/conversations.dart';
+import 'package:moxxyv2/ui/state/navigation.dart';
+import 'package:moxxyv2/ui/state/sendfiles.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/conversation/conversation.dart';
 

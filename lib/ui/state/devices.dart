@@ -5,7 +5,7 @@ import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart';
-import 'package:moxxyv2/ui/bloc/navigation.dart';
+import 'package:moxxyv2/ui/state/navigation.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 

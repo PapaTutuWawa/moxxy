@@ -7,11 +7,11 @@ import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
-import 'package:moxxyv2/ui/bloc/conversations.dart';
-import 'package:moxxyv2/ui/bloc/navigation.dart';
-import 'package:moxxyv2/ui/bloc/newconversation.dart';
-import 'package:moxxyv2/ui/bloc/preferences.dart';
-import 'package:moxxyv2/ui/bloc/sendfiles.dart';
+import 'package:moxxyv2/ui/state/conversations.dart';
+import 'package:moxxyv2/ui/state/navigation.dart';
+import 'package:moxxyv2/ui/state/newconversation.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
+import 'package:moxxyv2/ui/state/sendfiles.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
 part 'share_selection.freezed.dart';

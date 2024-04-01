@@ -3,7 +3,7 @@ import 'package:logging/logging.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/ui/bloc/preferences.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
 
 /// A UI service that is responsible for managing whether a read marker should
 /// get sent for a given message and, if all checks are green, actually send the

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/bloc/account.dart';
-import 'package:moxxyv2/ui/bloc/profile.dart';
+import 'package:moxxyv2/ui/state/account.dart';
+import 'package:moxxyv2/ui/state/profile.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 
 const double _accountListTileVerticalPadding = 8;

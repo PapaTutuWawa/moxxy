@@ -9,9 +9,9 @@ import 'package:logging/logging.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/ui/bloc/account.dart';
-import 'package:moxxyv2/ui/bloc/conversation.dart';
-import 'package:moxxyv2/ui/bloc/navigation.dart';
+import 'package:moxxyv2/ui/state/account.dart';
+import 'package:moxxyv2/ui/state/conversation.dart';
+import 'package:moxxyv2/ui/state/navigation.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
 class PreferencesCubit extends Cubit<PreferencesState> {

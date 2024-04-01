@@ -7,9 +7,9 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
-import 'package:moxxyv2/ui/bloc/conversation.dart' as conversation;
-import 'package:moxxyv2/ui/bloc/conversations.dart';
-import 'package:moxxyv2/ui/bloc/share_selection.dart';
+import 'package:moxxyv2/ui/state/conversation.dart' as conversation;
+import 'package:moxxyv2/ui/state/conversations.dart';
+import 'package:moxxyv2/ui/state/share_selection.dart';
 
 part 'newconversation.freezed.dart';
 

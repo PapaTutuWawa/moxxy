@@ -47,7 +47,7 @@ import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:moxxyv2/shared/models/sticker_pack.dart' as sticker_pack;
 import 'package:moxxyv2/shared/models/xmpp_state.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
-import 'package:moxxyv2/ui/bloc/sendfiles.dart';
+import 'package:moxxyv2/ui/state/sendfiles.dart';
 
 void setupBackgroundEventHandler() {
   final handler = EventHandler()

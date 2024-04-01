@@ -6,8 +6,8 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/ui/bloc/conversation.dart';
-import 'package:moxxyv2/ui/bloc/conversations.dart';
+import 'package:moxxyv2/ui/state/conversation.dart';
+import 'package:moxxyv2/ui/state/conversations.dart';
 
 part 'joingroupchat.freezed.dart';
 

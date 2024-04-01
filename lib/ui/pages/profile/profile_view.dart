@@ -7,7 +7,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/groupchat_member.dart';
-import 'package:moxxyv2/ui/bloc/server_info.dart';
+import 'package:moxxyv2/ui/state/server_info.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/profile/conversationheader.dart';
 import 'package:moxxyv2/ui/pages/profile/profile.dart';

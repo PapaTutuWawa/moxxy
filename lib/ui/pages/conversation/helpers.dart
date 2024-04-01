@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:moxxyv2/ui/bloc/conversation.dart';
+import 'package:moxxyv2/ui/state/conversation.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 
 /// Sends a block command to the service to block [jid].

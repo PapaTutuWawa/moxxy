@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/bloc/request.dart';
+import 'package:moxxyv2/ui/state/request.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class RequestDialog extends StatelessWidget {

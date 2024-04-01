@@ -6,8 +6,8 @@ import 'package:get_it/get_it.dart';
 import 'package:image/image.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxyv2/ui/bloc/navigation.dart';
-import 'package:moxxyv2/ui/bloc/preferences.dart';
+import 'package:moxxyv2/ui/state/navigation.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:path/path.dart' as path;
 

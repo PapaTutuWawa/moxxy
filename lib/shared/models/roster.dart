@@ -2,7 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/preferences.dart';
-import 'package:moxxyv2/ui/bloc/preferences.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
 
 part 'roster.freezed.dart';
 part 'roster.g.dart';

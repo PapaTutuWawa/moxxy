@@ -7,8 +7,8 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
-import 'package:moxxyv2/ui/bloc/navigation.dart';
-import 'package:moxxyv2/ui/bloc/stickers.dart' as stickers;
+import 'package:moxxyv2/ui/state/navigation.dart';
+import 'package:moxxyv2/ui/state/stickers.dart' as stickers;
 import 'package:moxxyv2/ui/constants.dart';
 
 part 'sticker_pack.freezed.dart';

@@ -1,5 +1,5 @@
 import 'package:get_it/get_it.dart';
-import 'package:moxxyv2/ui/bloc/preferences.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
 
 /// Taken from https://github.com/SimonBrazell/privacy-redirect/blob/master/src/assets/javascripts/helpers/youtube.js
 const _youtubeHosts = [

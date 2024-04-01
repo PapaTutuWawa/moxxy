@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/bloc/groupchat/joingroupchat.dart';
+import 'package:moxxyv2/ui/state/groupchat/joingroupchat.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
 class JoinGroupchatArguments {

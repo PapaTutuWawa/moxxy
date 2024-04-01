@@ -1,10 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/shared/constants.dart';
-import 'package:moxxyv2/ui/bloc/account.dart';
-import 'package:moxxyv2/ui/bloc/conversation.dart';
-import 'package:moxxyv2/ui/bloc/sendfiles.dart';
-import 'package:moxxyv2/ui/bloc/share_selection.dart';
+import 'package:moxxyv2/ui/state/account.dart';
+import 'package:moxxyv2/ui/state/conversation.dart';
+import 'package:moxxyv2/ui/state/sendfiles.dart';
+import 'package:moxxyv2/ui/state/share_selection.dart';
 import 'package:share_handler/share_handler.dart';
 
 /// This service is responsible for storing a sharing request and or executing it.

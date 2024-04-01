@@ -6,9 +6,9 @@ import 'package:grouped_list/grouped_list.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
-import 'package:moxxyv2/ui/bloc/navigation.dart' as nav;
-import 'package:moxxyv2/ui/bloc/sticker_pack.dart';
-import 'package:moxxyv2/ui/bloc/stickers.dart';
+import 'package:moxxyv2/ui/state/navigation.dart' as nav;
+import 'package:moxxyv2/ui/state/sticker_pack.dart';
+import 'package:moxxyv2/ui/state/stickers.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/sticker_pack_controller.dart';
 

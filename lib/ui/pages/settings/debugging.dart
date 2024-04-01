@@ -6,7 +6,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/debug.dart' as debug;
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/ui/bloc/preferences.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';

@@ -5,7 +5,7 @@ import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/shared/models/groupchat.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/ui/bloc/preferences.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
 
 part 'conversation.freezed.dart';
 part 'conversation.g.dart';
