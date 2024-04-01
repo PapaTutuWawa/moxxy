@@ -11,23 +11,21 @@ import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart' as stickers;
 import 'package:moxxyv2/ui/constants.dart';
 
-part 'sticker_pack_bloc.freezed.dart';
-part 'sticker_pack_event.dart';
-part 'sticker_pack_state.dart';
+part 'sticker_pack.freezed.dart';
 
-class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
-  StickerPackBloc() : super(StickerPackState()) {
-    on<LocallyAvailableStickerPackRequested>(_onLocalStickerPackRequested);
-    on<StickerPackRemovedEvent>(_onStickerPackRemoved);
-    on<RemoteStickerPackRequested>(_onRemoteStickerPackRequested);
-    on<StickerPackInstalledEvent>(_onStickerPackInstalled);
-    on<StickerPackRequested>(_onStickerPackRequested);
-  }
+@freezed
+class StickerPackState with _$StickerPackState {
+  factory StickerPackState({
+    StickerPack? stickerPack,
+    @Default(false) bool isWorking,
+    @Default(false) bool isInstalling,
+  }) = _StickerPackState;
+}
 
-  Future<void> _onLocalStickerPackRequested(
-    LocallyAvailableStickerPackRequested event,
-    Emitter<StickerPackState> emit,
-  ) async {
+class StickerPackCubit extends Cubit<StickerPackState> {
+  StickerPackCubit() : super(StickerPackState());
+
+  Future<void> requestLocalStickerPack(String stickerPackId) async {
     emit(
       state.copyWith(
         isWorking: true,
@@ -47,7 +45,7 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
         // ignore: cast_nullable_to_non_nullable
         await getForegroundService().send(
       GetStickerPackByIdCommand(
-        id: event.stickerPackId,
+        id: stickerPackId,
       ),
     ) as GetStickerPackByIdResult;
     assert(
@@ -63,10 +61,7 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     );
   }
 
-  Future<void> _onStickerPackRemoved(
-    StickerPackRemovedEvent event,
-    Emitter<StickerPackState> emit,
-  ) async {
+  Future<void> removeStickerPack(String stickerPackId) async {
     // Reset internal state
     emit(
       state.copyWith(
@@ -82,16 +77,16 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
 
     // Remove the sticker pack
     GetIt.I.get<stickers.StickersBloc>().add(
-          stickers.StickerPackRemovedEvent(event.stickerPackId),
+          stickers.StickerPackRemovedEvent(stickerPackId),
         );
   }
 
-  Future<void> _onRemoteStickerPackRequested(
-    RemoteStickerPackRequested event,
-    Emitter<StickerPackState> emit,
+  Future<void> requestRemoteStickerPack(
+    String jid,
+    String stickerPackId,
   ) async {
-    final mustDoWork = state.stickerPack == null ||
-        state.stickerPack?.id != event.stickerPackId;
+    final mustDoWork =
+        state.stickerPack == null || state.stickerPack?.id != stickerPackId;
     if (mustDoWork) {
       emit(
         state.copyWith(
@@ -111,8 +106,8 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     if (mustDoWork) {
       final result = await getForegroundService().send(
         FetchStickerPackCommand(
-          stickerPackId: event.stickerPackId,
-          jid: event.jid,
+          stickerPackId: stickerPackId,
+          jid: jid,
         ),
       );
 
@@ -132,10 +127,7 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     }
   }
 
-  Future<void> _onStickerPackInstalled(
-    StickerPackInstalledEvent event,
-    Emitter<StickerPackState> emit,
-  ) async {
+  Future<void> install() async {
     assert(!state.stickerPack!.local, 'Sticker pack must be remote');
     emit(
       state.copyWith(
@@ -170,10 +162,7 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     }
   }
 
-  Future<void> _onStickerPackRequested(
-    StickerPackRequested event,
-    Emitter<StickerPackState> emit,
-  ) async {
+  Future<void> request(String jid, String stickerPackId) async {
     emit(
       state.copyWith(
         isWorking: true,
@@ -184,18 +173,15 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
         // ignore: cast_nullable_to_non_nullable
         await getForegroundService().send(
       GetStickerPackByIdCommand(
-        id: event.stickerPackId,
+        id: stickerPackId,
       ),
     ) as GetStickerPackByIdResult;
 
     // Find out if the sticker pack is locally available or not
     if (stickerPackResult.stickerPack == null) {
-      await _onRemoteStickerPackRequested(
-        RemoteStickerPackRequested(
-          event.stickerPackId,
-          event.jid,
-        ),
-        emit,
+      await requestRemoteStickerPack(
+        stickerPackId,
+        jid,
       );
     } else {
       emit(

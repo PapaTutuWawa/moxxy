@@ -30,7 +30,7 @@ import 'package:moxxyv2/ui/bloc/sendfiles.dart';
 import 'package:moxxyv2/ui/bloc/server_info.dart';
 import 'package:moxxyv2/ui/bloc/share_selection.dart';
 import 'package:moxxyv2/ui/bloc/startchat.dart';
-import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sticker_pack.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
@@ -118,7 +118,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<DevicesCubit>(DevicesCubit());
   GetIt.I.registerSingleton<OwnDevicesBloc>(OwnDevicesBloc());
   GetIt.I.registerSingleton<StickersBloc>(StickersBloc());
-  GetIt.I.registerSingleton<StickerPackBloc>(StickerPackBloc());
+  GetIt.I.registerSingleton<StickerPackCubit>(StickerPackCubit());
   GetIt.I.registerSingleton<RequestCubit>(RequestCubit());
   GetIt.I.registerSingleton<JoinGroupchatBloc>(JoinGroupchatBloc());
   GetIt.I.registerSingleton<ConversationsCubit>(ConversationsCubit());
@@ -192,8 +192,8 @@ void main() async {
         BlocProvider<StickersBloc>(
           create: (_) => GetIt.I.get<StickersBloc>(),
         ),
-        BlocProvider<StickerPackBloc>(
-          create: (_) => GetIt.I.get<StickerPackBloc>(),
+        BlocProvider<StickerPackCubit>(
+          create: (_) => GetIt.I.get<StickerPackCubit>(),
         ),
         BlocProvider<RequestCubit>(
           create: (_) => GetIt.I.get<RequestCubit>(),

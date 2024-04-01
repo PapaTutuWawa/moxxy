@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/preferences.dart';
-import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sticker_pack.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:moxxyv2/ui/widgets/chat/sender_name.dart';
@@ -91,10 +91,8 @@ class StickerChatWidget extends StatelessWidget {
                   GetIt.I.get<PreferencesCubit>().state.enableStickers
               ? InkWell(
                   onTap: () {
-                    GetIt.I.get<StickerPackBloc>().add(
-                          LocallyAvailableStickerPackRequested(
-                            message.stickerPackId!,
-                          ),
+                    GetIt.I.get<StickerPackCubit>().requestLocalStickerPack(
+                          message.stickerPackId!,
                         );
                   },
                   child: Image.file(
@@ -105,12 +103,10 @@ class StickerChatWidget extends StatelessWidget {
                 )
               : InkWell(
                   onTap: () {
-                    context.read<StickerPackBloc>().add(
-                          RemoteStickerPackRequested(
-                            message.stickerPackId!,
-                            // TODO(PapaTutuWawa): This does not feel clean
-                            message.sender.split('/').first,
-                          ),
+                    context.read<StickerPackCubit>().requestRemoteStickerPack(
+                          message.stickerPackId!,
+                          // TODO(PapaTutuWawa): This does not feel clean
+                          message.sender.split('/').first,
                         );
                   },
                   child: _buildNotAvailable(context),

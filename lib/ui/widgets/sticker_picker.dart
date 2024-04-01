@@ -7,7 +7,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as nav;
-import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sticker_pack.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/sticker_pack_controller.dart';
@@ -158,10 +158,10 @@ class StickerPickerState extends State<StickerPicker> {
                         onLongPress: () {
                           Vibrate.feedback(FeedbackType.medium);
 
-                          context.read<StickerPackBloc>().add(
-                                LocallyAvailableStickerPackRequested(
-                                  stickerPack.id,
-                                ),
+                          context
+                              .read<StickerPackCubit>()
+                              .requestLocalStickerPack(
+                                stickerPack.id,
                               );
                         },
                         child: Image.file(

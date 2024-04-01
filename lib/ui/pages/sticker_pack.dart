@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
-import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sticker_pack.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/storage_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -82,8 +82,8 @@ class StickerPackPage extends StatelessWidget {
       StorageController.instance?.stickerPackRemoved(state.stickerPack!.size);
 
       // ignore: use_build_context_synchronously
-      context.read<StickerPackBloc>().add(
-            StickerPackRemovedEvent(state.stickerPack!.id),
+      await context.read<StickerPackCubit>().removeStickerPack(
+            state.stickerPack!.id,
           );
     }
   }
@@ -99,9 +99,7 @@ class StickerPackPage extends StatelessWidget {
     );
     if (result) {
       // ignore: use_build_context_synchronously
-      context.read<StickerPackBloc>().add(
-            StickerPackInstalledEvent(),
-          );
+      await context.read<StickerPackCubit>().install();
     }
   }
 
@@ -231,7 +229,7 @@ class StickerPackPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<StickerPackBloc, StickerPackState>(
+    return BlocBuilder<StickerPackCubit, StickerPackState>(
       builder: (context, state) => Scaffold(
         appBar: AppBar(
           title: Text(state.stickerPack?.name ?? '...'),

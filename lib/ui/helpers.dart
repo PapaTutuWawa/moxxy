@@ -16,7 +16,7 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart';
 import 'package:moxxyv2/ui/bloc/crop.dart';
-import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sticker_pack.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/util/qrcode.dart';
 import 'package:moxxyv2/ui/redirects.dart';
@@ -414,11 +414,9 @@ Future<void> handleUri(String uriString) async {
 
       if (node == moxxmpp.stickersXmlns && item != null) {
         // Retrieve a sticker pack
-        GetIt.I.get<StickerPackBloc>().add(
-              StickerPackRequested(
-                uri.path,
-                item,
-              ),
+        await GetIt.I.get<StickerPackCubit>().request(
+              uri.path,
+              item,
             );
       }
     }
