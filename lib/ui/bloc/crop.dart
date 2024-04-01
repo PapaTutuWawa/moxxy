@@ -6,7 +6,7 @@ import 'package:cropperx/cropperx.dart';
 import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
 part 'crop.freezed.dart';
@@ -36,7 +36,7 @@ class CropCubit extends Cubit<CropState> {
     );
     _completer.complete(bytes);
 
-    GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
+    GetIt.I.get<NavigationCubit>().pop();
 
     await resetImage();
   }
@@ -75,10 +75,8 @@ class CropCubit extends Cubit<CropState> {
     _completer = Completer();
 
     resetImage();
-    GetIt.I.get<NavigationBloc>().add(
-          PushedNamedEvent(
-            const NavigationDestination(cropRoute),
-          ),
+    GetIt.I.get<NavigationCubit>().pushNamed(
+          const NavigationDestination(cropRoute),
         );
     _performCropping(path);
 
@@ -91,10 +89,8 @@ class CropCubit extends Cubit<CropState> {
   Future<Uint8List?> cropImageWithData(Uint8List data) {
     _completer = Completer();
 
-    GetIt.I.get<NavigationBloc>().add(
-          PushedNamedEvent(
-            const NavigationDestination(cropRoute),
-          ),
+    GetIt.I.get<NavigationCubit>().pushNamed(
+          const NavigationDestination(cropRoute),
         );
 
     setImage(data);

@@ -6,7 +6,7 @@ import 'package:grouped_list/grouped_list.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as nav;
+import 'package:moxxyv2/ui/bloc/navigation.dart' as nav;
 import 'package:moxxyv2/ui/bloc/sticker_pack.dart';
 import 'package:moxxyv2/ui/bloc/stickers.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -100,11 +100,9 @@ class StickerPickerState extends State<StickerPicker> {
                         ),
                         TextButton(
                           onPressed: () {
-                            context.read<nav.NavigationBloc>().add(
-                                  nav.PushedNamedEvent(
-                                    const nav.NavigationDestination(
-                                      stickersRoute,
-                                    ),
+                            context.read<nav.NavigationCubit>().pushNamed(
+                                  const nav.NavigationDestination(
+                                    stickersRoute,
                                   ),
                                 );
                           },

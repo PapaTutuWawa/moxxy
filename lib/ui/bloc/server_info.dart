@@ -4,7 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
 part 'server_info.freezed.dart';
@@ -27,8 +27,8 @@ class ServerInfoCubit extends Cubit<ServerInfoState> {
   Future<void> request() async {
     emit(state.copyWith(working: true));
 
-    GetIt.I.get<NavigationBloc>().add(
-          PushedNamedEvent(const NavigationDestination(serverInfoRoute)),
+    await GetIt.I.get<NavigationCubit>().pushNamed(
+          const NavigationDestination(serverInfoRoute),
         );
 
     // ignore: cast_nullable_to_non_nullable

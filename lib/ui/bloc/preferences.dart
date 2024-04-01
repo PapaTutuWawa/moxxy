@@ -11,7 +11,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversation.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
 class PreferencesCubit extends Cubit<PreferencesState> {
@@ -56,16 +56,12 @@ class PreferencesCubit extends Cubit<PreferencesState> {
     );
 
     // Navigate to the login page but keep the intro page behind it
-    GetIt.I.get<NavigationBloc>().add(
-          PushedNamedAndRemoveUntilEvent(
-            const NavigationDestination(introRoute),
-            (_) => false,
-          ),
+    await GetIt.I.get<NavigationCubit>().pushNamedAndRemoveUntil(
+          const NavigationDestination(introRoute),
+          (_) => false,
         );
-    GetIt.I.get<NavigationBloc>().add(
-          PushedNamedEvent(
-            const NavigationDestination(loginRoute),
-          ),
+    await GetIt.I.get<NavigationCubit>().pushNamed(
+          const NavigationDestination(loginRoute),
         );
   }
 

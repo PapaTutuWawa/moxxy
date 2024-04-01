@@ -6,7 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:image/image.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/bloc/preferences.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:path/path.dart' as path;
@@ -45,10 +45,8 @@ class CropBackgroundCubit extends Cubit<CropBackgroundState> {
     // Navigate to the page
     _resetState();
 
-    GetIt.I.get<NavigationBloc>().add(
-          PushedNamedEvent(
-            const NavigationDestination(backgroundCroppingRoute),
-          ),
+    await GetIt.I.get<NavigationCubit>().pushNamed(
+          const NavigationDestination(backgroundCroppingRoute),
         );
 
     final data = await File(path).readAsBytes();
@@ -106,6 +104,6 @@ class CropBackgroundCubit extends Cubit<CropBackgroundState> {
     _resetState();
 
     await GetIt.I.get<PreferencesCubit>().setBackgroundImage(backgroundPath);
-    GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
+    GetIt.I.get<NavigationCubit>().pop();
   }
 }

@@ -4,7 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
 part 'blocklist.freezed.dart';
@@ -31,10 +31,8 @@ class BlocklistCubit extends Cubit<BlocklistState> {
       );
     }
 
-    GetIt.I.get<NavigationBloc>().add(
-          PushedNamedEvent(
-            const NavigationDestination(blocklistRoute),
-          ),
+    await GetIt.I.get<NavigationCubit>().pushNamed(
+          const NavigationDestination(blocklistRoute),
         );
 
     if (state.blocklist.isEmpty) {

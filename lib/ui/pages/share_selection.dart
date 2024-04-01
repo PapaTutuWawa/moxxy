@@ -5,7 +5,7 @@ import 'package:move_to_background/move_to_background.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as navigation;
+import 'package:moxxyv2/ui/bloc/navigation.dart' as navigation;
 import 'package:moxxyv2/ui/bloc/share_selection.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -50,11 +50,9 @@ class ShareSelectionPage extends StatelessWidget {
         GetIt.I.get<ShareSelectionCubit>().reset();
 
         // Navigate to the conversations page...
-        GetIt.I.get<navigation.NavigationBloc>().add(
-              navigation.PushedNamedAndRemoveUntilEvent(
-                const navigation.NavigationDestination(homeRoute),
-                (_) => false,
-              ),
+        GetIt.I.get<navigation.NavigationCubit>().pushNamedAndRemoveUntil(
+              const navigation.NavigationDestination(homeRoute),
+              (_) => false,
             );
         // ...and put the app back into the background
         MoveToBackground.moveTaskToBack();

@@ -6,7 +6,7 @@ import 'package:move_to_background/move_to_background.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 
@@ -102,21 +102,16 @@ class SendFilesCubit extends Cubit<SendFilesState> {
       ),
     );
 
-    NavigationEvent navEvent;
+    final cubit = GetIt.I.get<NavigationCubit>();
+    const destination = NavigationDestination(sendFilesRoute);
     if (popEntireStack) {
-      navEvent = PushedNamedAndRemoveUntilEvent(
-        const NavigationDestination(sendFilesRoute),
+      await cubit.pushNamedAndRemoveUntil(
+        destination,
         (_) => false,
       );
     } else {
-      navEvent = PushedNamedEvent(
-        const NavigationDestination(
-          sendFilesRoute,
-        ),
-      );
+      await cubit.pushNamed(destination);
     }
-
-    GetIt.I.get<NavigationBloc>().add(navEvent);
   }
 
   void setIndex(int index) {
@@ -146,26 +141,24 @@ class SendFilesCubit extends Cubit<SendFilesState> {
     _shouldIgnoreDeletionRequest = true;
 
     // Return to the last page
-    final bloc = GetIt.I.get<NavigationBloc>();
-    final canPop = bloc.canPop();
-    NavigationEvent navEvent;
+    final cubit = GetIt.I.get<NavigationCubit>();
+    final canPop = cubit.canPop();
     if (canPop) {
-      navEvent = PoppedRouteEvent();
+      cubit.pop();
     } else {
-      navEvent = PushedNamedAndRemoveUntilEvent(
+      await cubit.pushNamedAndRemoveUntil(
         const NavigationDestination(homeRoute),
-        (_) => false,
+        (route) => false,
       );
     }
 
-    bloc.add(navEvent);
     if (!canPop) await MoveToBackground.moveTaskToBack();
   }
 
   void remove(int index) {
     // Go to the last page if we would otherwise remove the last item on the
     if (state.files.length == 1) {
-      GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
+      GetIt.I.get<NavigationCubit>().pop();
       return;
     }
 

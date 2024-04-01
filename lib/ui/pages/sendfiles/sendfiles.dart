@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mime/mime.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/sendfiles/conversation_indicator.dart';
@@ -260,9 +260,9 @@ class SendFilesPage extends StatelessWidget {
                           // happens that just popping the stack results in just a gray screen.
                           // By using `SystemNavigator.pop`, we can tell the Flutter to "pop the
                           // entire app".
-                          context.read<NavigationBloc>().add(
-                                PoppedRouteWithOptionalSystemNavigatorEvent(),
-                              );
+                          context
+                              .read<NavigationCubit>()
+                              .popWithSystemNavigator();
                         },
                       ),
                       if (state.hasRecipientData)

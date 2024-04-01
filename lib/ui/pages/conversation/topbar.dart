@@ -5,7 +5,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/bloc/profile.dart' as profile;
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -220,9 +220,7 @@ class ConversationTopbar extends StatelessWidget
 
                       // Navigate back
                       // ignore: use_build_context_synchronously
-                      context.read<NavigationBloc>().add(
-                            PoppedRouteEvent(),
-                          );
+                      context.read<NavigationCubit>().pop();
                     }
                   case ConversationOption.block:
                     // ignore: use_build_context_synchronously

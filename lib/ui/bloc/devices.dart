@@ -5,7 +5,7 @@ import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 
@@ -26,10 +26,8 @@ class DevicesCubit extends Cubit<DevicesState> {
   Future<void> request(String jid) async {
     emit(state.copyWith(working: true, jid: jid));
 
-    GetIt.I.get<NavigationBloc>().add(
-          PushedNamedEvent(
-            const NavigationDestination(devicesRoute),
-          ),
+    await GetIt.I.get<NavigationCubit>().pushNamed(
+          const NavigationDestination(devicesRoute),
         );
 
     // ignore: cast_nullable_to_non_nullable
@@ -70,7 +68,7 @@ class DevicesCubit extends Cubit<DevicesState> {
     );
     emit(state.copyWith(devices: <OmemoDevice>[]));
 
-    GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
+    GetIt.I.get<NavigationCubit>().pop();
   }
 
   Future<void> verifyDevice(

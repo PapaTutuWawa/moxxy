@@ -20,7 +20,7 @@ import 'package:moxxyv2/ui/bloc/cropbackground.dart';
 import 'package:moxxyv2/ui/bloc/devices.dart';
 import 'package:moxxyv2/ui/bloc/groupchat/joingroupchat_bloc.dart';
 import 'package:moxxyv2/ui/bloc/login.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/bloc/newconversation.dart';
 import 'package:moxxyv2/ui/bloc/own_devices.dart';
 import 'package:moxxyv2/ui/bloc/preferences.dart';
@@ -102,8 +102,9 @@ Future<void> setupUIServices() async {
 }
 
 void setupBlocs(GlobalKey<NavigatorState> navKey) {
-  GetIt.I
-      .registerSingleton<NavigationBloc>(NavigationBloc(navigationKey: navKey));
+  GetIt.I.registerSingleton<NavigationCubit>(
+    NavigationCubit(navigationKey: navKey),
+  );
   GetIt.I.registerSingleton<NewConversationCubit>(NewConversationCubit());
   GetIt.I.registerSingleton<ConversationCubit>(ConversationCubit());
   GetIt.I.registerSingleton<BlocklistCubit>(BlocklistCubit());
@@ -141,8 +142,8 @@ void main() async {
   runApp(
     MultiBlocProvider(
       providers: [
-        BlocProvider<NavigationBloc>(
-          create: (_) => GetIt.I.get<NavigationBloc>(),
+        BlocProvider<NavigationCubit>(
+          create: (_) => GetIt.I.get<NavigationCubit>(),
         ),
         BlocProvider<LoginCubit>(
           create: (_) => LoginCubit(),

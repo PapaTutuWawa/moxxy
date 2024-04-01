@@ -7,7 +7,7 @@ import 'package:moxxyv2/quirks/quirks.g.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/bloc/newconversation.dart';
 import 'package:moxxyv2/ui/bloc/preferences.dart';
 import 'package:moxxyv2/ui/bloc/request.dart';
@@ -87,11 +87,9 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
     }
 
     GetIt.I.get<Logger>().finest('Navigating to conversations');
-    GetIt.I.get<NavigationBloc>().add(
-          PushedNamedAndRemoveUntilEvent(
-            const NavigationDestination(homeRoute),
-            (_) => false,
-          ),
+    await GetIt.I.get<NavigationCubit>().pushNamedAndRemoveUntil(
+          const NavigationDestination(homeRoute),
+          (_) => false,
         );
 
     // TODO(Unknown): A bit messy. It would be cool to handle this before navigating
@@ -116,11 +114,9 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
 
     // Navigate to the intro page
     GetIt.I.get<Logger>().finest('Navigating to intro');
-    GetIt.I.get<NavigationBloc>().add(
-          PushedNamedAndRemoveUntilEvent(
-            const NavigationDestination(introRoute),
-            (_) => false,
-          ),
+    await GetIt.I.get<NavigationCubit>().pushNamedAndRemoveUntil(
+          const NavigationDestination(introRoute),
+          (_) => false,
         );
   }
 }

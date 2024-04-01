@@ -10,7 +10,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/startgroupchat.dart';
 
@@ -63,14 +63,12 @@ class StartChatCubit extends Cubit<StartChatState> {
       return;
     } else if (result is JidIsGroupchatEvent) {
       if (kDebugMode) {
-        GetIt.I.get<NavigationBloc>().add(
-              PushedNamedAndRemoveUntilEvent(
-                NavigationDestination(
-                  joinGroupchatRoute,
-                  arguments: JoinGroupchatArguments(result.jid),
-                ),
-                (_) => false,
+        await GetIt.I.get<NavigationCubit>().pushNamedAndRemoveUntil(
+              NavigationDestination(
+                joinGroupchatRoute,
+                arguments: JoinGroupchatArguments(result.jid),
               ),
+              (_) => false,
             );
       } else {
         emit(

@@ -7,7 +7,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/bloc/stickers.dart' as stickers;
 import 'package:moxxyv2/ui/constants.dart';
 
@@ -34,10 +34,8 @@ class StickerPackCubit extends Cubit<StickerPackState> {
     );
 
     // Navigate
-    GetIt.I.get<NavigationBloc>().add(
-          PushedNamedEvent(
-            const NavigationDestination(stickerPackRoute),
-          ),
+    await GetIt.I.get<NavigationCubit>().pushNamed(
+          const NavigationDestination(stickerPackRoute),
         );
 
     // Apply
@@ -71,9 +69,7 @@ class StickerPackCubit extends Cubit<StickerPackState> {
     );
 
     // Leave the page
-    GetIt.I.get<NavigationBloc>().add(
-          PoppedRouteEvent(),
-        );
+    GetIt.I.get<NavigationCubit>().pop();
 
     // Remove the sticker pack
     await GetIt.I.get<stickers.StickersCubit>().remove(stickerPackId);
@@ -95,10 +91,8 @@ class StickerPackCubit extends Cubit<StickerPackState> {
     }
 
     // Navigate
-    GetIt.I.get<NavigationBloc>().add(
-          PushedNamedEvent(
-            const NavigationDestination(stickerPackRoute),
-          ),
+    await GetIt.I.get<NavigationCubit>().pushNamed(
+          const NavigationDestination(stickerPackRoute),
         );
 
     if (mustDoWork) {
@@ -118,9 +112,7 @@ class StickerPackCubit extends Cubit<StickerPackState> {
         );
       } else {
         // Leave the page
-        GetIt.I.get<NavigationBloc>().add(
-              PoppedRouteEvent(),
-            );
+        GetIt.I.get<NavigationCubit>().pop();
       }
     }
   }
@@ -146,9 +138,7 @@ class StickerPackCubit extends Cubit<StickerPackState> {
     );
 
     // Leave the page
-    GetIt.I.get<NavigationBloc>().add(
-          PoppedRouteEvent(),
-        );
+    GetIt.I.get<NavigationCubit>().pop();
 
     // Notify on failure
     if (result is! StickerPackInstallSuccessEvent) {

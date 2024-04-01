@@ -8,7 +8,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/bloc/newconversation.dart';
 import 'package:moxxyv2/ui/bloc/preferences.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles.dart';
@@ -173,11 +173,9 @@ class ShareSelectionCubit extends Cubit<ShareSelectionState> {
       ),
     );
 
-    GetIt.I.get<NavigationBloc>().add(
-          PushedNamedAndRemoveUntilEvent(
-            const NavigationDestination(shareSelectionRoute),
-            (_) => false,
-          ),
+    GetIt.I.get<NavigationCubit>().pushNamedAndRemoveUntil(
+          const NavigationDestination(shareSelectionRoute),
+          (_) => false,
         );
   }
 
@@ -210,11 +208,9 @@ class ShareSelectionCubit extends Cubit<ShareSelectionState> {
       );
 
       // Navigate to the conversations page...
-      GetIt.I.get<NavigationBloc>().add(
-            PushedNamedAndRemoveUntilEvent(
-              const NavigationDestination(homeRoute),
-              (_) => false,
-            ),
+      await GetIt.I.get<NavigationCubit>().pushNamedAndRemoveUntil(
+            const NavigationDestination(homeRoute),
+            (_) => false,
           );
       // ...reset the state...
       reset();

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/backdrop_spinner.dart';
 import 'package:moxxyv2/ui/widgets/cancel_button.dart';
@@ -111,7 +111,7 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                     child: CancelButton(
                       onPressed: () {
                         context.read<CropBackgroundCubit>().reset();
-                        context.read<NavigationBloc>().add(PoppedRouteEvent());
+                        context.read<NavigationCubit>().pop();
                       },
                     ),
                   ),

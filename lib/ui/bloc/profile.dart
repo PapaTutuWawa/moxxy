@@ -5,7 +5,7 @@ import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/profile/profile.dart';
 
@@ -48,15 +48,13 @@ class ProfileCubit extends Cubit<ProfileState> {
       );
     }
 
-    GetIt.I.get<NavigationBloc>().add(
-          PushedNamedEvent(
-            NavigationDestination(
-              profileRoute,
-              arguments: ProfileArguments(
-                isSelfProfile,
-                jid ?? conversation!.jid,
-                conversation?.type ?? ConversationType.chat,
-              ),
+    GetIt.I.get<NavigationCubit>().pushNamed(
+          NavigationDestination(
+            profileRoute,
+            arguments: ProfileArguments(
+              isSelfProfile,
+              jid ?? conversation!.jid,
+              conversation?.type ?? ConversationType.chat,
             ),
           ),
         );

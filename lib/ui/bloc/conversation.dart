@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/conversation/conversation.dart';
@@ -76,27 +75,23 @@ class ConversationCubit extends Cubit<ConversationState> {
       ),
     );
 
-    final arguments = ConversationPageArguments(
-      jid,
-      initialText,
-      conversation.type,
+    final cubit = GetIt.I.get<NavigationCubit>();
+    final destination = NavigationDestination(
+      conversationRoute,
+      arguments: ConversationPageArguments(
+        jid,
+        initialText,
+        conversation.type,
+      ),
     );
-    final navEvent = removeUntilConversations
-        ? (PushedNamedAndRemoveUntilEvent(
-            NavigationDestination(
-              conversationRoute,
-              arguments: arguments,
-            ),
-            ModalRoute.withName(homeRoute),
-          ))
-        : (PushedNamedEvent(
-            NavigationDestination(
-              conversationRoute,
-              arguments: arguments,
-            ),
-          ));
-
-    GetIt.I.get<NavigationBloc>().add(navEvent);
+    if (removeUntilConversations) {
+      await cubit.pushNamedAndRemoveUntil(
+        destination,
+        (route) => false,
+      );
+    } else {
+      await cubit.pushNamed(destination);
+    }
 
     await getForegroundService().send(
       SetOpenConversationCommand(jid: jid),

@@ -6,7 +6,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/bloc/request.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
@@ -99,13 +99,11 @@ class LoginCubit extends Cubit<LoginState> {
         ],
         0,
       );
-      GetIt.I.get<NavigationBloc>().add(
-            PushedNamedAndRemoveUntilEvent(
-              const NavigationDestination(
-                homeRoute,
-              ),
-              (_) => false,
+      await GetIt.I.get<NavigationCubit>().pushNamedAndRemoveUntil(
+            const NavigationDestination(
+              homeRoute,
             ),
+            (_) => false,
           );
       GetIt.I.get<RequestCubit>().setRequests(
         [

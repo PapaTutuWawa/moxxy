@@ -8,7 +8,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as nav;
+import 'package:moxxyv2/ui/bloc/navigation.dart' as nav;
 import 'package:moxxyv2/ui/bloc/preferences.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/storage_controller.dart';
@@ -214,11 +214,9 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
               child: TextButton(
                 child: Text(t.pages.settings.storage.viewMediaFiles),
                 onPressed: () {
-                  context.read<nav.NavigationBloc>().add(
-                        nav.PushedNamedEvent(
-                          const nav.NavigationDestination(
-                            storageSharedMediaSettingsRoute,
-                          ),
+                  context.read<nav.NavigationCubit>().pushNamed(
+                        const nav.NavigationDestination(
+                          storageSharedMediaSettingsRoute,
                         ),
                       );
                 },
