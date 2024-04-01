@@ -7,19 +7,24 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
-part 'server_info_bloc.freezed.dart';
-part 'server_info_event.dart';
-part 'server_info_state.dart';
+part 'server_info.freezed.dart';
 
-class ServerInfoBloc extends Bloc<ServerInfoEvent, ServerInfoState> {
-  ServerInfoBloc() : super(ServerInfoState()) {
-    on<ServerInfoPageRequested>(_onServerInfoRequested);
-  }
+@freezed
+class ServerInfoState with _$ServerInfoState {
+  factory ServerInfoState({
+    @Default(true) bool working,
+    @Default(false) bool streamManagementSupported,
+    @Default(false) bool userBlockingSupported,
+    @Default(false) bool httpFileUploadSupported,
+    @Default(false) bool csiSupported,
+    @Default(false) bool carbonsSupported,
+  }) = _ServerInfoState;
+}
 
-  Future<void> _onServerInfoRequested(
-    ServerInfoPageRequested event,
-    Emitter<ServerInfoState> emit,
-  ) async {
+class ServerInfoCubit extends Cubit<ServerInfoState> {
+  ServerInfoCubit() : super(ServerInfoState());
+
+  Future<void> request() async {
     emit(state.copyWith(working: true));
 
     GetIt.I.get<NavigationBloc>().add(

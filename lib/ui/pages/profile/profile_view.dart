@@ -7,7 +7,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/groupchat_member.dart';
-import 'package:moxxyv2/ui/bloc/server_info_bloc.dart';
+import 'package:moxxyv2/ui/bloc/server_info.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/profile/conversationheader.dart';
 import 'package:moxxyv2/ui/pages/profile/profile.dart';
@@ -159,9 +159,7 @@ class ProfileViewState extends State<ProfileView> {
               child: IconButton(
                 color: Colors.white,
                 icon: const Icon(Icons.info_outline),
-                onPressed: () {
-                  context.read<ServerInfoBloc>().add(ServerInfoPageRequested());
-                },
+                onPressed: context.read<ServerInfoCubit>().request,
               ),
             ),
           ),
