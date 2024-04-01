@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/bloc/own_devices_bloc.dart';
+import 'package:moxxyv2/ui/bloc/own_devices.dart';
 import 'package:moxxyv2/ui/bloc/profile.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/profile/profile.dart';
@@ -91,11 +91,7 @@ class SelfProfileHeader extends StatelessWidget {
                     ProfileOption(
                       icon: Icons.security_outlined,
                       title: t.pages.profile.general.omemo,
-                      onTap: () {
-                        context.read<OwnDevicesBloc>().add(
-                              OwnDevicesRequestedEvent(),
-                            );
-                      },
+                      onTap: context.read<OwnDevicesCubit>().request,
                     ),
                   ],
                 ),

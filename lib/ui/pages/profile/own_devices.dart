@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
-import 'package:moxxyv2/ui/bloc/own_devices_bloc.dart';
+import 'package:moxxyv2/ui/bloc/own_devices.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/profile/widgets.dart';
@@ -113,16 +113,15 @@ class OwnDevicesPage extends StatelessWidget {
             if (uri == null) return;
 
             // ignore: use_build_context_synchronously
-            context.read<OwnDevicesBloc>().add(
-                  DeviceVerifiedEvent(uri, item.deviceId),
+            await context.read<OwnDevicesCubit>().verifyDevice(
+                  uri,
+                  item.deviceId,
                 );
           },
           onEnableValueChanged: (value) {
-            context.read<OwnDevicesBloc>().add(
-                  OwnDeviceEnabledSetEvent(
-                    item.deviceId,
-                    value,
-                  ),
+            context.read<OwnDevicesCubit>().setDeviceEnabled(
+                  item.deviceId,
+                  value,
                 );
           },
           onDeletePressed: () async {
@@ -134,9 +133,7 @@ class OwnDevicesPage extends StatelessWidget {
 
             if (result) {
               // ignore: use_build_context_synchronously
-              context
-                  .read<OwnDevicesBloc>()
-                  .add(OwnDeviceRemovedEvent(item.deviceId));
+              await context.read<OwnDevicesCubit>().removeDevice(item.deviceId);
             }
           },
         );
@@ -153,7 +150,7 @@ class OwnDevicesPage extends StatelessWidget {
 
     if (result) {
       // ignore: use_build_context_synchronously
-      context.read<OwnDevicesBloc>().add(OwnSessionsRecreatedEvent());
+      await context.read<OwnDevicesCubit>().recreateSessions();
     }
   }
 
@@ -166,13 +163,13 @@ class OwnDevicesPage extends StatelessWidget {
 
     if (result) {
       // ignore: use_build_context_synchronously
-      context.read<OwnDevicesBloc>().add(OwnDeviceRegeneratedEvent());
+      await context.read<OwnDevicesCubit>().regenerateDevice();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<OwnDevicesBloc, OwnDevicesState>(
+    return BlocBuilder<OwnDevicesCubit, OwnDevicesState>(
       builder: (context, state) => Scaffold(
         appBar: AppBar(
           title: Text(t.pages.profile.owndevices.title),

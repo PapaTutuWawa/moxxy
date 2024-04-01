@@ -10,24 +10,22 @@ import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 
-part 'own_devices_bloc.freezed.dart';
-part 'own_devices_event.dart';
-part 'own_devices_state.dart';
+part 'own_devices.freezed.dart';
 
-class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
-  OwnDevicesBloc() : super(OwnDevicesState()) {
-    on<OwnDevicesRequestedEvent>(_onRequested);
-    on<OwnDeviceEnabledSetEvent>(_onDeviceEnabledSet);
-    on<OwnSessionsRecreatedEvent>(_onSessionsRecreated);
-    on<OwnDeviceRemovedEvent>(_onDeviceRemoved);
-    on<OwnDeviceRegeneratedEvent>(_onDeviceRegenerated);
-    on<DeviceVerifiedEvent>(_onDeviceVerified);
-  }
+@freezed
+class OwnDevicesState with _$OwnDevicesState {
+  factory OwnDevicesState({
+    @Default(false) bool working,
+    @Default([]) List<OmemoDevice> keys,
+    @Default(-1) int deviceId,
+    @Default('') String deviceFingerprint,
+  }) = _OwnDevicesState;
+}
 
-  Future<void> _onRequested(
-    OwnDevicesRequestedEvent event,
-    Emitter<OwnDevicesState> emit,
-  ) async {
+class OwnDevicesCubit extends Cubit<OwnDevicesState> {
+  OwnDevicesCubit() : super(OwnDevicesState());
+
+  Future<void> request() async {
     emit(state.copyWith(working: true));
 
     GetIt.I.get<NavigationBloc>().add(
@@ -51,16 +49,16 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     );
   }
 
-  Future<void> _onDeviceEnabledSet(
-    OwnDeviceEnabledSetEvent event,
-    Emitter<OwnDevicesState> emit,
+  Future<void> setDeviceEnabled(
+    int deviceId,
+    bool enabled,
   ) async {
     // ignore: cast_nullable_to_non_nullable
     await getForegroundService().send(
       SetOmemoDeviceEnabledCommand(
         jid: GetIt.I.get<AccountCubit>().state.account.jid,
-        deviceId: event.deviceId,
-        enabled: event.enabled,
+        deviceId: deviceId,
+        enabled: enabled,
       ),
       awaitable: false,
     );
@@ -68,8 +66,8 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     emit(
       state.copyWith(
         keys: state.keys.map((key) {
-          if (key.deviceId == event.deviceId) {
-            return key.copyWith(enabled: event.enabled);
+          if (key.deviceId == deviceId) {
+            return key.copyWith(enabled: enabled);
           }
 
           return key;
@@ -78,10 +76,7 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     );
   }
 
-  Future<void> _onSessionsRecreated(
-    OwnSessionsRecreatedEvent event,
-    Emitter<OwnDevicesState> emit,
-  ) async {
+  Future<void> recreateSessions() async {
     // ignore: cast_nullable_to_non_nullable
     await getForegroundService().send(
       RecreateSessionsCommand(
@@ -93,29 +88,23 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
   }
 
-  Future<void> _onDeviceRemoved(
-    OwnDeviceRemovedEvent event,
-    Emitter<OwnDevicesState> emit,
-  ) async {
+  Future<void> removeDevice(int deviceId) async {
     // ignore: cast_nullable_to_non_nullable
     await getForegroundService().send(
-      RemoveOwnDeviceCommand(deviceId: event.deviceId),
+      RemoveOwnDeviceCommand(deviceId: deviceId),
       awaitable: false,
     );
 
     emit(
       state.copyWith(
         keys: List.from(
-          state.keys.where((key) => key.deviceId != event.deviceId),
+          state.keys.where((key) => key.deviceId != deviceId),
         ),
       ),
     );
   }
 
-  Future<void> _onDeviceRegenerated(
-    OwnDeviceRegeneratedEvent event,
-    Emitter<OwnDevicesState> emit,
-  ) async {
+  Future<void> regenerateDevice() async {
     emit(state.copyWith(working: true));
 
     // ignore: cast_nullable_to_non_nullable
@@ -133,16 +122,16 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     );
   }
 
-  Future<void> _onDeviceVerified(
-    DeviceVerifiedEvent event,
-    Emitter<OwnDevicesState> emit,
+  Future<void> verifyDevice(
+    Uri uri,
+    int deviceId,
   ) async {
     final ownJid = GetIt.I.get<AccountCubit>().state.account.jid;
     final result = isVerificationUriValid(
       state.keys,
-      event.uri,
+      uri,
       ownJid,
-      event.deviceId,
+      deviceId,
     );
     if (result == -1) return;
 
@@ -155,7 +144,7 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     await getForegroundService().send(
       MarkOmemoDeviceAsVerifiedCommand(
         jid: ownJid,
-        deviceId: event.deviceId,
+        deviceId: deviceId,
       ),
       awaitable: false,
     );
