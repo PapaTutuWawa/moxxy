@@ -7,7 +7,7 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
-import 'package:moxxyv2/ui/bloc/request_bloc.dart';
+import 'package:moxxyv2/ui/bloc/request.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/home/accounts.dart';
@@ -363,8 +363,8 @@ class ConversationsPageState extends State<ConversationsPage>
       },
       child: PostBuildWidget(
         postBuild: () async {
-          final bloc = GetIt.I.get<RequestBloc>();
-          if (bloc.state.shouldShow) {
+          final cubit = GetIt.I.get<RequestCubit>();
+          if (cubit.state.shouldShow) {
             await showDialog<void>(
               context: context,
               barrierDismissible: false,

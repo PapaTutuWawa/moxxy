@@ -7,7 +7,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/request_bloc.dart';
+import 'package:moxxyv2/ui/bloc/request.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
 part 'login.freezed.dart';
@@ -107,15 +107,13 @@ class LoginCubit extends Cubit<LoginState> {
               (_) => false,
             ),
           );
-      GetIt.I.get<RequestBloc>().add(
-            RequestsSetEvent(
-              [
-                if (result.preStart.requestNotificationPermission)
-                  Request.notifications,
-                if (result.preStart.excludeFromBatteryOptimisation)
-                  Request.batterySavingExcemption,
-              ],
-            ),
+      GetIt.I.get<RequestCubit>().setRequests(
+            [
+              if (result.preStart.requestNotificationPermission)
+                Request.notifications,
+              if (result.preStart.excludeFromBatteryOptimisation)
+                Request.batterySavingExcemption,
+            ],
           );
     } else if (result is LoginFailureEvent) {
       return emit(

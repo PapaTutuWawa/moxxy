@@ -10,7 +10,7 @@ import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences.dart';
-import 'package:moxxyv2/ui/bloc/request_bloc.dart';
+import 'package:moxxyv2/ui/bloc/request.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/events.dart';
@@ -66,14 +66,12 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
         );
 
     // Handle requesting permissions
-    GetIt.I.get<RequestBloc>().add(
-          RequestsSetEvent(
-            [
-              if (result.requestNotificationPermission) Request.notifications,
-              if (result.excludeFromBatteryOptimisation)
-                Request.batterySavingExcemption,
-            ],
-          ),
+    GetIt.I.get<RequestCubit>().setRequests(
+          [
+            if (result.requestNotificationPermission) Request.notifications,
+            if (result.excludeFromBatteryOptimisation)
+              Request.batterySavingExcemption,
+          ],
         );
 
     // Handle (direct) shares

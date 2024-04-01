@@ -2,9 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 
-part 'request_bloc.freezed.dart';
-part 'request_event.dart';
-part 'request_state.dart';
+part 'request.freezed.dart';
 
 enum Request {
   notifications,
@@ -21,32 +19,34 @@ enum Request {
   }
 }
 
-class RequestBloc extends Bloc<RequestEvent, RequestState> {
-  RequestBloc() : super(const RequestState()) {
-    on<RequestsSetEvent>(_onRequestsSet);
-    on<NextRequestEvent>(_onNextRequest);
-    on<ResetRequestEvent>(_onReset);
-  }
+@freezed
+class RequestState with _$RequestState {
+  const factory RequestState({
+    @Default([]) List<Request> requests,
+    @Default(0) int currentIndex,
+    @Default(false) bool shouldShow,
+  }) = _RequestState;
+}
 
-  Future<void> _onRequestsSet(
-    RequestsSetEvent event,
-    Emitter<RequestState> emit,
-  ) async {
+class RequestCubit extends Cubit<RequestState> {
+  RequestCubit() : super(const RequestState());
+
+  void setRequests(
+    List<Request> requests,
+  ) {
     emit(
       state.copyWith(
-        requests: event.requests,
+        requests: requests,
         currentIndex: 0,
-        shouldShow: event.requests.isNotEmpty,
+        shouldShow: requests.isNotEmpty,
       ),
     );
   }
 
-  Future<void> _onNextRequest(
-    NextRequestEvent event,
-    Emitter<RequestState> emit,
-  ) async {
+  void nextRequest() {
     if (state.currentIndex + 1 >= state.requests.length) {
-      return _onReset(ResetRequestEvent(), emit);
+      reset();
+      return;
     }
 
     emit(
@@ -56,10 +56,7 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
     );
   }
 
-  Future<void> _onReset(
-    ResetRequestEvent event,
-    Emitter<RequestState> emit,
-  ) async {
+  void reset() {
     emit(
       state.copyWith(
         requests: [],
