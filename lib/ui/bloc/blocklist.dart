@@ -31,7 +31,7 @@ class BlocklistCubit extends Cubit<BlocklistState> {
       );
     }
 
-    await GetIt.I.get<Navigation>().pushNamed(
+    GetIt.I.get<Navigation>().pushNamed(
           const NavigationDestination(blocklistRoute),
         );
 

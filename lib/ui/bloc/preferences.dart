@@ -56,11 +56,11 @@ class PreferencesCubit extends Cubit<PreferencesState> {
     );
 
     // Navigate to the login page but keep the intro page behind it
-    await GetIt.I.get<Navigation>().pushNamedAndRemoveUntil(
+    GetIt.I.get<Navigation>().pushNamedAndRemoveUntil(
           const NavigationDestination(introRoute),
           (_) => false,
         );
-    await GetIt.I.get<Navigation>().pushNamed(
+    GetIt.I.get<Navigation>().pushNamed(
           const NavigationDestination(loginRoute),
         );
   }

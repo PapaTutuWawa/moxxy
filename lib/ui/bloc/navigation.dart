@@ -15,30 +15,28 @@ class Navigation {
 
   final GlobalKey<NavigatorState> navigationKey;
 
-  Future<void> pushNamed(
-    NavigationDestination destination,
-  ) async {
-    await navigationKey.currentState!.pushNamed(
+  void pushNamed(NavigationDestination destination) {
+    navigationKey.currentState!.pushNamed(
       destination.path,
       arguments: destination.arguments,
     );
   }
 
-  Future<void> pushNamedAndRemoveUntil(
+  void pushNamedAndRemoveUntil(
     NavigationDestination destination,
     RoutePredicate predicate,
-  ) async {
-    await navigationKey.currentState!.pushNamedAndRemoveUntil(
+  ) {
+    navigationKey.currentState!.pushNamedAndRemoveUntil(
       destination.path,
       predicate,
       arguments: destination.arguments,
     );
   }
 
-  Future<void> pushNamedReplace(
+  void pushNamedReplace(
     NavigationDestination destination,
-  ) async {
-    await navigationKey.currentState!.pushReplacementNamed(
+  ) {
+    navigationKey.currentState!.pushReplacementNamed(
       destination.path,
       arguments: destination.arguments,
     );
@@ -52,9 +50,9 @@ class Navigation {
     return navigationKey.currentState!.canPop();
   }
 
-  Future<void> popWithSystemNavigator() async {
+  void popWithSystemNavigator() {
     if (!canPop()) {
-      await SystemNavigator.pop();
+      SystemNavigator.pop();
       return;
     }
 

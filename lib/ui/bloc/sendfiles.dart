@@ -105,12 +105,12 @@ class SendFilesCubit extends Cubit<SendFilesState> {
     final cubit = GetIt.I.get<Navigation>();
     const destination = NavigationDestination(sendFilesRoute);
     if (popEntireStack) {
-      await cubit.pushNamedAndRemoveUntil(
+      cubit.pushNamedAndRemoveUntil(
         destination,
         (_) => false,
       );
     } else {
-      await cubit.pushNamed(destination);
+      cubit.pushNamed(destination);
     }
   }
 
@@ -146,7 +146,7 @@ class SendFilesCubit extends Cubit<SendFilesState> {
     if (canPop) {
       cubit.pop();
     } else {
-      await cubit.pushNamedAndRemoveUntil(
+      cubit.pushNamedAndRemoveUntil(
         const NavigationDestination(homeRoute),
         (route) => false,
       );

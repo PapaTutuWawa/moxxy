@@ -85,12 +85,12 @@ class ConversationCubit extends Cubit<ConversationState> {
       ),
     );
     if (removeUntilConversations) {
-      await cubit.pushNamedAndRemoveUntil(
+      cubit.pushNamedAndRemoveUntil(
         destination,
         (route) => false,
       );
     } else {
-      await cubit.pushNamed(destination);
+      cubit.pushNamed(destination);
     }
 
     await getForegroundService().send(

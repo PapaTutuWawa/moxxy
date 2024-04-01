@@ -208,7 +208,7 @@ class ShareSelectionCubit extends Cubit<ShareSelectionState> {
       );
 
       // Navigate to the conversations page...
-      await GetIt.I.get<Navigation>().pushNamedAndRemoveUntil(
+      GetIt.I.get<Navigation>().pushNamedAndRemoveUntil(
             const NavigationDestination(homeRoute),
             (_) => false,
           );

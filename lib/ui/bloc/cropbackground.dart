@@ -45,7 +45,7 @@ class CropBackgroundCubit extends Cubit<CropBackgroundState> {
     // Navigate to the page
     _resetState();
 
-    await GetIt.I.get<Navigation>().pushNamed(
+    GetIt.I.get<Navigation>().pushNamed(
           const NavigationDestination(backgroundCroppingRoute),
         );
 

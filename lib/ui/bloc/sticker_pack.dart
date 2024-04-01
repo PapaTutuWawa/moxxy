@@ -34,7 +34,7 @@ class StickerPackCubit extends Cubit<StickerPackState> {
     );
 
     // Navigate
-    await GetIt.I.get<Navigation>().pushNamed(
+    GetIt.I.get<Navigation>().pushNamed(
           const NavigationDestination(stickerPackRoute),
         );
 
@@ -91,7 +91,7 @@ class StickerPackCubit extends Cubit<StickerPackState> {
     }
 
     // Navigate
-    await GetIt.I.get<Navigation>().pushNamed(
+    GetIt.I.get<Navigation>().pushNamed(
           const NavigationDestination(stickerPackRoute),
         );
 
