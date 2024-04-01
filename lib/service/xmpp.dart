@@ -110,6 +110,7 @@ class XmppService {
   Future<void> setCurrentlyOpenedChatJid(String jid) async {
     final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
     final cs = GetIt.I.get<ConversationService>()..activeConversationJid = jid;
+    _log.finest('Set active conversation to "$jid"');
 
     final conversation = await cs.createOrUpdateConversation(
       jid,
