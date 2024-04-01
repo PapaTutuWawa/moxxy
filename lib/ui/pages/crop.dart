@@ -2,7 +2,7 @@ import 'package:cropperx/cropperx.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
+import 'package:moxxyv2/ui/bloc/crop.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/backdrop_spinner.dart';
 import 'package:moxxyv2/ui/widgets/cancel_button.dart';
@@ -28,7 +28,7 @@ class CropPage extends StatelessWidget {
           child: Cropper(
             backgroundColor: Colors.black,
             image: Image.memory(state.image!),
-            cropperKey: context.read<CropBloc>().cropKey,
+            cropperKey: context.read<CropCubit>().cropKey,
             overlayType: OverlayType.circle,
           ),
         ),
@@ -52,11 +52,7 @@ class CropPage extends StatelessWidget {
               FilledButton(
                 onPressed: state.isWorking
                     ? null
-                    : () async {
-                        context.read<CropBloc>().add(
-                              ImageCroppedEvent(),
-                            );
-                      },
+                    : context.read<CropCubit>().croppedImage,
                 child: Text(t.pages.crop.setProfilePicture),
               ),
             ],
@@ -77,11 +73,11 @@ class CropPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CropBloc, CropState>(
+    return BlocBuilder<CropCubit, CropState>(
       builder: (context, state) {
         return PopScope(
           onPopInvoked: (_) {
-            context.read<CropBloc>().add(ResetImageEvent());
+            context.read<CropCubit>().resetImage();
           },
           child: SafeArea(
             child: state.image != null

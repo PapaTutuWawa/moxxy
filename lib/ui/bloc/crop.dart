@@ -9,23 +9,22 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
-part 'crop_bloc.freezed.dart';
-part 'crop_event.dart';
-part 'crop_state.dart';
+part 'crop.freezed.dart';
 
-class CropBloc extends Bloc<CropEvent, CropState> {
-  CropBloc() : super(CropState()) {
-    on<ImageCroppedEvent>(_onImageCropped);
-    on<ResetImageEvent>(_onImageReset);
-    on<SetImageEvent>(_onImageSet);
-  }
+@freezed
+class CropState with _$CropState {
+  factory CropState({
+    @Default(null) Uint8List? image,
+    @Default(false) bool isWorking,
+  }) = _CropState;
+}
+
+class CropCubit extends Cubit<CropState> {
+  CropCubit() : super(CropState());
   late Completer<Uint8List?> _completer;
   final GlobalKey cropKey = GlobalKey();
 
-  Future<void> _onImageCropped(
-    ImageCroppedEvent event,
-    Emitter<CropState> emit,
-  ) async {
+  Future<void> croppedImage() async {
     emit(
       state.copyWith(
         isWorking: true,
@@ -39,13 +38,10 @@ class CropBloc extends Bloc<CropEvent, CropState> {
 
     GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
 
-    await _onImageReset(ResetImageEvent(), emit);
+    await resetImage();
   }
 
-  Future<void> _onImageReset(
-    ResetImageEvent event,
-    Emitter<CropState> emit,
-  ) async {
+  Future<void> resetImage() async {
     emit(
       state.copyWith(
         image: null,
@@ -54,10 +50,10 @@ class CropBloc extends Bloc<CropEvent, CropState> {
     );
   }
 
-  Future<void> _onImageSet(SetImageEvent event, Emitter<CropState> emit) async {
+  Future<void> setImage(Uint8List image) async {
     emit(
       state.copyWith(
-        image: event.image,
+        image: image,
       ),
     );
   }
@@ -68,7 +64,7 @@ class CropBloc extends Bloc<CropEvent, CropState> {
 
     final bytes = await file.readAsBytes();
 
-    add(SetImageEvent(bytes));
+    return setImage(bytes);
   }
 
   /// User-callable function. Loads the image, navigates to the page
@@ -78,7 +74,7 @@ class CropBloc extends Bloc<CropEvent, CropState> {
   Future<Uint8List?> cropImage(String path) {
     _completer = Completer();
 
-    add(ResetImageEvent());
+    resetImage();
     GetIt.I.get<NavigationBloc>().add(
           PushedNamedEvent(
             const NavigationDestination(cropRoute),
@@ -101,7 +97,7 @@ class CropBloc extends Bloc<CropEvent, CropState> {
           ),
         );
 
-    add(SetImageEvent(data));
+    setImage(data);
 
     return _completer.future;
   }

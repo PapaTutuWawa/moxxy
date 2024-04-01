@@ -15,7 +15,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart';
-import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
+import 'package:moxxyv2/ui/bloc/crop.dart';
 import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/util/qrcode.dart';
@@ -180,7 +180,7 @@ Future<Uint8List?> pickAndCropImage(BuildContext context) async {
   );
 
   if (result != null) {
-    return GetIt.I.get<CropBloc>().cropImageWithData(result.data!);
+    return GetIt.I.get<CropCubit>().cropImageWithData(result.data!);
   }
 
   return null;
