@@ -19,7 +19,7 @@ import 'package:moxxyv2/ui/bloc/crop.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground.dart';
 import 'package:moxxyv2/ui/bloc/devices.dart';
 import 'package:moxxyv2/ui/bloc/groupchat/joingroupchat_bloc.dart';
-import 'package:moxxyv2/ui/bloc/login_bloc.dart';
+import 'package:moxxyv2/ui/bloc/login.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/own_devices_bloc.dart';
@@ -144,8 +144,8 @@ void main() async {
         BlocProvider<NavigationBloc>(
           create: (_) => GetIt.I.get<NavigationBloc>(),
         ),
-        BlocProvider<LoginBloc>(
-          create: (_) => LoginBloc(),
+        BlocProvider<LoginCubit>(
+          create: (_) => LoginCubit(),
         ),
         BlocProvider<ConversationsCubit>(
           create: (_) => GetIt.I.get<ConversationsCubit>(),

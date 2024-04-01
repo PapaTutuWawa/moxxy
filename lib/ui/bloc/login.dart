@@ -10,43 +10,42 @@ import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/request_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
-part 'login_bloc.freezed.dart';
-part 'login_event.dart';
-part 'login_state.dart';
+part 'login.freezed.dart';
 
-class LoginBloc extends Bloc<LoginEvent, LoginState> {
-  LoginBloc() : super(LoginState()) {
-    on<LoginJidChangedEvent>(_onJidChanged);
-    on<LoginPasswordChangedEvent>(_onPasswordChanged);
-    on<LoginPasswordVisibilityToggledEvent>(_onPasswordVisibilityToggled);
-    on<LoginSubmittedEvent>(_onSubmitted);
+class LoginFormState {
+  const LoginFormState(this.isOkay, {this.error});
+  final bool isOkay;
+  final String? error;
+}
+
+@freezed
+class LoginState with _$LoginState {
+  factory LoginState({
+    @Default('') String jid,
+    @Default('') String password,
+    @Default(false) bool working,
+    @Default(false) bool passwordVisible,
+    @Default(LoginFormState(true)) LoginFormState jidState,
+    @Default(LoginFormState(true)) LoginFormState passwordState,
+  }) = _LoginState;
+}
+
+class LoginCubit extends Cubit<LoginState> {
+  LoginCubit() : super(LoginState());
+
+  void onJidChanged(String jid) {
+    emit(state.copyWith(jid: jid));
   }
 
-  Future<void> _onJidChanged(
-    LoginJidChangedEvent event,
-    Emitter<LoginState> emit,
-  ) async {
-    emit(state.copyWith(jid: event.jid));
+  void onPasswordChanged(String password) {
+    emit(state.copyWith(password: password));
   }
 
-  Future<void> _onPasswordChanged(
-    LoginPasswordChangedEvent event,
-    Emitter<LoginState> emit,
-  ) async {
-    emit(state.copyWith(password: event.password));
-  }
-
-  Future<void> _onPasswordVisibilityToggled(
-    LoginPasswordVisibilityToggledEvent event,
-    Emitter<LoginState> emit,
-  ) async {
+  void onPasswordVisibilityToggled() {
     emit(state.copyWith(passwordVisible: !state.passwordVisible));
   }
 
-  Future<void> _onSubmitted(
-    LoginSubmittedEvent event,
-    Emitter<LoginState> emit,
-  ) async {
+  Future<void> submit() async {
     final jidValidity = validateJidString(state.jid);
     if (jidValidity != null) {
       return emit(
