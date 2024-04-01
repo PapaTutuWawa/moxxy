@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart';
@@ -9,8 +10,8 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
-import 'package:moxxyv2/ui/state/conversation.dart' as conversation;
 import 'package:moxxyv2/ui/controller/bidirectional_controller.dart';
+import 'package:moxxyv2/ui/state/conversation.dart' as conversation;
 import 'package:moxxyv2/ui/widgets/messaging_textfield/controller.dart';
 
 class MessageEditingState {

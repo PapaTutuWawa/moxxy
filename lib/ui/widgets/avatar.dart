@@ -1,11 +1,12 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/ui/service/avatars.dart';
 import 'package:moxxyv2/ui/state/account.dart';
 import 'package:moxxyv2/ui/state/preferences.dart';
-import 'package:moxxyv2/ui/service/avatars.dart';
 import 'package:moxxyv2/ui/theme.dart';
 
 class CachingXMPPAvatar extends StatefulWidget {

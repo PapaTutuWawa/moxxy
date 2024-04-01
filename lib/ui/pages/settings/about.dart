@@ -4,8 +4,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/version.dart';
-import 'package:moxxyv2/ui/state/preferences.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // TODO(PapaTutuWawa): Include license text

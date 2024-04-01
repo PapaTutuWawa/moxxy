@@ -8,11 +8,11 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/pages/startgroupchat.dart';
 import 'package:moxxyv2/ui/state/conversation.dart';
 import 'package:moxxyv2/ui/state/conversations.dart';
 import 'package:moxxyv2/ui/state/navigation.dart';
-import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/pages/startgroupchat.dart';
 
 part 'startchat.freezed.dart';
 

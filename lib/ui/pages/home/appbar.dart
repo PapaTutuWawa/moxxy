@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxxyv2/ui/state/conversations.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/state/conversations.dart';
 
 /// A wrapper around IconButton where the icon is controlled by whether
 /// the [TextField] has text in it or not.

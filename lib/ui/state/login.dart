@@ -5,10 +5,10 @@ import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/state/account.dart';
 import 'package:moxxyv2/ui/state/navigation.dart';
 import 'package:moxxyv2/ui/state/request.dart';
-import 'package:moxxyv2/ui/constants.dart';
 
 part 'login.freezed.dart';
 

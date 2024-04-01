@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
@@ -6,11 +7,11 @@ import 'package:grouped_list/grouped_list.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
+import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/controller/sticker_pack_controller.dart';
 import 'package:moxxyv2/ui/state/navigation.dart' as nav;
 import 'package:moxxyv2/ui/state/sticker_pack.dart';
 import 'package:moxxyv2/ui/state/stickers.dart';
-import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/controller/sticker_pack_controller.dart';
 
 /// A wrapper data class to group by a sticker pack's id, but display its title.
 @immutable

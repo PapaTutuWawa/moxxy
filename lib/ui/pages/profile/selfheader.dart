@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/state/own_devices.dart';
-import 'package:moxxyv2/ui/state/profile.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/profile/profile.dart';
+import 'package:moxxyv2/ui/state/own_devices.dart';
+import 'package:moxxyv2/ui/state/profile.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/profile/options.dart';
 

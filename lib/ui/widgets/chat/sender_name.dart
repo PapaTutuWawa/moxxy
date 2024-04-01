@@ -3,8 +3,8 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxmpp_color/moxxmpp_color.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/state/conversation.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/state/conversation.dart';
 
 class SenderName extends StatelessWidget {
   const SenderName(

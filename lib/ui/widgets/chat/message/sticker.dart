@@ -1,11 +1,12 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/state/preferences.dart';
 import 'package:moxxyv2/ui/state/sticker_pack.dart';
-import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:moxxyv2/ui/widgets/chat/sender_name.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';

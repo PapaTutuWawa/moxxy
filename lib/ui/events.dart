@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -8,15 +9,15 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
+import 'package:moxxyv2/ui/controller/conversation_controller.dart';
+import 'package:moxxyv2/ui/prestart.dart';
+import 'package:moxxyv2/ui/service/avatars.dart';
+import 'package:moxxyv2/ui/service/progress.dart';
 import 'package:moxxyv2/ui/state/blocklist.dart' as blocklist;
 import 'package:moxxyv2/ui/state/conversation.dart' as conversation;
 import 'package:moxxyv2/ui/state/conversations.dart' as conversations;
 import 'package:moxxyv2/ui/state/newconversation.dart' as new_conversation;
 import 'package:moxxyv2/ui/state/profile.dart' as profile;
-import 'package:moxxyv2/ui/controller/conversation_controller.dart';
-import 'package:moxxyv2/ui/prestart.dart';
-import 'package:moxxyv2/ui/service/avatars.dart';
-import 'package:moxxyv2/ui/service/progress.dart';
 
 void setupEventHandler() {
   final handler = EventHandler()

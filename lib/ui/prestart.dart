@@ -1,10 +1,14 @@
 import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/quirks/quirks.g.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/events.dart';
+import 'package:moxxyv2/ui/service/sharing.dart';
 import 'package:moxxyv2/ui/state/account.dart';
 import 'package:moxxyv2/ui/state/conversations.dart';
 import 'package:moxxyv2/ui/state/navigation.dart';
@@ -12,9 +16,6 @@ import 'package:moxxyv2/ui/state/newconversation.dart';
 import 'package:moxxyv2/ui/state/preferences.dart';
 import 'package:moxxyv2/ui/state/request.dart';
 import 'package:moxxyv2/ui/state/share_selection.dart';
-import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/events.dart';
-import 'package:moxxyv2/ui/service/sharing.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 Future<void> _requestPermissions() async {

@@ -2,8 +2,8 @@ import 'package:cropperx/cropperx.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/state/crop.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/state/crop.dart';
 import 'package:moxxyv2/ui/widgets/backdrop_spinner.dart';
 import 'package:moxxyv2/ui/widgets/cancel_button.dart';
 

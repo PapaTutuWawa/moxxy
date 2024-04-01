@@ -6,9 +6,9 @@ import 'package:move_to_background/move_to_background.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxyv2/ui/state/navigation.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/state/navigation.dart';
 
 part 'sendfiles.freezed.dart';
 part 'sendfiles.g.dart';
