@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
+import 'package:moxxyv2/ui/bloc/devices.dart';
 import 'package:moxxyv2/ui/bloc/profile.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/contact_helper.dart';
@@ -102,9 +102,9 @@ class ConversationProfileHeader extends StatelessWidget {
                         icon: Icons.security_outlined,
                         title: t.pages.profile.general.omemo,
                         onTap: () {
-                          context.read<DevicesBloc>().add(
-                                DevicesRequestedEvent(conversation.jid),
-                              );
+                          context
+                              .read<DevicesCubit>()
+                              .request(conversation.jid);
                         },
                       ),
                     ProfileOption(

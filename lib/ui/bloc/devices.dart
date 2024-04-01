@@ -9,23 +9,22 @@ import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 
-part 'devices_bloc.freezed.dart';
-part 'devices_event.dart';
-part 'devices_state.dart';
+part 'devices.freezed.dart';
 
-class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
-  DevicesBloc() : super(DevicesState()) {
-    on<DevicesRequestedEvent>(_onRequested);
-    on<DeviceEnabledSetEvent>(_onDeviceEnabledSet);
-    on<SessionsRecreatedEvent>(_onSessionsRecreated);
-    on<DeviceVerifiedEvent>(_onDeviceVerified);
-  }
+@freezed
+class DevicesState with _$DevicesState {
+  factory DevicesState({
+    @Default(false) bool working,
+    @Default([]) List<OmemoDevice> devices,
+    @Default('') String jid,
+  }) = _DevicesState;
+}
 
-  Future<void> _onRequested(
-    DevicesRequestedEvent event,
-    Emitter<DevicesState> emit,
-  ) async {
-    emit(state.copyWith(working: true, jid: event.jid));
+class DevicesCubit extends Cubit<DevicesState> {
+  DevicesCubit() : super(DevicesState());
+
+  Future<void> request(String jid) async {
+    emit(state.copyWith(working: true, jid: jid));
 
     GetIt.I.get<NavigationBloc>().add(
           PushedNamedEvent(
@@ -36,7 +35,7 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
       GetConversationOmemoFingerprintsCommand(
-        jid: event.jid,
+        jid: jid,
       ),
     ) as GetConversationOmemoFingerprintsResult;
 
@@ -48,25 +47,22 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
     );
   }
 
-  Future<void> _onDeviceEnabledSet(
-    DeviceEnabledSetEvent event,
-    Emitter<DevicesState> emit,
+  Future<void> setDeviceEnabled(
+    int deviceId,
+    bool enabled,
   ) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
       SetOmemoDeviceEnabledCommand(
         jid: state.jid,
-        deviceId: event.deviceId,
-        enabled: event.enabled,
+        deviceId: deviceId,
+        enabled: enabled,
       ),
     ) as GetConversationOmemoFingerprintsResult;
     emit(state.copyWith(devices: result.fingerprints));
   }
 
-  Future<void> _onSessionsRecreated(
-    SessionsRecreatedEvent event,
-    Emitter<DevicesState> emit,
-  ) async {
+  Future<void> recreateSessions() async {
     // ignore: cast_nullable_to_non_nullable
     await getForegroundService().send(
       RecreateSessionsCommand(jid: state.jid),
@@ -77,15 +73,15 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
     GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
   }
 
-  Future<void> _onDeviceVerified(
-    DeviceVerifiedEvent event,
-    Emitter<DevicesState> emit,
+  Future<void> verifyDevice(
+    Uri uri,
+    int deviceId,
   ) async {
     final result = isVerificationUriValid(
       state.devices,
-      event.uri,
+      uri,
       state.jid,
-      event.deviceId,
+      deviceId,
     );
     if (result == -1) return;
 
@@ -98,7 +94,7 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
     await getForegroundService().send(
       MarkOmemoDeviceAsVerifiedCommand(
         jid: state.jid,
-        deviceId: event.deviceId,
+        deviceId: deviceId,
       ),
       awaitable: false,
     );

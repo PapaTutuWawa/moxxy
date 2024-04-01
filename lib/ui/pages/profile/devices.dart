@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
+import 'package:moxxyv2/ui/bloc/devices.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/profile/widgets.dart';
@@ -65,16 +65,15 @@ class DevicesPage extends StatelessWidget {
             if (result == null) return;
 
             // ignore: use_build_context_synchronously
-            context.read<DevicesBloc>().add(
-                  DeviceVerifiedEvent(result, item.deviceId),
+            await context.read<DevicesCubit>().verifyDevice(
+                  result,
+                  item.deviceId,
                 );
           },
           onEnableValueChanged: (value) {
-            context.read<DevicesBloc>().add(
-                  DeviceEnabledSetEvent(
-                    item.deviceId,
-                    value,
-                  ),
+            context.read<DevicesCubit>().setDeviceEnabled(
+                  item.deviceId,
+                  value,
                 );
           },
         );
@@ -91,13 +90,13 @@ class DevicesPage extends StatelessWidget {
 
     if (result) {
       // ignore: use_build_context_synchronously
-      context.read<DevicesBloc>().add(SessionsRecreatedEvent());
+      await context.read<DevicesCubit>().recreateSessions();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DevicesBloc, DevicesState>(
+    return BlocBuilder<DevicesCubit, DevicesState>(
       builder: (context, state) => Scaffold(
         appBar: AppBar(
           title: Text(t.pages.profile.devices.title),
