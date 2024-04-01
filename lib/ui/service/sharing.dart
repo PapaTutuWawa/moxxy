@@ -4,7 +4,7 @@ import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles.dart';
-import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
+import 'package:moxxyv2/ui/bloc/share_selection.dart';
 import 'package:share_handler/share_handler.dart';
 
 /// This service is responsible for storing a sharing request and or executing it.
@@ -71,14 +71,12 @@ class UISharingService {
         );
       }
     } else {
-      GetIt.I.get<ShareSelectionBloc>().add(
-            ShareSelectionRequestedEvent(
-              attachments.map((a) => a!.path).toList(),
-              media.content,
-              media.content != null
-                  ? ShareSelectionType.text
-                  : ShareSelectionType.media,
-            ),
+      GetIt.I.get<ShareSelectionCubit>().request(
+            attachments.map((a) => a!.path).toList(),
+            media.content,
+            media.content != null
+                ? ShareSelectionType.text
+                : ShareSelectionType.media,
           );
     }
 

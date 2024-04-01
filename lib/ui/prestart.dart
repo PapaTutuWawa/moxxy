@@ -11,7 +11,7 @@ import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences.dart';
 import 'package:moxxyv2/ui/bloc/request.dart';
-import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
+import 'package:moxxyv2/ui/bloc/share_selection.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/events.dart';
 import 'package:moxxyv2/ui/service/sharing.dart';
@@ -58,11 +58,9 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
             result.roster!,
           ),
         );
-    GetIt.I.get<ShareSelectionBloc>().add(
-          ShareSelectionInitEvent(
-            result.conversations!,
-            result.roster!,
-          ),
+    GetIt.I.get<ShareSelectionCubit>().init(
+          result.conversations!,
+          result.roster!,
         );
 
     // Handle requesting permissions

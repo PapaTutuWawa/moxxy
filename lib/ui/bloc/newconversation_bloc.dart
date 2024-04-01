@@ -9,7 +9,7 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
 import 'package:moxxyv2/ui/bloc/conversations.dart';
-import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
+import 'package:moxxyv2/ui/bloc/share_selection.dart';
 
 part 'newconversation_bloc.freezed.dart';
 part 'newconversation_event.dart';
@@ -114,8 +114,8 @@ class NewConversationBloc
     }
 
     // TODO(Unknown): Doing it from here feels absolutely not clean. Maybe change that.
-    GetIt.I.get<ShareSelectionBloc>().add(
-          RosterModifiedEvent(roster),
+    await GetIt.I.get<ShareSelectionCubit>().onRosterUpdated(
+          roster,
         );
 
     emit(state.copyWith(roster: roster));

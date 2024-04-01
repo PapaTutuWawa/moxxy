@@ -14,14 +14,28 @@ import 'package:moxxyv2/ui/bloc/preferences.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
-part 'share_selection_bloc.freezed.dart';
-part 'share_selection_event.dart';
-part 'share_selection_state.dart';
+part 'share_selection.freezed.dart';
 
 /// The type of data we try to share
 enum ShareSelectionType {
   media,
   text,
+}
+
+@freezed
+class ShareSelectionState with _$ShareSelectionState {
+  factory ShareSelectionState({
+    // A deduplicated combination of the conversation and roster list
+    @Default(<ShareListItem>[]) List<ShareListItem> items,
+    // List of paths that we want to share
+    @Default(<String>[]) List<String> paths,
+    // The text we want to share
+    @Default(null) String? text,
+    // List of selected items in items
+    @Default(<int>[]) List<int> selection,
+    // The type of data we try to share
+    @Default(ShareSelectionType.media) ShareSelectionType type,
+  }) = _ShareSelectionState;
 }
 
 /// Create a common ground between Conversations and RosterItems
@@ -62,20 +76,11 @@ class ShareListItem {
   }
 }
 
-class ShareSelectionBloc
-    extends Bloc<ShareSelectionEvent, ShareSelectionState> {
-  ShareSelectionBloc() : super(ShareSelectionState()) {
-    on<ShareSelectionInitEvent>(_onShareSelectionInit);
-    on<ConversationsModified>(_onConversationsModified);
-    on<RosterModifiedEvent>(_onRosterModified);
-    on<ShareSelectionRequestedEvent>(_onRequested);
-    on<SelectionToggledEvent>(_onSelectionToggled);
-    on<SubmittedEvent>(_onSubmit);
-    on<ResetEvent>(_onReset);
-  }
+class ShareSelectionCubit extends Cubit<ShareSelectionState> {
+  ShareSelectionCubit() : super(ShareSelectionState());
 
   /// Resets user controllable data, i.e. paths, selections and text
-  void _resetState(Emitter<ShareSelectionState> emit) {
+  void reset() {
     emit(state.copyWith(selection: [], paths: [], text: null));
   }
 
@@ -87,7 +92,6 @@ class ShareSelectionBloc
   void _updateItems(
     List<Conversation> conversations,
     List<RosterItem> rosterItems,
-    Emitter<ShareSelectionState> emit,
   ) {
     // Use all conversations as a base
     final items = List<ShareListItem>.from(
@@ -149,22 +153,23 @@ class ShareSelectionBloc
     emit(state.copyWith(items: items));
   }
 
-  Future<void> _onShareSelectionInit(
-    ShareSelectionInitEvent event,
-    Emitter<ShareSelectionState> emit,
-  ) async {
-    _updateItems(event.conversations, event.rosterItems, emit);
+  void init(
+    List<Conversation> conversations,
+    List<RosterItem> rosterItems,
+  ) {
+    _updateItems(conversations, rosterItems);
   }
 
-  Future<void> _onRequested(
-    ShareSelectionRequestedEvent event,
-    Emitter<ShareSelectionState> emit,
-  ) async {
+  void request(
+    List<String> paths,
+    String? text,
+    ShareSelectionType type,
+  ) {
     emit(
       state.copyWith(
-        paths: event.paths,
-        text: event.text,
-        type: event.type,
+        paths: paths,
+        text: text,
+        type: type,
       ),
     );
 
@@ -176,32 +181,25 @@ class ShareSelectionBloc
         );
   }
 
-  Future<void> _onConversationsModified(
-    ConversationsModified event,
-    Emitter<ShareSelectionState> emit,
+  Future<void> onConversationsUpdated(
+    List<Conversation> update,
   ) async {
     _updateItems(
-      event.conversations,
+      update,
       GetIt.I.get<NewConversationBloc>().state.roster,
-      emit,
     );
   }
 
-  Future<void> _onRosterModified(
-    RosterModifiedEvent event,
-    Emitter<ShareSelectionState> emit,
+  Future<void> onRosterUpdated(
+    List<RosterItem> items,
   ) async {
     _updateItems(
       GetIt.I.get<ConversationsCubit>().state.conversations,
-      event.rosterItems,
-      emit,
+      items,
     );
   }
 
-  Future<void> _onSubmit(
-    SubmittedEvent event,
-    Emitter<ShareSelectionState> emit,
-  ) async {
+  Future<void> submit() async {
     if (state.type == ShareSelectionType.text) {
       await getForegroundService().send(
         SendMessageCommand(
@@ -219,7 +217,7 @@ class ShareSelectionBloc
             ),
           );
       // ...reset the state...
-      _resetState(emit);
+      reset();
       // ...and put the app back into the background
       await MoveToBackground.moveTaskToBack();
     } else {
@@ -240,19 +238,18 @@ class ShareSelectionBloc
             popEntireStack: true,
           );
 
-      _resetState(emit);
+      reset();
     }
   }
 
-  Future<void> _onSelectionToggled(
-    SelectionToggledEvent event,
-    Emitter<ShareSelectionState> emit,
+  Future<void> selectionToggled(
+    int index,
   ) async {
-    if (state.selection.contains(event.index)) {
+    if (state.selection.contains(index)) {
       emit(
         state.copyWith(
           selection: List.from(
-            state.selection.where((s) => s != event.index).toList(),
+            state.selection.where((s) => s != index).toList(),
           ),
         ),
       );
@@ -260,17 +257,10 @@ class ShareSelectionBloc
       emit(
         state.copyWith(
           selection: List.from(
-            [...state.selection, event.index],
+            [...state.selection, index],
           ),
         ),
       );
     }
-  }
-
-  Future<void> _onReset(
-    ResetEvent event,
-    Emitter<ShareSelectionState> emit,
-  ) async {
-    _resetState(emit);
   }
 }

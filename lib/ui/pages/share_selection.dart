@@ -6,7 +6,7 @@ import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as navigation;
-import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
+import 'package:moxxyv2/ui/bloc/share_selection.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
@@ -47,7 +47,7 @@ class ShareSelectionPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopScope(
       onPopInvoked: (_) {
-        GetIt.I.get<ShareSelectionBloc>().add(ResetEvent());
+        GetIt.I.get<ShareSelectionCubit>().reset();
 
         // Navigate to the conversations page...
         GetIt.I.get<navigation.NavigationBloc>().add(
@@ -59,7 +59,7 @@ class ShareSelectionPage extends StatelessWidget {
         // ...and put the app back into the background
         MoveToBackground.moveTaskToBack();
       },
-      child: BlocBuilder<ShareSelectionBloc, ShareSelectionState>(
+      child: BlocBuilder<ShareSelectionCubit, ShareSelectionState>(
         buildWhen: _buildWhen,
         builder: (context, state) => Scaffold(
           appBar: AppBar(
@@ -96,9 +96,7 @@ class ShareSelectionPage extends StatelessWidget {
                 showTimestamp: false,
                 isSelected: state.selection.contains(index),
                 onPressed: () {
-                  context.read<ShareSelectionBloc>().add(
-                        SelectionToggledEvent(index),
-                      );
+                  context.read<ShareSelectionCubit>().selectionToggled(index);
                 },
               );
             },
@@ -106,13 +104,13 @@ class ShareSelectionPage extends StatelessWidget {
           floatingActionButton: state.selection.isNotEmpty
               ? FloatingActionButton(
                   onPressed: () async {
-                    final bloc = context.read<ShareSelectionBloc>();
+                    final cubit = context.read<ShareSelectionCubit>();
                     final hasUnencrypted =
-                        bloc.state.selection.any((selection) {
-                      return !bloc.state.items[selection].isEncrypted;
+                        cubit.state.selection.any((selection) {
+                      return !cubit.state.items[selection].isEncrypted;
                     });
-                    final hasEncrypted = bloc.state.selection.any((selection) {
-                      return bloc.state.items[selection].isEncrypted;
+                    final hasEncrypted = cubit.state.selection.any((selection) {
+                      return cubit.state.items[selection].isEncrypted;
                     });
 
                     // Warn the user
@@ -124,12 +122,12 @@ class ShareSelectionPage extends StatelessWidget {
                       );
 
                       if (result) {
-                        bloc.add(SubmittedEvent());
+                        await cubit.submit();
                       }
                       return;
                     }
 
-                    bloc.add(SubmittedEvent());
+                    await cubit.submit();
                   },
                   child: const Icon(
                     Icons.send,

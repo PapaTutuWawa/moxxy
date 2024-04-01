@@ -28,7 +28,7 @@ import 'package:moxxyv2/ui/bloc/profile.dart';
 import 'package:moxxyv2/ui/bloc/request.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles.dart';
 import 'package:moxxyv2/ui/bloc/server_info.dart';
-import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
+import 'package:moxxyv2/ui/bloc/share_selection.dart';
 import 'package:moxxyv2/ui/bloc/startchat_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
@@ -113,7 +113,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<CropCubit>(CropCubit());
   GetIt.I.registerSingleton<SendFilesCubit>(SendFilesCubit());
   GetIt.I.registerSingleton<CropBackgroundCubit>(CropBackgroundCubit());
-  GetIt.I.registerSingleton<ShareSelectionBloc>(ShareSelectionBloc());
+  GetIt.I.registerSingleton<ShareSelectionCubit>(ShareSelectionCubit());
   GetIt.I.registerSingleton<ServerInfoCubit>(ServerInfoCubit());
   GetIt.I.registerSingleton<DevicesCubit>(DevicesCubit());
   GetIt.I.registerSingleton<OwnDevicesBloc>(OwnDevicesBloc());
@@ -177,8 +177,8 @@ void main() async {
         BlocProvider<CropBackgroundCubit>(
           create: (_) => GetIt.I.get<CropBackgroundCubit>(),
         ),
-        BlocProvider<ShareSelectionBloc>(
-          create: (_) => GetIt.I.get<ShareSelectionBloc>(),
+        BlocProvider<ShareSelectionCubit>(
+          create: (_) => GetIt.I.get<ShareSelectionCubit>(),
         ),
         BlocProvider<ServerInfoCubit>(
           create: (_) => GetIt.I.get<ServerInfoCubit>(),
