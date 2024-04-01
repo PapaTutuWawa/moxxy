@@ -8,7 +8,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/newconversation.dart';
 import 'package:moxxyv2/ui/bloc/preferences.dart';
 import 'package:moxxyv2/ui/bloc/request.dart';
 import 'package:moxxyv2/ui/bloc/share_selection.dart';
@@ -53,10 +53,8 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
       ],
       0,
     );
-    GetIt.I.get<NewConversationBloc>().add(
-          NewConversationInitEvent(
-            result.roster!,
-          ),
+    GetIt.I.get<NewConversationCubit>().init(
+          result.roster!,
         );
     GetIt.I.get<ShareSelectionCubit>().init(
           result.conversations!,

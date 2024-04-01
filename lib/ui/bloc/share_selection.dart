@@ -9,7 +9,7 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/newconversation.dart';
 import 'package:moxxyv2/ui/bloc/preferences.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -186,7 +186,7 @@ class ShareSelectionCubit extends Cubit<ShareSelectionState> {
   ) async {
     _updateItems(
       update,
-      GetIt.I.get<NewConversationBloc>().state.roster,
+      GetIt.I.get<NewConversationCubit>().state.roster,
     );
   }
 

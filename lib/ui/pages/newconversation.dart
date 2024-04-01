@@ -7,7 +7,7 @@ import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/newconversation.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/service/connectivity.dart';
@@ -64,7 +64,7 @@ class NewConversationPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(t.pages.newconversation.title),
       ),
-      body: BlocBuilder<NewConversationBloc, NewConversationState>(
+      body: BlocBuilder<NewConversationCubit, NewConversationState>(
         builder: (BuildContext context, NewConversationState state) =>
             ListView.builder(
           itemCount: state.roster.length + 2,
@@ -111,9 +111,10 @@ class NewConversationPage extends StatelessWidget {
                   direction: item.pseudoRosterItem
                       ? DismissDirection.none
                       : DismissDirection.horizontal,
-                  onDismissed: (_) => context.read<NewConversationBloc>().add(
-                        NewConversationRosterItemRemovedEvent(item.jid),
-                      ),
+                  onDismissed: (_) =>
+                      context.read<NewConversationCubit>().remove(
+                            item.jid,
+                          ),
                   background: const ColoredBox(
                     color: Colors.red,
                     child: Padding(
@@ -162,13 +163,11 @@ class NewConversationPage extends StatelessWidget {
                     false,
                     showTimestamp: false,
                     isSelected: false,
-                    onPressed: () => context.read<NewConversationBloc>().add(
-                          NewConversationAddedEvent(
-                            item.jid,
-                            item.title,
-                            item.avatarPath,
-                            ConversationType.chat,
-                          ),
+                    onPressed: () => context.read<NewConversationCubit>().add(
+                          item.jid,
+                          item.title,
+                          item.avatarPath,
+                          ConversationType.chat,
                         ),
                     titleSuffixIcon:
                         item.pseudoRosterItem ? Icons.smartphone : null,

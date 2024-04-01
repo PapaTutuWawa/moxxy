@@ -11,43 +11,43 @@ import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/share_selection.dart';
 
-part 'newconversation_bloc.freezed.dart';
-part 'newconversation_event.dart';
-part 'newconversation_state.dart';
+part 'newconversation.freezed.dart';
 
-class NewConversationBloc
-    extends Bloc<NewConversationEvent, NewConversationState> {
-  NewConversationBloc() : super(NewConversationState()) {
-    on<NewConversationInitEvent>(_onInit);
-    on<NewConversationAddedEvent>(_onAdded);
-    on<NewConversationRosterItemRemovedEvent>(_onRosterItemRemoved);
-    on<RosterPushedEvent>(_onRosterPushed);
-  }
+@freezed
+class NewConversationState with _$NewConversationState {
+  factory NewConversationState({
+    @Default(<RosterItem>[]) List<RosterItem> roster,
+  }) = _NewConversationState;
+}
 
-  Future<void> _onInit(
-    NewConversationInitEvent event,
-    Emitter<NewConversationState> emit,
-  ) async {
+class NewConversationCubit extends Cubit<NewConversationState> {
+  NewConversationCubit() : super(NewConversationState());
+
+  void init(
+    List<RosterItem> roster,
+  ) {
     return emit(
       state.copyWith(
-        roster: event.roster,
+        roster: roster,
       ),
     );
   }
 
-  Future<void> _onAdded(
-    NewConversationAddedEvent event,
-    Emitter<NewConversationState> emit,
+  Future<void> add(
+    String jid,
+    String title,
+    String? avatarUrl,
+    ConversationType type,
   ) async {
     final conversations = GetIt.I.get<ConversationsCubit>();
 
     final result = await getForegroundService().send(
       AddConversationCommand(
-        title: event.title,
-        jid: event.jid,
-        avatarUrl: event.avatarUrl,
+        title: title,
+        jid: jid,
+        avatarUrl: avatarUrl,
         lastMessageBody: '',
-        conversationType: event.type.value,
+        conversationType: type.value,
       ),
     );
 
@@ -61,23 +61,20 @@ class NewConversationBloc
 
     GetIt.I.get<conversation.ConversationBloc>().add(
           conversation.RequestedConversationEvent(
-            event.jid,
-            event.title,
-            event.avatarUrl,
+            jid,
+            title,
+            avatarUrl,
             removeUntilConversations: true,
           ),
         );
   }
 
-  Future<void> _onRosterItemRemoved(
-    NewConversationRosterItemRemovedEvent event,
-    Emitter<NewConversationState> emit,
-  ) async {
+  Future<void> remove(String jid) async {
     emit(
       state.copyWith(
         roster: state.roster
             .where(
-              (item) => item.jid != event.jid,
+              (item) => item.jid != jid,
             )
             .toList(),
       ),
@@ -85,29 +82,30 @@ class NewConversationBloc
 
     await getForegroundService().send(
       RemoveContactCommand(
-        jid: event.jid,
+        jid: jid,
       ),
       awaitable: false,
     );
   }
 
-  Future<void> _onRosterPushed(
-    RosterPushedEvent event,
-    Emitter<NewConversationState> emit,
+  Future<void> onRosterPushed(
+    List<RosterItem> added,
+    List<RosterItem> modified,
+    List<String> removed,
   ) async {
     // TODO(Unknown): Should we guard against adding the same entries multiple times?
-    final roster = List<RosterItem>.from(event.added);
+    final roster = List<RosterItem>.from(added);
 
     for (final item in state.roster) {
       // Handle removed items
-      if (event.removed.contains(item.jid)) continue;
+      if (removed.contains(item.jid)) continue;
 
       // Handle modified items
-      final modified = event.modified.firstWhereOrNull(
+      final m = modified.firstWhereOrNull(
         (RosterItem i) => i.jid == item.jid,
       );
-      if (modified != null) {
-        roster.add(modified);
+      if (m != null) {
+        roster.add(m);
       } else {
         roster.add(item);
       }

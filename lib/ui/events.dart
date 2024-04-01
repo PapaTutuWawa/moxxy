@@ -11,7 +11,7 @@ import 'package:moxxyv2/shared/synchronized_queue.dart';
 import 'package:moxxyv2/ui/bloc/blocklist.dart' as blocklist;
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
 import 'package:moxxyv2/ui/bloc/conversations.dart' as conversations;
-import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart' as new_conversation;
+import 'package:moxxyv2/ui/bloc/newconversation.dart' as new_conversation;
 import 'package:moxxyv2/ui/bloc/profile.dart' as profile;
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/prestart.dart';
@@ -127,12 +127,10 @@ Future<void> onBlocklistPushed(
 }
 
 Future<void> onRosterPush(RosterDiffEvent event, {dynamic extra}) async {
-  GetIt.I.get<new_conversation.NewConversationBloc>().add(
-        new_conversation.RosterPushedEvent(
-          event.added,
-          event.modified,
-          event.removed,
-        ),
+  return GetIt.I.get<new_conversation.NewConversationCubit>().onRosterPushed(
+        event.added,
+        event.modified,
+        event.removed,
       );
 }
 
