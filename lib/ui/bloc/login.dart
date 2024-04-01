@@ -108,13 +108,13 @@ class LoginCubit extends Cubit<LoginState> {
             ),
           );
       GetIt.I.get<RequestCubit>().setRequests(
-            [
-              if (result.preStart.requestNotificationPermission)
-                Request.notifications,
-              if (result.preStart.excludeFromBatteryOptimisation)
-                Request.batterySavingExcemption,
-            ],
-          );
+        [
+          if (result.preStart.requestNotificationPermission)
+            Request.notifications,
+          if (result.preStart.excludeFromBatteryOptimisation)
+            Request.batterySavingExcemption,
+        ],
+      );
     } else if (result is LoginFailureEvent) {
       return emit(
         state.copyWith(

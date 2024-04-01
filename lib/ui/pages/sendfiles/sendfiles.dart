@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mime/mime.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sendfiles.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/sendfiles/conversation_indicator.dart';
 import 'package:moxxyv2/ui/widgets/cancel_button.dart';
@@ -54,14 +54,10 @@ class SendFilesPage extends StatelessWidget {
           onTap: () {
             if (selected) {
               // The trash can icon has been tapped
-              context.read<SendFilesBloc>().add(
-                    ItemRemovedEvent(index),
-                  );
+              context.read<SendFilesCubit>().remove(index);
             } else {
               // Another item has been tapped
-              context.read<SendFilesBloc>().add(
-                    IndexSetEvent(index),
-                  );
+              context.read<SendFilesCubit>().setIndex(index);
             }
           },
           borderColor: selected ? Colors.blue : null,
@@ -79,14 +75,10 @@ class SendFilesPage extends StatelessWidget {
           onTap: () {
             if (selected) {
               // The trash can icon has been tapped
-              context.read<SendFilesBloc>().add(
-                    ItemRemovedEvent(index),
-                  );
+              context.read<SendFilesCubit>().remove(index);
             } else {
               // Another item has been tapped
-              context.read<SendFilesBloc>().add(
-                    IndexSetEvent(index),
-                  );
+              context.read<SendFilesCubit>().setIndex(index);
             }
           },
           borderColor: selected ? Colors.blue : null,
@@ -117,14 +109,10 @@ class SendFilesPage extends StatelessWidget {
           onTap: () {
             if (selected) {
               // The trash can icon has been tapped
-              context.read<SendFilesBloc>().add(
-                    ItemRemovedEvent(index),
-                  );
+              context.read<SendFilesCubit>().remove(index);
             } else {
               // Another item has been tapped
-              context.read<SendFilesBloc>().add(
-                    IndexSetEvent(index),
-                  );
+              context.read<SendFilesCubit>().setIndex(index);
             }
           },
         ),
@@ -168,7 +156,7 @@ class SendFilesPage extends StatelessWidget {
   void _maybeRemoveTemporaryFiles() {
     if (Platform.isAndroid) {
       // Remove temporary files.
-      GetIt.I.get<SendFilesBloc>().add(RemovedCacheFilesEvent());
+      GetIt.I.get<SendFilesCubit>().removeCacheFiles();
     }
   }
 
@@ -183,7 +171,7 @@ class SendFilesPage extends StatelessWidget {
       },
       child: SafeArea(
         child: Scaffold(
-          body: BlocBuilder<SendFilesBloc, SendFilesState>(
+          body: BlocBuilder<SendFilesCubit, SendFilesState>(
             builder: (context, state) => Stack(
               children: [
                 Positioned(
@@ -224,9 +212,7 @@ class SendFilesPage extends StatelessWidget {
                               return SharedMediaContainer(
                                 const Icon(Icons.attach_file),
                                 color: sharedMediaItemBackgroundColor,
-                                onTap: () => context.read<SendFilesBloc>().add(
-                                      AddFilesRequestedEvent(),
-                                    ),
+                                onTap: context.read<SendFilesCubit>().addFiles,
                               );
                             }
                           },
@@ -254,9 +240,7 @@ class SendFilesPage extends StatelessWidget {
                           child: IconButton(
                             color: Colors.white,
                             icon: const Icon(Icons.send),
-                            onPressed: () => context
-                                .read<SendFilesBloc>()
-                                .add(FileSendingRequestedEvent()),
+                            onPressed: context.read<SendFilesCubit>().submit,
                           ),
                         ),
                       ),
@@ -285,7 +269,9 @@ class SendFilesPage extends StatelessWidget {
                         ConversationIndicator(state.recipients)
                       else
                         FetchingConversationIndicator(
-                          state.recipients.map((r) => r.jid).toList(),
+                          state.recipients
+                              .map((SendFilesRecipient r) => r.jid)
+                              .toList(),
                         ),
                     ],
                   ),

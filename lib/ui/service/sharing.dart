@@ -3,7 +3,7 @@ import 'package:logging/logging.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sendfiles.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:share_handler/share_handler.dart';
 
@@ -53,25 +53,22 @@ class UISharingService {
               attachment!.type == SharedAttachmentType.image ||
               attachment.type == SharedAttachmentType.video,
         );
-        GetIt.I.get<SendFilesBloc>().add(
-              SendFilesPageRequestedEvent(
-                [
-                  // NOTE: We put in some stub values (except for the JID) as the UI will fetch it.
-                  SendFilesRecipient(
-                    conversationJid!,
-                    conversationJid,
-                    null,
-                    null,
-                    false,
-                  ),
-                ],
-                isMedia ? SendFilesType.media : SendFilesType.generic,
-                paths:
-                    attachments.map((attachment) => attachment!.path).toList(),
-                hasRecipientData: false,
-                popEntireStack: true,
-              ),
-            );
+        await GetIt.I.get<SendFilesCubit>().request(
+          [
+            // NOTE: We put in some stub values (except for the JID) as the UI will fetch it.
+            SendFilesRecipient(
+              conversationJid!,
+              conversationJid,
+              null,
+              null,
+              false,
+            ),
+          ],
+          isMedia ? SendFilesType.media : SendFilesType.generic,
+          paths: attachments.map((attachment) => attachment!.path).toList(),
+          hasRecipientData: false,
+          popEntireStack: true,
+        );
       }
     } else {
       GetIt.I.get<ShareSelectionBloc>().add(

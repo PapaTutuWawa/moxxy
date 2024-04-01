@@ -16,7 +16,7 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
-import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sendfiles.dart';
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
@@ -647,20 +647,18 @@ class ConversationPageState extends State<ConversationPage>
                 await File(tempFile).writeAsBytes(content.data!);
 
                 // Open the SendFiles page
-                GetIt.I.get<SendFilesBloc>().add(
-                      SendFilesPageRequestedEvent(
-                        [
-                          SendFilesRecipient(
-                            state.conversation!.jid,
-                            state.conversation!.titleWithOptionalContact,
-                            state.conversation!.avatarPath,
-                            state.conversation!.avatarHash,
-                            state.conversation!.contactId != null,
-                          ),
-                        ],
-                        SendFilesType.media,
-                        paths: [tempFile],
-                      ),
+                return GetIt.I.get<SendFilesCubit>().request(
+                      [
+                        SendFilesRecipient(
+                          state.conversation!.jid,
+                          state.conversation!.titleWithOptionalContact,
+                          state.conversation!.avatarPath,
+                          state.conversation!.avatarHash,
+                          state.conversation!.contactId != null,
+                        ),
+                      ],
+                      SendFilesType.media,
+                      paths: [tempFile],
                     );
               },
             ),

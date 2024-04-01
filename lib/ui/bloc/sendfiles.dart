@@ -10,21 +10,51 @@ import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 
-part 'sendfiles_bloc.freezed.dart';
-part 'sendfiles_bloc.g.dart';
-part 'sendfiles_event.dart';
-part 'sendfiles_state.dart';
+part 'sendfiles.freezed.dart';
+part 'sendfiles.g.dart';
 
-class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
-  SendFilesBloc() : super(SendFilesState()) {
-    on<SendFilesPageRequestedEvent>(_sendFilesRequested);
-    on<IndexSetEvent>(_onIndexSet);
-    on<AddFilesRequestedEvent>(_onAddFilesRequested);
-    on<FileSendingRequestedEvent>(_onFileSendingRequested);
-    on<ItemRemovedEvent>(_onItemRemoved);
-    on<RemovedCacheFilesEvent>(_onCacheFilesRemoved);
-  }
+enum SendFilesType {
+  media,
+  generic,
+}
 
+@freezed
+class SendFilesRecipient with _$SendFilesRecipient {
+  factory SendFilesRecipient(
+    String jid,
+    String title,
+    String? avatar,
+    String? avatarHash,
+    bool hasContactId,
+  ) = _SendFilesRecipient;
+
+  /// JSON
+  factory SendFilesRecipient.fromJson(Map<String, dynamic> json) =>
+      _$SendFilesRecipientFromJson(json);
+}
+
+@freezed
+class SendFilesState with _$SendFilesState {
+  factory SendFilesState({
+    // List of file paths that the user wants to send
+    @Default(<String>[]) List<String> files,
+
+    // The currently selected path
+    @Default(0) int index,
+
+    // The chat that is currently active
+    @Default(<SendFilesRecipient>[]) List<SendFilesRecipient> recipients,
+
+    // Flag indicating whether we can immediately display the conversation indicator (true)
+    // or have to first fetch that data from the service (false).
+    @Default(false) bool hasRecipientData,
+  }) = _SendFilesState;
+}
+
+class SendFilesCubit extends Cubit<SendFilesState> {
+  SendFilesCubit() : super(SendFilesState());
+
+  // ignore: comment_references
   /// Whether a single [RemovedCacheFilesEvent] event should be ignored.
   bool _shouldIgnoreDeletionRequest = false;
 
@@ -45,15 +75,18 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
     return result.files!;
   }
 
-  Future<void> _sendFilesRequested(
-    SendFilesPageRequestedEvent event,
-    Emitter<SendFilesState> emit,
-  ) async {
+  Future<void> request(
+    List<SendFilesRecipient> recipients,
+    SendFilesType type, {
+    List<String>? paths,
+    bool hasRecipientData = true,
+    bool popEntireStack = false,
+  }) async {
     List<String> files;
-    if (event.paths != null) {
-      files = event.paths!;
+    if (paths != null) {
+      files = paths;
     } else {
-      final pickedFiles = await _pickFiles(event.type);
+      final pickedFiles = await _pickFiles(type);
       if (pickedFiles == null) return;
 
       files = pickedFiles;
@@ -64,13 +97,13 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
       state.copyWith(
         files: files,
         index: 0,
-        recipients: event.recipients,
-        hasRecipientData: event.hasRecipientData,
+        recipients: recipients,
+        hasRecipientData: hasRecipientData,
       ),
     );
 
     NavigationEvent navEvent;
-    if (event.popEntireStack) {
+    if (popEntireStack) {
       navEvent = PushedNamedAndRemoveUntilEvent(
         const NavigationDestination(sendFilesRoute),
         (_) => false,
@@ -86,35 +119,27 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
     GetIt.I.get<NavigationBloc>().add(navEvent);
   }
 
-  Future<void> _onIndexSet(
-    IndexSetEvent event,
-    Emitter<SendFilesState> emit,
-  ) async {
-    emit(state.copyWith(index: event.index));
+  void setIndex(int index) {
+    emit(state.copyWith(index: index));
   }
 
-  Future<void> _onAddFilesRequested(
-    AddFilesRequestedEvent event,
-    Emitter<SendFilesState> emit,
-  ) async {
+  Future<void> addFiles() async {
     final files = await _pickFiles(SendFilesType.generic);
     if (files == null) return;
 
     emit(
       state.copyWith(
-        files: List.from(state.files)..addAll(files),
+        files: List<String>.from(state.files)..addAll(files),
       ),
     );
   }
 
-  Future<void> _onFileSendingRequested(
-    FileSendingRequestedEvent event,
-    Emitter<SendFilesState> emitter,
-  ) async {
+  Future<void> submit() async {
     await getForegroundService().send(
       SendFilesCommand(
         paths: state.files,
-        recipients: state.recipients.map((r) => r.jid).toList(),
+        recipients:
+            state.recipients.map((SendFilesRecipient r) => r.jid).toList(),
       ),
       awaitable: false,
     );
@@ -137,37 +162,31 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
     if (!canPop) await MoveToBackground.moveTaskToBack();
   }
 
-  Future<void> _onItemRemoved(
-    ItemRemovedEvent event,
-    Emitter<SendFilesState> emit,
-  ) async {
+  void remove(int index) {
     // Go to the last page if we would otherwise remove the last item on the
     if (state.files.length == 1) {
       GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
       return;
     }
 
-    final files = List<String>.from(state.files)..removeAt(event.index);
+    final files = List<String>.from(state.files)..removeAt(index);
 
-    var index = state.index;
-    if (index == 0 || index != state.files.length - 1) {
+    var i = state.index;
+    if (i == 0 || i != state.files.length - 1) {
       // Do nothing to prevent out of bounds
     } else {
-      index--;
+      i--;
     }
 
     emit(
       state.copyWith(
         files: files,
-        index: index,
+        index: i,
       ),
     );
   }
 
-  Future<void> _onCacheFilesRemoved(
-    RemovedCacheFilesEvent event,
-    Emitter<SendFilesState> _,
-  ) async {
+  Future<void> removeCacheFiles() async {
     if (_shouldIgnoreDeletionRequest) {
       _log.finest('Ignoring RemovedCacheFilesEvent.');
       _shouldIgnoreDeletionRequest = false;

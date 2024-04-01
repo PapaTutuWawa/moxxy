@@ -11,7 +11,7 @@ import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences.dart';
-import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sendfiles.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
 part 'share_selection_bloc.freezed.dart';
@@ -223,23 +223,21 @@ class ShareSelectionBloc
       // ...and put the app back into the background
       await MoveToBackground.moveTaskToBack();
     } else {
-      GetIt.I.get<SendFilesBloc>().add(
-            SendFilesPageRequestedEvent(
-              state.selection.map((i) {
-                final item = state.items[i];
-                return SendFilesRecipient(
-                  item.jid,
-                  item.title,
-                  item.avatarPath,
-                  item.avatarHash,
-                  item.contactId != null,
-                );
-              }).toList(),
-              // TODO(PapaTutuWawa): Fix
-              SendFilesType.media,
-              paths: state.paths,
-              popEntireStack: true,
-            ),
+      await GetIt.I.get<SendFilesCubit>().request(
+            state.selection.map((i) {
+              final item = state.items[i];
+              return SendFilesRecipient(
+                item.jid,
+                item.title,
+                item.avatarPath,
+                item.avatarHash,
+                item.contactId != null,
+              );
+            }).toList(),
+            // TODO(PapaTutuWawa): Fix
+            SendFilesType.media,
+            paths: state.paths,
+            popEntireStack: true,
           );
 
       _resetState(emit);

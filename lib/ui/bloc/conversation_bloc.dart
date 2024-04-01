@@ -8,7 +8,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sendfiles.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/conversation/conversation.dart';
 
@@ -144,40 +144,36 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     ImagePickerRequestedEvent event,
     Emitter<ConversationState> emit,
   ) async {
-    GetIt.I.get<SendFilesBloc>().add(
-          SendFilesPageRequestedEvent(
-            [
-              SendFilesRecipient(
-                state.conversation!.jid,
-                state.conversation!.titleWithOptionalContact,
-                state.conversation!.avatarPath,
-                state.conversation!.avatarHash,
-                state.conversation!.contactId != null,
-              ),
-            ],
-            SendFilesType.media,
-          ),
-        );
+    return GetIt.I.get<SendFilesCubit>().request(
+      [
+        SendFilesRecipient(
+          state.conversation!.jid,
+          state.conversation!.titleWithOptionalContact,
+          state.conversation!.avatarPath,
+          state.conversation!.avatarHash,
+          state.conversation!.contactId != null,
+        ),
+      ],
+      SendFilesType.media,
+    );
   }
 
   Future<void> _onFilePickerRequested(
     FilePickerRequestedEvent event,
     Emitter<ConversationState> emit,
   ) async {
-    GetIt.I.get<SendFilesBloc>().add(
-          SendFilesPageRequestedEvent(
-            [
-              SendFilesRecipient(
-                state.conversation!.jid,
-                state.conversation!.titleWithOptionalContact,
-                state.conversation!.avatarPath,
-                state.conversation!.avatarHash,
-                state.conversation!.contactId != null,
-              ),
-            ],
-            SendFilesType.generic,
-          ),
-        );
+    return GetIt.I.get<SendFilesCubit>().request(
+      [
+        SendFilesRecipient(
+          state.conversation!.jid,
+          state.conversation!.titleWithOptionalContact,
+          state.conversation!.avatarPath,
+          state.conversation!.avatarHash,
+          state.conversation!.contactId != null,
+        ),
+      ],
+      SendFilesType.generic,
+    );
   }
 
   Future<void> _onOmemoSet(

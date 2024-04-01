@@ -67,12 +67,12 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
 
     // Handle requesting permissions
     GetIt.I.get<RequestCubit>().setRequests(
-          [
-            if (result.requestNotificationPermission) Request.notifications,
-            if (result.excludeFromBatteryOptimisation)
-              Request.batterySavingExcemption,
-          ],
-        );
+      [
+        if (result.requestNotificationPermission) Request.notifications,
+        if (result.excludeFromBatteryOptimisation)
+          Request.batterySavingExcemption,
+      ],
+    );
 
     // Handle (direct) shares
     final sharing = GetIt.I.get<UISharingService>();
