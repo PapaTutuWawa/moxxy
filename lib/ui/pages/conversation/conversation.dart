@@ -24,6 +24,7 @@ import 'package:moxxyv2/ui/service/read.dart';
 import 'package:moxxyv2/ui/state/account.dart';
 import 'package:moxxyv2/ui/state/conversation.dart';
 import 'package:moxxyv2/ui/state/conversations.dart';
+import 'package:moxxyv2/ui/state/navigation.dart';
 import 'package:moxxyv2/ui/state/sendfiles.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/bubbles.dart';
@@ -33,6 +34,7 @@ import 'package:moxxyv2/ui/widgets/chat/typing_indicator.dart';
 import 'package:moxxyv2/ui/widgets/combined_picker.dart';
 import 'package:moxxyv2/ui/widgets/context_menu.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/messaging_textfield.dart';
+import 'package:moxxyv2/ui/widgets/quirks/pop_scope.dart';
 import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
 
@@ -111,6 +113,8 @@ class ConversationPageState extends State<ConversationPage>
 
   final Map<String, GlobalKey> _messageKeys = {};
 
+  final ValueNotifier<bool> _canPopNotifier = ValueNotifier(true);
+
   @override
   void initState() {
     super.initState();
@@ -122,6 +126,8 @@ class ConversationPageState extends State<ConversationPage>
       _textfieldFocusNode,
       initialText: widget.initialText,
     );
+    _conversationController.messagingController.isRecordingNotifier
+        .addListener(_onRecordingStateChanged);
     _conversationController.fetchOlderData();
 
     // Tabbing inside the combined picker
@@ -167,6 +173,8 @@ class ConversationPageState extends State<ConversationPage>
   void dispose() {
     // Controllers
     _tabController.dispose();
+    _conversationController.messagingController.isRecordingNotifier
+        .removeListener(_onRecordingStateChanged);
     _conversationController.dispose();
     _keyboardController.dispose();
 
@@ -177,6 +185,11 @@ class ConversationPageState extends State<ConversationPage>
     _scrollToBottomAnimationController.dispose();
     _scrolledToBottomStateSubscription.cancel();
     super.dispose();
+  }
+
+  void _onRecordingStateChanged() {
+    _canPopNotifier.value =
+        !_conversationController.messagingController.isRecordingNotifier.value;
   }
 
   /// Called when we should show or hide the "scroll to bottom" button.
@@ -325,6 +338,7 @@ class ConversationPageState extends State<ConversationPage>
 
         // Dismiss the soft-keyboard
         dismissSoftKeyboard(context);
+        _canPopNotifier.value = false;
 
         // Start the actual animation
         _selectionController.selectMessage(
@@ -365,12 +379,11 @@ class ConversationPageState extends State<ConversationPage>
   @override
   Widget build(BuildContext context) {
     final maxWidth = MediaQuery.of(context).size.width * 0.6;
-    return PopScope(
-      canPop: !_keyboardController.currentData.visible &&
-          !_keyboardController.currentData.showWidget &&
-          !_conversationController
-              .messagingController.isRecordingNotifier.value,
-      onPopInvoked: (didPop) {
+    return PopScopeNotifier(
+      canPopNotifier: _canPopNotifier,
+      onPopInvoked: (didPop) async {
+        final wasRecording = _conversationController
+            .messagingController.isRecordingNotifier.value;
         if (_keyboardController.currentData.visible) {
           // If the keyboard is open, dismiss it.
           dismissSoftKeyboard(context);
@@ -380,11 +393,9 @@ class ConversationPageState extends State<ConversationPage>
           _keyboardController.hideWidget();
           _textfieldFocusNode.unfocus();
           return;
-        } else if (_conversationController
-            .messagingController.isRecordingNotifier.value) {
-          // TODO: How are we handling this?
+        } else if (wasRecording) {
           // If we are recording a voice message, ask if we should continue or discard it.
-          /*final result = await showConfirmationDialog(
+          final result = await showConfirmationDialog(
             t.pages.conversation.voiceRecording.leaveConfirmation.title,
             t.pages.conversation.voiceRecording.leaveConfirmation.body,
             context,
@@ -394,8 +405,8 @@ class ConversationPageState extends State<ConversationPage>
                 t.pages.conversation.voiceRecording.leaveConfirmation.negative,
           );
           if (!result) {
-            return false;
-          }*/
+            return;
+          }
 
           // Cancel the recording
           _conversationController.messagingController.cancelRecording();
@@ -405,12 +416,17 @@ class ConversationPageState extends State<ConversationPage>
         GetIt.I.get<UIReadMarkerService>().clear();
 
         // Tell the backend that the chat is no longer open
-        GetIt.I.get<ConversationsCubit>().exitConversation(
+        await GetIt.I.get<ConversationsCubit>().exitConversation(
               widget.conversationType,
             );
+
+        if (wasRecording) {
+          GetIt.I.get<Navigation>().pop();
+        }
       },
       child: KeyboardReplacerScaffold(
         controller: _keyboardController,
+        canPop: _canPopNotifier,
         keyboardWidget: CombinedPicker(
           tabController: _tabController,
           onEmojiTapped: (emoji) {

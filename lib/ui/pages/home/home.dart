@@ -13,6 +13,7 @@ import 'package:moxxyv2/ui/request_dialog.dart';
 import 'package:moxxyv2/ui/state/account.dart';
 import 'package:moxxyv2/ui/state/conversation.dart';
 import 'package:moxxyv2/ui/state/conversations.dart';
+import 'package:moxxyv2/ui/state/navigation.dart';
 import 'package:moxxyv2/ui/state/request.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/context_menu.dart';
@@ -347,7 +348,7 @@ class ConversationsPageState extends State<ConversationsPage>
   Widget build(BuildContext context) {
     final cubit = context.read<ConversationsCubit>();
     return PopScope(
-      canPop: _overlayEntry == null || !cubit.state.searchOpen,
+      canPop: false,
       onPopInvoked: (_) {
         if (_overlayEntry != null) {
           _dismissOverlay();
@@ -358,6 +359,8 @@ class ConversationsPageState extends State<ConversationsPage>
           cubit.closeSearchBar();
           return;
         }
+
+        GetIt.I.get<Navigation>().popWithSystemNavigator();
       },
       child: PostBuildWidget(
         postBuild: () async {
