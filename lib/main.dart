@@ -23,7 +23,7 @@ import 'package:moxxyv2/ui/bloc/login.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/own_devices_bloc.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/bloc/preferences.dart';
 import 'package:moxxyv2/ui/bloc/profile.dart';
 import 'package:moxxyv2/ui/bloc/request_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
@@ -108,7 +108,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<ConversationBloc>(ConversationBloc());
   GetIt.I.registerSingleton<BlocklistCubit>(BlocklistCubit());
   GetIt.I.registerSingleton<ProfileCubit>(ProfileCubit());
-  GetIt.I.registerSingleton<PreferencesBloc>(PreferencesBloc());
+  GetIt.I.registerSingleton<PreferencesCubit>(PreferencesCubit());
   GetIt.I.registerSingleton<StartChatBloc>(StartChatBloc());
   GetIt.I.registerSingleton<CropCubit>(CropCubit());
   GetIt.I.registerSingleton<SendFilesBloc>(SendFilesBloc());
@@ -162,8 +162,8 @@ void main() async {
         BlocProvider<ProfileCubit>(
           create: (_) => GetIt.I.get<ProfileCubit>(),
         ),
-        BlocProvider<PreferencesBloc>(
-          create: (_) => GetIt.I.get<PreferencesBloc>(),
+        BlocProvider<PreferencesCubit>(
+          create: (_) => GetIt.I.get<PreferencesCubit>(),
         ),
         BlocProvider<StartChatBloc>(
           create: (_) => GetIt.I.get<StartChatBloc>(),

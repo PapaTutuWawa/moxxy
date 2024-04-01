@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/bloc/preferences.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/settings/privacy/redirect_dialog.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
@@ -28,7 +28,7 @@ class RedirectSettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PreferencesBloc, PreferencesState>(
+    return BlocBuilder<PreferencesCubit, PreferencesState>(
       builder: (context, state) => SettingsRow(
         title:
             t.pages.settings.privacy.redirectsTitle(serviceName: serviceName),
@@ -41,9 +41,9 @@ class RedirectSettingsTile extends StatelessWidget {
             context: context,
             builder: (BuildContext context) => RedirectDialog(
               (value) {
-                context
-                    .read<PreferencesBloc>()
-                    .add(PreferencesChangedEvent(setProxy(state, value)));
+                context.read<PreferencesCubit>().change(
+                      setProxy(state, value),
+                    );
               },
               serviceName,
               getProxy(state),
@@ -63,9 +63,7 @@ class RedirectSettingsTile extends StatelessWidget {
               return;
             }
 
-            context
-                .read<PreferencesBloc>()
-                .add(PreferencesChangedEvent(setEnabled(state, value)));
+            context.read<PreferencesCubit>().change(setEnabled(state, value));
           },
         ),
       ),

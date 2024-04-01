@@ -5,7 +5,7 @@ import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/shared/models/groupchat.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/bloc/preferences.dart';
 
 part 'conversation.freezed.dart';
 part 'conversation.g.dart';
@@ -235,10 +235,10 @@ class Conversation with _$Conversation {
   }
 
   /// This getter is a short-hand for [getAvatarPathWithOptionalContact] with the
-  /// contact integration enablement status extracted from the [PreferencesBloc].
+  /// contact integration enablement status extracted from the [PreferencesCubit].
   /// NOTE: This method only works in the UI.
   String? get avatarPathWithOptionalContact => getAvatarPathWithOptionalContact(
-        GetIt.I.get<PreferencesBloc>().state.enableContactIntegration,
+        GetIt.I.get<PreferencesCubit>().state.enableContactIntegration,
       );
 
   /// This getter is a short-hand for [getAvatarPathWithOptionalContact] with the
@@ -262,10 +262,10 @@ class Conversation with _$Conversation {
   }
 
   /// This getter is a short-hand for [getTitleWithOptionalContact] with the
-  /// contact integration enablement status extracted from the [PreferencesBloc].
+  /// contact integration enablement status extracted from the [PreferencesCubit].
   /// NOTE: This method only works in the UI.
   String get titleWithOptionalContact => getTitleWithOptionalContact(
-        GetIt.I.get<PreferencesBloc>().state.enableContactIntegration,
+        GetIt.I.get<PreferencesCubit>().state.enableContactIntegration,
       );
 
   /// This getter is a short-hand for [getTitleWithOptionalContact] with the

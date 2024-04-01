@@ -9,7 +9,7 @@ import 'package:moxxyv2/ui/bloc/account.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/bloc/preferences.dart';
 import 'package:moxxyv2/ui/bloc/request_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -25,11 +25,9 @@ Future<void> _requestPermissions() async {
 
 /// Handler for when we received a [PreStartDoneEvent].
 Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
-  GetIt.I.get<PreferencesBloc>().add(
-        PreferencesChangedEvent(
-          result.preferences,
-          notify: false,
-        ),
+  await GetIt.I.get<PreferencesCubit>().change(
+        result.preferences,
+        notify: false,
       );
 
   WidgetsFlutterBinding.ensureInitialized();

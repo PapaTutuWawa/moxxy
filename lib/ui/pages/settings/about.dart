@@ -4,7 +4,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/version.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/bloc/preferences.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -49,7 +49,7 @@ class SettingsAboutPageState extends State<SettingsAboutPage> {
         padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
         child: Column(
           children: [
-            BlocBuilder<PreferencesBloc, PreferencesState>(
+            BlocBuilder<PreferencesCubit, PreferencesState>(
               buildWhen: (prev, next) =>
                   prev.showDebugMenu != next.showDebugMenu,
               builder: (context, state) => InkWell(
@@ -69,11 +69,9 @@ class SettingsAboutPageState extends State<SettingsAboutPage> {
 
                   _counter++;
                   if (_counter == 10) {
-                    context.read<PreferencesBloc>().add(
-                          PreferencesChangedEvent(
-                            state.copyWith(
-                              showDebugMenu: true,
-                            ),
+                    await context.read<PreferencesCubit>().change(
+                          state.copyWith(
+                            showDebugMenu: true,
                           ),
                         );
 

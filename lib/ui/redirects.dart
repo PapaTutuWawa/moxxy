@@ -1,5 +1,5 @@
 import 'package:get_it/get_it.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/bloc/preferences.dart';
 
 /// Taken from https://github.com/SimonBrazell/privacy-redirect/blob/master/src/assets/javascripts/helpers/youtube.js
 const _youtubeHosts = [
@@ -28,7 +28,7 @@ const _twitterHosts = [
 /// redirect is disabled, just return [uri].
 Uri redirectUrl(Uri uri) {
   // Check for Youtube links
-  final bloc = GetIt.I.get<PreferencesBloc>();
+  final bloc = GetIt.I.get<PreferencesCubit>();
   if (bloc.state.enableYoutubeRedirect) {
     if (_youtubeHosts.contains(uri.host)) {
       return uri.replace(host: bloc.state.youtubeRedirect);

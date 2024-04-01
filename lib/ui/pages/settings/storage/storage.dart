@@ -9,7 +9,7 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as nav;
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/bloc/preferences.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/storage_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -162,7 +162,7 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
       appBar: AppBar(
         title: Text(t.pages.settings.storage.title),
       ),
-      body: BlocBuilder<PreferencesBloc, PreferencesState>(
+      body: BlocBuilder<PreferencesCubit, PreferencesState>(
         builder: (context, state) => ListView(
           children: [
             Padding(

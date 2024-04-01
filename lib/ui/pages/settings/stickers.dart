@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/bloc/preferences.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
@@ -35,7 +35,7 @@ class StickersSettingsPage extends StatelessWidget {
                 appBar: AppBar(
                   title: Text(t.pages.settings.stickers.title),
                 ),
-                body: BlocBuilder<PreferencesBloc, PreferencesState>(
+                body: BlocBuilder<PreferencesCubit, PreferencesState>(
                   builder: (_, prefs) => Padding(
                     padding: EdgeInsets.zero,
                     child: ListView(
@@ -48,11 +48,9 @@ class StickersSettingsPage extends StatelessWidget {
                           suffix: Switch(
                             value: prefs.enableStickers,
                             onChanged: (value) {
-                              context.read<PreferencesBloc>().add(
-                                    PreferencesChangedEvent(
-                                      prefs.copyWith(
-                                        enableStickers: value,
-                                      ),
+                              context.read<PreferencesCubit>().change(
+                                    prefs.copyWith(
+                                      enableStickers: value,
                                     ),
                                   );
                             },
@@ -65,11 +63,9 @@ class StickersSettingsPage extends StatelessWidget {
                           suffix: Switch(
                             value: prefs.autoDownloadStickersFromContacts,
                             onChanged: (value) {
-                              context.read<PreferencesBloc>().add(
-                                    PreferencesChangedEvent(
-                                      prefs.copyWith(
-                                        autoDownloadStickersFromContacts: value,
-                                      ),
+                              context.read<PreferencesCubit>().change(
+                                    prefs.copyWith(
+                                      autoDownloadStickersFromContacts: value,
                                     ),
                                   );
                             },

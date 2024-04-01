@@ -63,7 +63,8 @@ class Login extends StatelessWidget {
                       padding: const EdgeInsetsDirectional.only(end: 8),
                       child: InkWell(
                         onTap: () => context
-                            .read<LoginCubit>().onPasswordVisibilityToggled(),
+                            .read<LoginCubit>()
+                            .onPasswordVisibilityToggled(),
                         child: Icon(
                           state.passwordVisible
                               ? Icons.visibility

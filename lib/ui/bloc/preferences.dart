@@ -14,50 +14,41 @@ import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
-part 'preferences_event.dart';
-
-class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
-  PreferencesBloc()
+class PreferencesCubit extends Cubit<PreferencesState> {
+  PreferencesCubit()
       : _log = Logger('PreferencesBloc'),
-        super(PreferencesState()) {
-    on<PreferencesChangedEvent>(_onPreferencesChanged);
-    on<SignedOutEvent>(_onSignedOut);
-    on<BackgroundImageSetEvent>(_onBackgroundImageSet);
-  }
+        super(PreferencesState());
   final Logger _log;
 
-  Future<void> _onPreferencesChanged(
-    PreferencesChangedEvent event,
-    Emitter<PreferencesState> emit,
-  ) async {
-    if (event.notify) {
+  Future<void> change(
+    PreferencesState preferences, {
+    bool notify = true,
+  }) async {
+    if (notify) {
       await getForegroundService().send(
         SetPreferencesCommand(
-          preferences: event.preferences,
+          preferences: preferences,
         ),
         awaitable: false,
       );
     }
 
     // Notify the conversation UI if we changed the background
-    if (event.preferences.backgroundPath != state.backgroundPath) {
+    if (preferences.backgroundPath != state.backgroundPath) {
       GetIt.I.get<ConversationBloc>().add(
-            BackgroundChangedEvent(event.preferences.backgroundPath),
+            BackgroundChangedEvent(preferences.backgroundPath),
           );
     }
 
     if (!kDebugMode) {
-      final enableDebug = event.preferences.debugEnabled;
+      final enableDebug = preferences.debugEnabled;
       Logger.root.level = enableDebug ? Level.ALL : Level.INFO;
     }
 
-    emit(event.preferences);
+    emit(preferences);
   }
 
-  Future<void> _onSignedOut(
-    SignedOutEvent event,
-    Emitter<PreferencesState> emit,
-  ) async {
+  Future<void> signOut() async {
     // TODO(Unknown): Only remove the current account
     GetIt.I.get<AccountCubit>().clearAccounts();
     await getForegroundService().send(
@@ -78,19 +69,16 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
         );
   }
 
-  Future<void> _onBackgroundImageSet(
-    BackgroundImageSetEvent event,
-    Emitter<PreferencesState> emit,
-  ) async {
+  Future<void> setBackgroundImage(String path) async {
     if (state.backgroundPath != null) {
       // Invalidate the old entry
       _log.finest('Invalidating cache entry for ${state.backgroundPath}');
       await FileImage(File(state.backgroundPath!)).evict();
     }
 
-    add(
-      PreferencesChangedEvent(
-        state.copyWith(backgroundPath: event.backgroundPath),
+    await change(
+      state.copyWith(
+        backgroundPath: path,
       ),
     );
   }

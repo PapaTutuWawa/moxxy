@@ -10,7 +10,7 @@ import 'package:moxxyv2/shared/models/roster.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/bloc/preferences.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
@@ -54,7 +54,7 @@ class ShareListItem {
   /// Either returns the contact's title (if available), then the item title if the contact
   /// integration is enabled. If not, just returns the item title.
   String get titleWithOptionalContact {
-    if (GetIt.I.get<PreferencesBloc>().state.enableContactIntegration) {
+    if (GetIt.I.get<PreferencesCubit>().state.enableContactIntegration) {
       return contactDisplayName ?? title;
     }
 
@@ -122,7 +122,7 @@ class ShareSelectionBloc
             rosterItem.title,
             false,
             null,
-            GetIt.I.get<PreferencesBloc>().state.enableOmemoByDefault,
+            GetIt.I.get<PreferencesCubit>().state.enableOmemoByDefault,
             rosterItem.pseudoRosterItem,
             rosterItem.contactId,
             rosterItem.contactAvatarPath,

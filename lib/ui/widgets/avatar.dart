@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/ui/bloc/account.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/bloc/preferences.dart';
 import 'package:moxxyv2/ui/service/avatars.dart';
 import 'package:moxxyv2/ui/theme.dart';
 
@@ -83,7 +83,7 @@ class CachingXMPPAvatar extends StatefulWidget {
 class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
   void _performRequest() {
     // Only request the avatar if we don't have a contact integration avatar already.
-    if (!GetIt.I.get<PreferencesBloc>().state.enableContactIntegration ||
+    if (!GetIt.I.get<PreferencesCubit>().state.enableContactIntegration ||
         !widget.hasContactId) {
       GetIt.I.get<UIAvatarsService>().requestAvatarIfRequired(
             widget.jid,
@@ -267,7 +267,7 @@ class SquircleCachingXMPPAvatar extends StatefulWidget {
 class SquircleCachingXMPPAvatarState extends State<SquircleCachingXMPPAvatar> {
   void _performRequest() {
     // Only request the avatar if we don't have a contact integration avatar already.
-    if (!GetIt.I.get<PreferencesBloc>().state.enableContactIntegration ||
+    if (!GetIt.I.get<PreferencesCubit>().state.enableContactIntegration ||
         !widget.hasContactId) {
       GetIt.I.get<UIAvatarsService>().requestAvatarIfRequired(
             widget.jid,

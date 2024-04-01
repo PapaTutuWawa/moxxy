@@ -6,7 +6,7 @@ import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/bloc/preferences.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
@@ -59,10 +59,8 @@ class ConversationSettingsPage extends StatelessWidget {
     // TODO(PapaTutuWawa): Invalidate the cache
 
     // ignore: use_build_context_synchronously
-    context.read<PreferencesBloc>().add(
-          PreferencesChangedEvent(
-            state.copyWith(backgroundPath: null),
-          ),
+    await context.read<PreferencesCubit>().change(
+          state.copyWith(backgroundPath: null),
         );
   }
 
@@ -72,7 +70,7 @@ class ConversationSettingsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(t.pages.settings.conversation.title),
       ),
-      body: BlocBuilder<PreferencesBloc, PreferencesState>(
+      body: BlocBuilder<PreferencesCubit, PreferencesState>(
         builder: (context, state) => ListView(
           children: [
             SectionTitle(t.pages.settings.conversation.appearance),
@@ -126,10 +124,8 @@ class ConversationSettingsPage extends StatelessWidget {
                   }
 
                   // ignore: use_build_context_synchronously
-                  context.read<PreferencesBloc>().add(
-                        PreferencesChangedEvent(
-                          state.copyWith(enableContactIntegration: value),
-                        ),
+                  await context.read<PreferencesCubit>().change(
+                        state.copyWith(enableContactIntegration: value),
                       );
                 },
               ),
@@ -140,10 +136,8 @@ class ConversationSettingsPage extends StatelessWidget {
               suffix: Switch(
                 value: state.defaultMuteState,
                 onChanged: (value) {
-                  context.read<PreferencesBloc>().add(
-                        PreferencesChangedEvent(
-                          state.copyWith(defaultMuteState: value),
-                        ),
+                  context.read<PreferencesCubit>().change(
+                        state.copyWith(defaultMuteState: value),
                       );
                 },
               ),
@@ -153,10 +147,8 @@ class ConversationSettingsPage extends StatelessWidget {
               suffix: Switch(
                 value: state.enableOmemoByDefault,
                 onChanged: (value) {
-                  context.read<PreferencesBloc>().add(
-                        PreferencesChangedEvent(
-                          state.copyWith(enableOmemoByDefault: value),
-                        ),
+                  context.read<PreferencesCubit>().change(
+                        state.copyWith(enableOmemoByDefault: value),
                       );
                 },
               ),
