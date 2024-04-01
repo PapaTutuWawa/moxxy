@@ -7,22 +7,20 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
-part 'blocklist_bloc.freezed.dart';
-part 'blocklist_event.dart';
-part 'blocklist_state.dart';
+part 'blocklist.freezed.dart';
 
-class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
-  BlocklistBloc() : super(BlocklistState()) {
-    on<BlocklistRequestedEvent>(_onBlocklistRequested);
-    on<UnblockedJidEvent>(_onJidUnblocked);
-    on<UnblockedAllEvent>(_onUnblockedAll);
-    on<BlocklistPushedEvent>(_onBlocklistPushed);
-  }
+@freezed
+class BlocklistState with _$BlocklistState {
+  factory BlocklistState({
+    @Default(<String>[]) List<String> blocklist,
+    @Default(false) bool isWorking,
+  }) = _BlocklistState;
+}
 
-  Future<void> _onBlocklistRequested(
-    BlocklistRequestedEvent event,
-    Emitter<BlocklistState> emit,
-  ) async {
+class BlocklistCubit extends Cubit<BlocklistState> {
+  BlocklistCubit() : super(BlocklistState());
+
+  Future<void> requestBlocklist() async {
     final mustDoWork = state.blocklist.isEmpty;
 
     if (mustDoWork) {
@@ -54,25 +52,20 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
     }
   }
 
-  Future<void> _onJidUnblocked(
-    UnblockedJidEvent event,
-    Emitter<BlocklistState> emit,
+  Future<void> unblockJid(
+    String jid,
   ) async {
     await getForegroundService().send(
       UnblockJidCommand(
-        jid: event.jid,
+        jid: jid,
       ),
     );
 
-    final blocklist =
-        state.blocklist.where((String i) => i != event.jid).toList();
+    final blocklist = state.blocklist.where((String i) => i != jid).toList();
     emit(state.copyWith(blocklist: blocklist));
   }
 
-  Future<void> _onUnblockedAll(
-    UnblockedAllEvent event,
-    Emitter<BlocklistState> emit,
-  ) async {
+  Future<void> unblockAll() async {
     await getForegroundService().send(
       UnblockAllCommand(),
     );
@@ -82,15 +75,14 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
     );
   }
 
-  Future<void> _onBlocklistPushed(
-    BlocklistPushedEvent event,
-    Emitter<BlocklistState> emit,
+  Future<void> blocklistPushed(
+    List<String> added,
+    List<String> removed,
   ) async {
-    final blocklist = state.blocklist..addAll(event.added);
+    final blocklist = state.blocklist..addAll(added);
     emit(
       state.copyWith(
-        blocklist:
-            blocklist.where((String i) => !event.removed.contains(i)).toList(),
+        blocklist: blocklist.where((String i) => !removed.contains(i)).toList(),
       ),
     );
   }

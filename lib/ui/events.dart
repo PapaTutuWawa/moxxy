@@ -8,7 +8,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
-import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart' as blocklist;
+import 'package:moxxyv2/ui/bloc/blocklist.dart' as blocklist;
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
 import 'package:moxxyv2/ui/bloc/conversations.dart' as conversations;
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart' as new_conversation;
@@ -120,11 +120,9 @@ Future<void> onBlocklistPushed(
   BlocklistPushEvent event, {
   dynamic extra,
 }) async {
-  GetIt.I.get<blocklist.BlocklistBloc>().add(
-        blocklist.BlocklistPushedEvent(
-          event.added,
-          event.removed,
-        ),
+  return GetIt.I.get<blocklist.BlocklistCubit>().blocklistPushed(
+        event.added,
+        event.removed,
       );
 }
 

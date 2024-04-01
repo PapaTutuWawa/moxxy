@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart';
+import 'package:moxxyv2/ui/bloc/blocklist.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -101,9 +101,7 @@ class SettingsPage extends StatelessWidget {
                 child: Icon(Icons.block),
               ),
               onTap: () {
-                GetIt.I.get<BlocklistBloc>().add(
-                      BlocklistRequestedEvent(),
-                    );
+                GetIt.I.get<BlocklistCubit>().requestBlocklist();
               },
             ),
             SectionTitle(t.pages.settings.settings.accountSection),
