@@ -11,20 +11,24 @@ import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:path/path.dart' as path;
 
-part 'cropbackground_bloc.freezed.dart';
-part 'cropbackground_event.dart';
-part 'cropbackground_state.dart';
+part 'cropbackground.freezed.dart';
 
-class CropBackgroundBloc
-    extends Bloc<CropBackgroundEvent, CropBackgroundState> {
-  CropBackgroundBloc() : super(CropBackgroundState()) {
-    on<CropBackgroundRequestedEvent>(_onRequested);
-    on<CropBackgroundResetEvent>(_onReset);
-    on<BlurToggledEvent>(_onBlurToggled);
-    on<BackgroundSetEvent>(_onBackgroundSet);
-  }
+@freezed
+class CropBackgroundState with _$CropBackgroundState {
+  factory CropBackgroundState({
+    String? imagePath,
+    @Default(null) Uint8List? image,
+    @Default(false) bool blurEnabled,
+    @Default(0) int imageHeight,
+    @Default(0) int imageWidth,
+    @Default(false) bool isWorking,
+  }) = _CropBackgroundState;
+}
 
-  void _resetState(Emitter<CropBackgroundState> emit) {
+class CropBackgroundCubit extends Cubit<CropBackgroundState> {
+  CropBackgroundCubit() : super(CropBackgroundState());
+
+  void _resetState() {
     emit(
       state.copyWith(
         image: null,
@@ -37,12 +41,9 @@ class CropBackgroundBloc
     );
   }
 
-  Future<void> _onRequested(
-    CropBackgroundRequestedEvent event,
-    Emitter<CropBackgroundState> emit,
-  ) async {
+  Future<void> request(String path) async {
     // Navigate to the page
-    _resetState(emit);
+    _resetState();
 
     GetIt.I.get<NavigationBloc>().add(
           PushedNamedEvent(
@@ -50,35 +51,32 @@ class CropBackgroundBloc
           ),
         );
 
-    final data = await File(event.path).readAsBytes();
+    final data = await File(path).readAsBytes();
     final imageSize = (await getImageSizeFromData(data))!;
     emit(
       state.copyWith(
         image: data,
-        imagePath: event.path,
+        imagePath: path,
         imageWidth: imageSize.width.toInt(),
         imageHeight: imageSize.height.toInt(),
       ),
     );
   }
 
-  Future<void> _onReset(
-    CropBackgroundResetEvent event,
-    Emitter<CropBackgroundState> emit,
-  ) async {
-    _resetState(emit);
+  void reset() {
+    _resetState();
   }
 
-  Future<void> _onBlurToggled(
-    BlurToggledEvent event,
-    Emitter<CropBackgroundState> emit,
-  ) async {
+  void toggleBlur() {
     emit(state.copyWith(blurEnabled: !state.blurEnabled));
   }
 
-  Future<void> _onBackgroundSet(
-    BackgroundSetEvent event,
-    Emitter<CropBackgroundState> emit,
+  Future<void> setBackground(
+    double x,
+    double y,
+    double q,
+    double viewportHeight,
+    double viewportWidth,
   ) async {
     emit(state.copyWith(isWorking: true));
 
@@ -86,9 +84,9 @@ class CropBackgroundBloc
     final backgroundPath = path.join(appDir, 'background_image.png');
 
     // Compute values for cropping the image.
-    final inverse = 1 / event.q;
-    final xp = (event.x.abs() * inverse).toInt();
-    final yp = (event.y.abs() * inverse).toInt();
+    final inverse = 1 / q;
+    final xp = (x.abs() * inverse).toInt();
+    final yp = (y.abs() * inverse).toInt();
 
     // Compute the crop and optional blur.
     final cmd = Command()
@@ -96,8 +94,8 @@ class CropBackgroundBloc
       ..copyCrop(
         x: xp,
         y: yp,
-        width: (event.viewportWidth * inverse).toInt(),
-        height: (event.viewportHeight * inverse).toInt(),
+        width: (viewportWidth * inverse).toInt(),
+        height: (viewportHeight * inverse).toInt(),
       );
     if (state.blurEnabled) {
       cmd.gaussianBlur(radius: 10);
@@ -105,7 +103,7 @@ class CropBackgroundBloc
     cmd.writeToFile(backgroundPath);
     await cmd.executeThread();
 
-    _resetState(emit);
+    _resetState();
 
     GetIt.I.get<PreferencesBloc>().add(BackgroundImageSetEvent(backgroundPath));
     GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());

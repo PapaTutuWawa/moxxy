@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
+import 'package:moxxyv2/ui/bloc/cropbackground.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -85,8 +85,8 @@ class ConversationSettingsPage extends StatelessWidget {
 
                 if (backgroundPath != null) {
                   // ignore: use_build_context_synchronously
-                  context.read<CropBackgroundBloc>().add(
-                        CropBackgroundRequestedEvent(backgroundPath),
+                  await context.read<CropBackgroundCubit>().request(
+                        backgroundPath,
                       );
                 }
               },

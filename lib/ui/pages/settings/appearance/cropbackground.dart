@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
+import 'package:moxxyv2/ui/bloc/cropbackground.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/backdrop_spinner.dart';
@@ -87,15 +87,13 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CropBackgroundBloc, CropBackgroundState>(
+    return BlocBuilder<CropBackgroundCubit, CropBackgroundState>(
       builder: (BuildContext context, CropBackgroundState state) {
         return PopScope(
           canPop: !state.isWorking,
           onPopInvoked: (didPop) {
             if (didPop) {
-              context
-                  .read<CropBackgroundBloc>()
-                  .add(CropBackgroundResetEvent());
+              context.read<CropBackgroundCubit>().reset();
             }
           },
           child: SafeArea(
@@ -112,9 +110,7 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                     color: const Color.fromRGBO(0, 0, 0, 0),
                     child: CancelButton(
                       onPressed: () {
-                        context
-                            .read<CropBackgroundBloc>()
-                            .add(CropBackgroundResetEvent());
+                        context.read<CropBackgroundCubit>().reset();
                         context.read<NavigationBloc>().add(PoppedRouteEvent());
                       },
                     ),
@@ -143,8 +139,8 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                                 if (state.isWorking) return;
 
                                 context
-                                    .read<CropBackgroundBloc>()
-                                    .add(BlurToggledEvent());
+                                    .read<CropBackgroundCubit>()
+                                    .toggleBlur();
                               },
                             ),
                           ],
@@ -173,14 +169,14 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                                     ? 1.0
                                     : value.entry(0, 0);
 
-                                context.read<CropBackgroundBloc>().add(
-                                      BackgroundSetEvent(
-                                        translation.x,
-                                        translation.y,
-                                        scale,
-                                        MediaQuery.of(context).size.height,
-                                        MediaQuery.of(context).size.width,
-                                      ),
+                                context
+                                    .read<CropBackgroundCubit>()
+                                    .setBackground(
+                                      translation.x,
+                                      translation.y,
+                                      scale,
+                                      MediaQuery.of(context).size.height,
+                                      MediaQuery.of(context).size.width,
                                     );
                               },
                         child: Text(t.pages.cropbackground.setAsBackground),
