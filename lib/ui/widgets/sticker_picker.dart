@@ -8,7 +8,7 @@ import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as nav;
 import 'package:moxxyv2/ui/bloc/sticker_pack.dart';
-import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
+import 'package:moxxyv2/ui/bloc/stickers.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/sticker_pack_controller.dart';
 
@@ -77,7 +77,7 @@ class StickerPickerState extends State<StickerPicker> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<StickersBloc, StickersState>(
+    return BlocBuilder<StickersCubit, StickersState>(
       builder: (context, state) {
         return Padding(
           padding: const EdgeInsets.only(top: 16),

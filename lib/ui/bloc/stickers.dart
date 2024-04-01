@@ -9,38 +9,51 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/ui/controller/sticker_pack_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 
-part 'stickers_bloc.freezed.dart';
-part 'stickers_event.dart';
-part 'stickers_state.dart';
+part 'stickers.freezed.dart';
 
-class StickersBloc extends Bloc<StickersEvent, StickersState> {
-  StickersBloc() : super(StickersState()) {
-    on<StickerPackRemovedEvent>(_onStickerPackRemoved);
-    on<StickerPackImportedEvent>(_onStickerPackImported);
+@immutable
+class StickerKey {
+  const StickerKey(this.packId, this.stickerHashKey);
+  final String packId;
+  final String stickerHashKey;
+
+  @override
+  int get hashCode => packId.hashCode ^ stickerHashKey.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    return other is StickerKey &&
+        other.packId == packId &&
+        other.stickerHashKey == stickerHashKey;
   }
+}
 
-  Future<void> _onStickerPackRemoved(
-    StickerPackRemovedEvent event,
-    Emitter<StickersState> emit,
-  ) async {
+@freezed
+class StickersState with _$StickersState {
+  factory StickersState({
+    @Default(false) bool isImportRunning,
+  }) = _StickersState;
+}
+
+class StickersCubit extends Cubit<StickersState> {
+  StickersCubit() : super(StickersState());
+
+  Future<void> remove(String stickerPackId) async {
     // Remove from the UI
     BidirectionalStickerPackController.instance?.removeItem(
-      (stickerPack) => stickerPack.id == event.stickerPackId,
+      (stickerPack) => stickerPack.id == stickerPackId,
     );
 
     // Notify the backend
     await getForegroundService().send(
       RemoveStickerPackCommand(
-        stickerPackId: event.stickerPackId,
+        stickerPackId: stickerPackId,
       ),
       awaitable: false,
     );
   }
 
-  Future<void> _onStickerPackImported(
-    StickerPackImportedEvent event,
-    Emitter<StickersState> emit,
-  ) async {
+  Future<void> import() async {
     final pickerResult = await safePickFiles(
       FilePickerType.generic,
       allowMultiple: false,

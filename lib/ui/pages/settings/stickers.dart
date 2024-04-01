@@ -4,7 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/preferences.dart';
-import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
+import 'package:moxxyv2/ui/bloc/stickers.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
@@ -21,7 +21,7 @@ class StickersSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<StickersBloc, StickersState>(
+    return BlocBuilder<StickersCubit, StickersState>(
       builder: (_, stickersState) => PopScope(
         canPop: !stickersState.isImportRunning,
         child: Stack(
@@ -72,11 +72,7 @@ class StickersSettingsPage extends StatelessWidget {
                           ),
                         ),
                         SettingsRow(
-                          onTap: () {
-                            GetIt.I.get<StickersBloc>().add(
-                                  StickerPackImportedEvent(),
-                                );
-                          },
+                          onTap: GetIt.I.get<StickersCubit>().import,
                           title: t.pages.settings.stickers.importStickerPack,
                         ),
                         SettingsRow(

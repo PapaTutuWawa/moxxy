@@ -8,7 +8,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/stickers_bloc.dart' as stickers;
+import 'package:moxxyv2/ui/bloc/stickers.dart' as stickers;
 import 'package:moxxyv2/ui/constants.dart';
 
 part 'sticker_pack.freezed.dart';
@@ -76,9 +76,7 @@ class StickerPackCubit extends Cubit<StickerPackState> {
         );
 
     // Remove the sticker pack
-    GetIt.I.get<stickers.StickersBloc>().add(
-          stickers.StickerPackRemovedEvent(stickerPackId),
-        );
+    await GetIt.I.get<stickers.StickersCubit>().remove(stickerPackId);
   }
 
   Future<void> requestRemoteStickerPack(
