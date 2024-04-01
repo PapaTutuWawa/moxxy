@@ -9,32 +9,29 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/ui/bloc/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations.dart';
 
-part 'joingroupchat_bloc.freezed.dart';
-part 'joingroupchat_event.dart';
-part 'joingroupchat_state.dart';
+part 'joingroupchat.freezed.dart';
 
-class JoinGroupchatBloc extends Bloc<JoinGroupchatEvent, JoinGroupchatState> {
-  JoinGroupchatBloc() : super(JoinGroupchatState()) {
-    on<PageResetEvent>(_onPageReset);
-    on<StartGroupchatEvent>(_onStartGroupchat);
-    on<NickChangedEvent>(_onNickChanged);
-  }
+@freezed
+class JoinGroupchatState with _$JoinGroupchatState {
+  factory JoinGroupchatState({
+    @Default('') String nick,
+    @Default(null) String? nickError,
+    @Default(false) bool isWorking,
+  }) = _JoinGroupchatState;
+}
 
-  Future<void> _onNickChanged(
-    NickChangedEvent event,
-    Emitter<JoinGroupchatState> emit,
-  ) async {
+class JoinGroupchatCubit extends Cubit<JoinGroupchatState> {
+  JoinGroupchatCubit() : super(JoinGroupchatState());
+
+  void onNickChanged(String nick) {
     emit(
       state.copyWith(
-        nick: event.nick,
+        nick: nick,
       ),
     );
   }
 
-  Future<void> _onPageReset(
-    PageResetEvent event,
-    Emitter<JoinGroupchatState> emit,
-  ) async {
+  void reset() {
     emit(
       state.copyWith(
         nick: '',
@@ -44,10 +41,7 @@ class JoinGroupchatBloc extends Bloc<JoinGroupchatEvent, JoinGroupchatState> {
     );
   }
 
-  Future<void> _onStartGroupchat(
-    JoinGroupchatEvent event,
-    Emitter<JoinGroupchatState> emit,
-  ) async {
+  Future<void> startGroupchat(String jid) async {
     // Assuming that the JID has been validated before this step
 
     if (state.nick.isEmpty) {
@@ -64,7 +58,7 @@ class JoinGroupchatBloc extends Bloc<JoinGroupchatEvent, JoinGroupchatState> {
     // ignore: cast_nullable_to_non_nullable
     final result = await getForegroundService().send(
       JoinGroupchatCommand(
-        jid: (event as StartGroupchatEvent).jid,
+        jid: jid,
         nick: state.nick,
       ),
     );
@@ -82,7 +76,7 @@ class JoinGroupchatBloc extends Bloc<JoinGroupchatEvent, JoinGroupchatState> {
       return;
     }
 
-    await _onPageReset(PageResetEvent(), emit);
+    reset();
     final joinEvent = result! as JoinGroupchatResult;
 
     await GetIt.I.get<ConversationsCubit>().addConversation(

@@ -18,7 +18,7 @@ import 'package:moxxyv2/ui/bloc/conversations.dart';
 import 'package:moxxyv2/ui/bloc/crop.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground.dart';
 import 'package:moxxyv2/ui/bloc/devices.dart';
-import 'package:moxxyv2/ui/bloc/groupchat/joingroupchat_bloc.dart';
+import 'package:moxxyv2/ui/bloc/groupchat/joingroupchat.dart';
 import 'package:moxxyv2/ui/bloc/login.dart';
 import 'package:moxxyv2/ui/bloc/navigation.dart';
 import 'package:moxxyv2/ui/bloc/newconversation.dart';
@@ -121,7 +121,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<StickersCubit>(StickersCubit());
   GetIt.I.registerSingleton<StickerPackCubit>(StickerPackCubit());
   GetIt.I.registerSingleton<RequestCubit>(RequestCubit());
-  GetIt.I.registerSingleton<JoinGroupchatBloc>(JoinGroupchatBloc());
+  GetIt.I.registerSingleton<JoinGroupchatCubit>(JoinGroupchatCubit());
   GetIt.I.registerSingleton<ConversationsCubit>(ConversationsCubit());
   GetIt.I.registerSingleton<AccountCubit>(AccountCubit());
 }
@@ -196,8 +196,8 @@ void main() async {
         BlocProvider<RequestCubit>(
           create: (_) => GetIt.I.get<RequestCubit>(),
         ),
-        BlocProvider<JoinGroupchatBloc>(
-          create: (_) => GetIt.I.get<JoinGroupchatBloc>(),
+        BlocProvider<JoinGroupchatCubit>(
+          create: (_) => GetIt.I.get<JoinGroupchatCubit>(),
         ),
         BlocProvider<AccountCubit>(
           create: (_) => GetIt.I.get<AccountCubit>(),

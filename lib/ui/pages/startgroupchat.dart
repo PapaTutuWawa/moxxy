@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/bloc/groupchat/joingroupchat_bloc.dart';
+import 'package:moxxyv2/ui/bloc/groupchat/joingroupchat.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
 class JoinGroupchatArguments {
@@ -35,13 +35,11 @@ class JoinGroupchatPageState extends State<JoinGroupchatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<JoinGroupchatBloc, JoinGroupchatState>(
+    return BlocBuilder<JoinGroupchatCubit, JoinGroupchatState>(
       builder: (context, state) => PopScope(
         onPopInvoked: (didPop) {
           if (didPop) {
-            context.read<JoinGroupchatBloc>().add(
-                  PageResetEvent(),
-                );
+            context.read<JoinGroupchatCubit>().reset();
           }
         },
         canPop: !state.isWorking,
@@ -60,9 +58,7 @@ class JoinGroupchatPageState extends State<JoinGroupchatPage> {
                     const EdgeInsets.symmetric(horizontal: paddingVeryLarge)
                         .add(const EdgeInsets.only(top: 8)),
                 child: TextField(
-                  onChanged: (value) => context.read<JoinGroupchatBloc>().add(
-                        NickChangedEvent(value),
-                      ),
+                  onChanged: context.read<JoinGroupchatCubit>().onNickChanged,
                   controller: _nickController,
                   enabled: !state.isWorking,
                   decoration: InputDecoration(
@@ -89,10 +85,10 @@ class JoinGroupchatPageState extends State<JoinGroupchatPage> {
                       child: FilledButton(
                         onPressed: state.isWorking
                             ? null
-                            : () => context.read<JoinGroupchatBloc>().add(
-                                  StartGroupchatEvent(
-                                    widget.arguments.jid,
-                                  ),
+                            : () => context
+                                .read<JoinGroupchatCubit>()
+                                .startGroupchat(
+                                  widget.arguments.jid,
                                 ),
                         child: Text(t.pages.newconversation.joinGroupChat),
                       ),
