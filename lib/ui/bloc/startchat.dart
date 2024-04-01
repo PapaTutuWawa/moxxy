@@ -14,21 +14,21 @@ import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/startgroupchat.dart';
 
-part 'startchat_bloc.freezed.dart';
-part 'startchat_event.dart';
-part 'startchat_state.dart';
+part 'startchat.freezed.dart';
 
-class StartChatBloc extends Bloc<StartChatEvent, StartChatState> {
-  StartChatBloc() : super(StartChatState()) {
-    on<AddedContactEvent>(_onContactAdded);
-    on<JidChangedEvent>(_onJidChanged);
-    on<PageResetEvent>(_onPageReset);
-  }
+@freezed
+class StartChatState with _$StartChatState {
+  factory StartChatState({
+    @Default('') String jid,
+    @Default(null) String? jidError,
+    @Default(false) bool isWorking,
+  }) = _StartChatState;
+}
 
-  Future<void> _onContactAdded(
-    AddedContactEvent event,
-    Emitter<StartChatState> emit,
-  ) async {
+class StartChatCubit extends Cubit<StartChatState> {
+  StartChatCubit() : super(StartChatState());
+
+  Future<void> addContact() async {
     final validation = validateJidString(state.jid);
     if (validation != null) {
       emit(state.copyWith(jidError: validation));
@@ -83,15 +83,15 @@ class StartChatBloc extends Bloc<StartChatEvent, StartChatState> {
       return;
     }
 
-    await _onPageReset(PageResetEvent(), emit);
+    reset();
 
     final addResult = result! as AddContactResultEvent;
     if (addResult.conversation != null) {
-      final bloc = GetIt.I.get<ConversationsCubit>();
+      final cubit = GetIt.I.get<ConversationsCubit>();
       if (addResult.added) {
-        await bloc.addConversation(addResult.conversation!);
+        await cubit.addConversation(addResult.conversation!);
       } else {
-        await bloc.updateConversation(addResult.conversation!);
+        await cubit.updateConversation(addResult.conversation!);
       }
     }
 
@@ -109,21 +109,15 @@ class StartChatBloc extends Bloc<StartChatEvent, StartChatState> {
         );
   }
 
-  Future<void> _onJidChanged(
-    JidChangedEvent event,
-    Emitter<StartChatState> emit,
-  ) async {
+  void onJidChanged(String jid) {
     emit(
       state.copyWith(
-        jid: event.jid,
+        jid: jid,
       ),
     );
   }
 
-  Future<void> _onPageReset(
-    PageResetEvent event,
-    Emitter<StartChatState> emit,
-  ) async {
+  void reset() {
     emit(
       state.copyWith(
         jidError: null,
