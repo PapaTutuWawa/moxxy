@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/state/conversations.dart';
 
@@ -210,8 +211,7 @@ class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
                                         horizontal: pxToLp(42),
                                       ),
                                       isDense: true,
-                                      // TODO: i18n
-                                      hintText: 'Search...',
+                                      hintText: t.pages.home.search,
                                       suffixIcon: const SearchFieldIconButton(),
                                     ),
                                     style: TextStyle(

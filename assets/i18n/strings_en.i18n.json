@@ -178,7 +178,8 @@
             "searchNoResults": "No search results...",
             "chat": "Chat",
             "favourite": "Favourite",
-            "unfavourite": "Unfavourite"
+            "unfavourite": "Unfavourite",
+            "search": "Search..."
         },
         "conversations": {
             "speeddialNewChat": "New chat",
