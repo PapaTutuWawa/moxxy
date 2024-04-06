@@ -13,6 +13,9 @@ import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+// Size of profile picture in "physical" pixels.
+const profilePictureSize = 144;
+
 IconData? _messageStateToIcon(Message msg) {
   if (msg.displayed) {
     return Icons.done_all;
@@ -284,9 +287,8 @@ class ConversationCard extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 12),
                   child: SquircleCachingXMPPAvatar(
                     jid: conversation.jid,
-                    size: pxToLp(144),
-                    // TODO: Constant
-                    borderRadius: pxToLp(144 ~/ 4),
+                    size: pxToLp(profilePictureSize),
+                    borderRadius: pxToLp(profilePictureSize ~/ 4),
                     hasContactId: conversation.contactId != null,
                     isGroupchat: conversation.isGroupchat,
                     path: conversation.avatarPath,
