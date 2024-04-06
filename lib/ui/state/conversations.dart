@@ -33,7 +33,6 @@ class ConversationsState with _$ConversationsState {
 /// A BLoC that handles changes to the conversations list. This included adding
 /// conversations, updating conversations, and handling different changes, like
 /// closing a conversation.
-// TODO: Move into a new file.
 class ConversationsCubit extends Cubit<ConversationsState> {
   ConversationsCubit() : super(ConversationsState());
 
@@ -159,8 +158,10 @@ class ConversationsCubit extends Cubit<ConversationsState> {
   /// Return, if existent, the conversation from the state with a JID equal to [jid].
   /// Returns null, if the conversation does not exist.
   Conversation? getConversationByJid(String jid) {
-    // TODO: Consider the accountJid
-    return state.conversations.firstWhereOrNull((c) => c.jid == jid);
+    final accountJid = GetIt.I.get<AccountCubit>().state.account.jid;
+    return state.conversations.firstWhereOrNull(
+      (c) => c.jid == jid && c.accountJid == accountJid,
+    );
   }
 
   /// Sets the searchOpen attribute to [value].
