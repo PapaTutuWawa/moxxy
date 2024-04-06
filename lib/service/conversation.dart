@@ -257,6 +257,7 @@ ORDER BY
     Object? contactAvatarPath = notSpecified,
     Object? contactDisplayName = notSpecified,
     GroupchatDetails? groupchatDetails,
+    bool? favourite,
   }) async {
     final conversation = (await _getConversationByJid(jid, accountJid))!;
 
@@ -294,6 +295,9 @@ ORDER BY
     }
     if (contactDisplayName != notSpecified) {
       c['contactDisplayName'] = contactDisplayName as String?;
+    }
+    if (favourite != null) {
+      c['favourite'] = boolToInt(favourite);
     }
 
     final result =

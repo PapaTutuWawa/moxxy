@@ -3,10 +3,12 @@ import 'package:bloc/bloc.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/ui/state/account.dart';
 import 'package:synchronized/synchronized.dart';
 
 part 'conversations.freezed.dart';
@@ -215,6 +217,19 @@ class ConversationsCubit extends Cubit<ConversationsState> {
         searchResults: (result! as ConversationSearchResult).results,
         isSearching: false,
       ),
+    );
+  }
+
+  void setFavourite(String jid, bool favourite) {
+    // NOTE: We don't update the state here because the service will send back
+    //       a conversation update.
+    getForegroundService().send(
+      ConversationSetFavourite(
+        jid: jid,
+        accountJid: GetIt.I.get<AccountCubit>().state.account.jid,
+        state: favourite,
+      ),
+      awaitable: false,
     );
   }
 }

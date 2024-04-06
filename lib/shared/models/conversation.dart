@@ -175,6 +175,9 @@ class Conversation with _$Conversation {
 
     // The contact's display name, if it exists
     String? contactDisplayName,
+
+    // Whether the chat has been pinned (marked as favourite) or not
+    @Default(false) bool favourite,
   }) = _Conversation;
 
   const Conversation._();
@@ -195,6 +198,7 @@ class Conversation with _$Conversation {
       'open': intToBool(json['open']! as int),
       'showAddToRoster': showAddToRoster,
       'encrypted': intToBool(json['encrypted']! as int),
+      'favourite': intToBool(json['favourite']! as int),
       'chatState':
           const ConversationChatStateConverter().toJson(ChatState.gone),
     }).copyWith(
@@ -216,6 +220,7 @@ class Conversation with _$Conversation {
       'open': boolToInt(open),
       'muted': boolToInt(muted),
       'encrypted': boolToInt(encrypted),
+      'favourite': boolToInt(favourite),
       'lastMessageId': lastMessage?.id,
     };
   }
@@ -297,10 +302,6 @@ class Conversation with _$Conversation {
       return unreadCounter.toString();
     }
   }
-
-  /// Flag indicating whether the conversation is "favourited".
-  // TODO: Replace with an actual database attribute.
-  bool get favourite => false;
 }
 
 /// Sorts conversations in descending order by their last change timestamp.

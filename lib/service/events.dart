@@ -120,6 +120,9 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<ExitConversationCommand>(performConversationExited),
       EventTypeMatcher<GetMembersForGroupchatCommand>(performGetMembers),
       EventTypeMatcher<PerformConversationSearch>(performConversationSearch),
+      EventTypeMatcher<ConversationSetFavourite>(
+        performSetConversationFavourite,
+      ),
     ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -1775,9 +1778,29 @@ Future<void> performConversationSearch(
 
   sendEvent(
     ConversationSearchResult(
-      // TODO: Replace with an extra search method of ConversationService
       results: await cs.searchConversations(accountJid!, command.text),
     ),
     id: extra as String,
+  );
+}
+
+Future<void> performSetConversationFavourite(
+  ConversationSetFavourite command, {
+  dynamic extra,
+}) async {
+  final cs = GetIt.I.get<ConversationService>();
+  final newConversation = await cs.createOrUpdateConversation(
+    command.jid,
+    command.accountJid,
+    update: (Conversation conversation) {
+      return cs.updateConversation(
+        command.jid,
+        command.accountJid,
+        favourite: command.state,
+      );
+    },
+  );
+  sendEvent(
+    ConversationUpdatedEvent(conversation: newConversation!),
   );
 }

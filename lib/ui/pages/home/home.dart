@@ -220,6 +220,20 @@ class ConversationsPageState extends State<ConversationsPage>
                         }
                       },
                     ),
+                    ContextMenuItem(
+                      icon: Icons.close,
+                      text: _selectedConversation!.favourite
+                          ? t.pages.home.unfavourite
+                          : t.pages.home.favourite,
+                      onPressed: () async {
+                        GetIt.I.get<ConversationsCubit>().setFavourite(
+                              _selectedConversation!.jid,
+                              !_selectedConversation!.favourite,
+                            );
+
+                        dismissContextMenu();
+                      },
+                    ),
                   ],
                 ),
               ),
