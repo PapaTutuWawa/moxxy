@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -297,4 +298,17 @@ class Message with _$Message {
 
   /// The JID of the sender in moxxmpp's format.
   JID get senderJid => JID.fromString(sender);
+
+  /// Returns the string to prepend to the message ("You: ", "<sender>: ", ...).
+  /// Returns null if no such string should be prepended.
+  String? senderString(bool sentBySelf, bool inGroupchat) {
+    if (sentBySelf) {
+      return '${t.messages.you}: ';
+    }
+
+    // TODO(Unknown): This means we expect the resource to the be nick. Maybe
+    //                add this to the message itself to make this method less
+    //                dependent on the actual GC implementation.
+    return inGroupchat ? '${senderJid.resource}: ' : null;
+  }
 }

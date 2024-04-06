@@ -219,6 +219,8 @@ class ConversationCard extends StatelessWidget {
       body = message.body;
     }
 
+    final senderString =
+        message.senderString(sentBySelf, conversation.isGroupchat);
     final messageStateIcon = _messageStateToIcon(message);
     return Row(
       children: [
@@ -239,10 +241,9 @@ class ConversationCard extends StatelessWidget {
                 ? Theme.of(context).colorScheme.primary
                 : null,
           ),
-        // TODO: Handle sender name in groupchats
-        if (sentBySelf)
+        if (senderString != null)
           Text(
-            '${t.messages.you}: ',
+            senderString,
             style: TextStyle(
               fontSize: ptToFontSize(32),
               color: Theme.of(context).colorScheme.onSurface,
