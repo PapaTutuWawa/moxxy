@@ -13,17 +13,16 @@ import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-IconData _messageStateToIcon(Message msg) {
+IconData? _messageStateToIcon(Message msg) {
   if (msg.displayed) {
     return Icons.done_all;
   } else if (msg.received) {
     return Icons.done_all;
   } else if (msg.acked) {
     return Icons.done;
-  } else {
-    // TODO: Find something better here
-    return Icons.donut_large;
   }
+
+  return null;
 }
 
 class _RowIcon extends StatelessWidget {
@@ -220,6 +219,7 @@ class ConversationCard extends StatelessWidget {
       body = message.body;
     }
 
+    final messageStateIcon = _messageStateToIcon(message);
     return Row(
       children: [
         if (message.hasError)
@@ -229,9 +229,12 @@ class ConversationCard extends StatelessWidget {
           ),
 
         // With read markers and an error it will get too crowded
-        if (!conversation.isGroupchat && sentBySelf && !message.hasError)
+        if (!conversation.isGroupchat &&
+            sentBySelf &&
+            !message.hasError &&
+            messageStateIcon != null)
           _RowIcon(
-            _messageStateToIcon(message),
+            messageStateIcon,
             color: message.displayed
                 ? Theme.of(context).colorScheme.primary
                 : null,
@@ -309,14 +312,6 @@ class ConversationCard extends StatelessWidget {
                               const _RowIcon(Icons.notifications_off),
 
                             Expanded(
-                              /*child: Text(
-                                conversation.titleWithOptionalContact,
-                                style: TextStyle(
-                                  fontSize: ptToFontSize(32),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),*/
                               child: HighlightWord(
                                 text: conversation.titleWithOptionalContact,
                                 word: highlightWord,
