@@ -1,4 +1,3 @@
-// TODO: Handle the underscroll color change
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -65,18 +64,10 @@ class SearchFieldIconButtonState extends State<SearchFieldIconButton> {
 class ConversationsHomeAppBar extends StatefulWidget
     implements PreferredSizeWidget {
   const ConversationsHomeAppBar({
-    required this.foregroundColor,
-    required this.backgroundColor,
     required this.title,
     required this.actions,
     super.key,
   });
-
-  /// The color of icons on the AppBar.
-  final Color foregroundColor;
-
-  /// The color of the AppBar itself.
-  final Color backgroundColor;
 
   /// The title widget.
   final Widget title;
@@ -94,18 +85,71 @@ class ConversationsHomeAppBar extends StatefulWidget
 }
 
 class ConversationsHomeAppBarState extends State<ConversationsHomeAppBar> {
+  bool _scrolledUnder = false;
+  ScrollNotificationObserverState? _scrollNotificationObserver;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _scrollNotificationObserver?.removeListener(_handleScrollNotification);
+    _scrollNotificationObserver = ScrollNotificationObserver.maybeOf(context);
+    _scrollNotificationObserver?.addListener(_handleScrollNotification);
+  }
+
+  @override
+  void dispose() {
+    _scrollNotificationObserver?.removeListener(_handleScrollNotification);
+    _scrollNotificationObserver = null;
+
+    super.dispose();
+  }
+
+  void _handleScrollNotification(ScrollNotification notification) {
+    // Based on https://github.com/flutter/flutter/blob/master/packages/flutter/lib/src/material/app_bar.dart#L777
+    if (notification is! ScrollUpdateNotification ||
+        !defaultScrollNotificationPredicate(notification)) {
+      return;
+    }
+
+    final oldScrolledUnder = _scrolledUnder;
+    final metrics = notification.metrics;
+    switch (metrics.axisDirection) {
+      case AxisDirection.up:
+        _scrolledUnder = metrics.extentAfter > 0;
+      case AxisDirection.down:
+        _scrolledUnder = metrics.extentBefore > 0;
+      case AxisDirection.left:
+      case AxisDirection.right:
+        break;
+    }
+
+    if (_scrolledUnder != oldScrolledUnder) {
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // TODO(Unknown): Check if the colors are correct
+    final theme = Theme.of(context);
+    final scrolledUnderColor = MaterialStateProperty.resolveAs<Color?>(
+          theme.appBarTheme.backgroundColor,
+          {MaterialState.scrolledUnder},
+        ) ??
+        theme.colorScheme.surface;
+
     return SafeArea(
       child: SizedBox(
         height: widget.preferredSize.height,
         child: Material(
-          color: widget.backgroundColor,
+          color:
+              _scrolledUnder ? scrolledUnderColor : theme.colorScheme.surface,
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: pxToLp(48)),
             child: IconTheme(
               data: Theme.of(context).iconTheme.copyWith(
-                    color: widget.foregroundColor,
+                    color: theme.colorScheme.onSurface,
                   ),
               child: BlocBuilder<ConversationsCubit, ConversationsState>(
                 builder: (context, state) => AnimatedCrossFade(

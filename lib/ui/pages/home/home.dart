@@ -389,11 +389,6 @@ class ConversationsPageState extends State<ConversationsPage>
         },
         child: Scaffold(
           appBar: ConversationsHomeAppBar(
-            foregroundColor: Theme.of(context).colorScheme.onSurface,
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            //automaticallyImplyLeading: false,
-            //elevation: 0,
-            //toolbarHeight: 70,
             title: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
