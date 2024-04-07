@@ -294,7 +294,6 @@ class ConversationsPageState extends State<ConversationsPage>
               onLongPressStart: (event) async {
                 Vibrate.feedback(FeedbackType.medium);
 
-                // TODO: Move this into the ContextMenu class as a static method.
                 final widgetRect = getWidgetPositionOnScreen(key);
                 final height = MediaQuery.of(context).size.height;
 
@@ -392,7 +391,6 @@ class ConversationsPageState extends State<ConversationsPage>
             title: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // TODO: Fix padding
                 Padding(
                   padding: const EdgeInsets.only(right: 14),
                   child: CachingXMPPAvatar.self(
@@ -404,7 +402,6 @@ class ConversationsPageState extends State<ConversationsPage>
                     },
                   ),
                 ),
-
                 BlocBuilder<AccountCubit, AccountState>(
                   builder: (context, account) => Text(
                     account.account.displayName,

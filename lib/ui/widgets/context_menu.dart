@@ -21,7 +21,7 @@ class ContextMenuItem extends StatelessWidget {
   final VoidCallback onPressed;
 
   /// The height of a single [ContextMenuItem].
-  static int height = 48;
+  static int height = 32;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class ContextMenuItem extends StatelessWidget {
         padding: EdgeInsets.symmetric(
           horizontal: pxToLp(48),
           // NOTE: 96px / 2
-          vertical: pxToLp(48),
+          vertical: pxToLp(32),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -65,7 +65,8 @@ class ContextMenu extends StatelessWidget {
   static double computeHeight(BuildContext context, int numberItems) {
     return 2 * pxToLp(24) +
         numberItems *
-            (pxToLp(48) + MediaQuery.of(context).textScaler.scale(32));
+            (pxToLp(ContextMenuItem.height) +
+                MediaQuery.of(context).textScaler.scale(32));
   }
 
   @override
