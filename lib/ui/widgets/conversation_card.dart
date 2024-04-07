@@ -285,7 +285,7 @@ class ConversationCard extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.only(right: 12),
-                  child: SquircleCachingXMPPAvatar(
+                  child: CachingXMPPAvatar(
                     jid: conversation.jid,
                     size: pxToLp(profilePictureSize),
                     borderRadius: pxToLp(profilePictureSize ~/ 4),

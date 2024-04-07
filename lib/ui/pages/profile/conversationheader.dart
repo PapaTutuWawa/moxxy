@@ -29,7 +29,8 @@ class ConversationProfileHeader extends StatelessWidget {
       builder: () {
         final path = conversation.avatarPathWithOptionalContact;
         final avatar = CachingXMPPAvatar(
-          radius: 110,
+          borderRadius: 110,
+          size: 220,
           jid: conversation.jid,
           hasContactId: conversation.contactId != null,
           path: path,

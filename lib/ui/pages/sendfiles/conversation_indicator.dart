@@ -27,7 +27,8 @@ class ConversationIndicator extends StatelessWidget {
             if (showAvatar)
               CachingXMPPAvatar(
                 jid: recipients.first.jid,
-                radius: 20,
+                borderRadius: 20,
+                size: 40,
                 hasContactId: recipients.first.hasContactId,
                 // TODO(Unknown): This is not always correct.
                 isGroupchat: false,

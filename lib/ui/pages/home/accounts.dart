@@ -69,7 +69,7 @@ class AccountListTile extends StatelessWidget {
                 right: 12,
               ),
               // TODO: Pass the JID of our different account here.
-              child: SquircleCachingXMPPAvatar.self(
+              child: CachingXMPPAvatar.self(
                 size: _accountListTilePictureHeight,
                 borderRadius: 12,
               ),

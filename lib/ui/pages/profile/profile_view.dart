@@ -71,7 +71,10 @@ class ProfileViewState extends State<ProfileView> {
   Widget _buildMemberTile(GroupchatMember member) {
     if (member.isSelf) {
       return ListTile(
-        leading: CachingXMPPAvatar.self(radius: 20),
+        leading: CachingXMPPAvatar.self(
+          size: 40,
+          borderRadius: 20,
+        ),
         title: Text(
           member.nick,
           overflow: TextOverflow.ellipsis,
@@ -87,8 +90,9 @@ class ProfileViewState extends State<ProfileView> {
     } else {
       return ListTile(
         leading: CachingXMPPAvatar(
+          borderRadius: 20,
+          size: 40,
           jid: '${widget.arguments.jid}/${member.nick}',
-          radius: 20,
           hasContactId: false,
           isGroupchat: true,
           // TODO(Unknown): Request avatars at some point

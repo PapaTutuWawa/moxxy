@@ -180,7 +180,8 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     return RebuildOnContactIntegrationChange(
       builder: () {
         final avatar = CachingXMPPAvatar(
-          radius: 35,
+          borderRadius: 35,
+          size: 70,
           jid: widget.conversation.jid,
           hash: widget.conversation.avatarHash,
           path: widget.conversation.avatarPathWithOptionalContact,

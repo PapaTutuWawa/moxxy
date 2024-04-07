@@ -395,7 +395,7 @@ class ConversationsPageState extends State<ConversationsPage>
                 // TODO: Fix padding
                 Padding(
                   padding: const EdgeInsets.only(right: 14),
-                  child: SquircleCachingXMPPAvatar.self(
+                  child: CachingXMPPAvatar.self(
                     size: pxToLp(104),
                     borderRadius: pxToLp(104),
                     onTap: () {

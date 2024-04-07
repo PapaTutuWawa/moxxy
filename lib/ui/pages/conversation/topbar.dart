@@ -115,7 +115,8 @@ class ConversationTopbar extends StatelessWidget
                             child: RebuildOnContactIntegrationChange(
                               builder: () => CachingXMPPAvatar(
                                 jid: state.conversation?.jid ?? '',
-                                radius: 25,
+                                borderRadius: 25,
+                                size: 50,
                                 hasContactId:
                                     state.conversation?.contactId != null,
                                 isGroupchat:

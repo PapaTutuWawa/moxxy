@@ -37,7 +37,8 @@ class SelfProfileHeader extends StatelessWidget {
               tag: 'self_profile_picture',
               child: Material(
                 child: CachingXMPPAvatar.self(
-                  radius: 110,
+                  borderRadius: 110,
+                  size: 220,
                   onTap: () => pickAndSetAvatar(context, state.avatarUrl),
                 ),
               ),

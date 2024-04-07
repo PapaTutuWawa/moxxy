@@ -78,10 +78,12 @@ class ReactionList extends StatelessWidget {
             return ReactionsRow(
               avatar: ownReaction
                   ? CachingXMPPAvatar.self(
-                      radius: 35,
+                      borderRadius: 35,
+                      size: 70,
                     )
                   : CachingXMPPAvatar(
-                      radius: 35,
+                      borderRadius: 35,
+                      size: 70,
                       jid: reaction.jid,
                       isGroupchat: false,
                       // TODO(Unknown): This will break with groupchats
