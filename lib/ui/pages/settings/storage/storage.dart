@@ -214,7 +214,7 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
               child: TextButton(
                 child: Text(t.pages.settings.storage.viewMediaFiles),
                 onPressed: () {
-                  context.read<nav.Navigation>().pushNamed(
+                  GetIt.I.get<nav.Navigation>().pushNamed(
                         const nav.NavigationDestination(
                           storageSharedMediaSettingsRoute,
                         ),
