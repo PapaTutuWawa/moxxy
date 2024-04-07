@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
+import 'package:get_it/get_it.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
@@ -101,7 +102,7 @@ class StickerPickerState extends State<StickerPicker> {
                         ),
                         TextButton(
                           onPressed: () {
-                            context.read<nav.Navigation>().pushNamed(
+                            GetIt.I.get<nav.Navigation>().pushNamed(
                                   const nav.NavigationDestination(
                                     stickersRoute,
                                   ),
