@@ -233,23 +233,13 @@ class ConversationCard extends StatelessWidget {
             color: Theme.of(context).colorScheme.error,
           ),
 
-        // With read markers and an error it will get too crowded
-        if (!conversation.isGroupchat &&
-            sentBySelf &&
-            !message.hasError &&
-            messageStateIcon != null)
-          _RowIcon(
-            messageStateIcon,
-            color: message.displayed
-                ? Theme.of(context).colorScheme.primary
-                : null,
-          ),
         if (senderString != null)
           Text(
             senderString,
             style: TextStyle(
               fontSize: ptToFontSize(32),
               color: Theme.of(context).colorScheme.onSurface,
+              fontWeight: FontWeight.bold,
             ),
           ),
 
@@ -263,6 +253,20 @@ class ConversationCard extends StatelessWidget {
             color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
+
+        const Spacer(),
+
+        // With read markers and an error it will get too crowded
+        if (!conversation.isGroupchat &&
+            sentBySelf &&
+            !message.hasError &&
+            messageStateIcon != null)
+          _RowIcon(
+            messageStateIcon,
+            color: message.displayed
+                ? Theme.of(context).colorScheme.primary
+                : null,
+          ),
       ],
     );
   }
