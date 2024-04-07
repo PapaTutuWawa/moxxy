@@ -68,7 +68,6 @@ class AccountListTile extends StatelessWidget {
               padding: const EdgeInsets.only(
                 right: 12,
               ),
-              // TODO: Pass the JID of our different account here.
               child: CachingXMPPAvatar.self(
                 size: _accountListTilePictureHeight,
                 borderRadius: 12,
