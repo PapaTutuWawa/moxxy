@@ -5,11 +5,12 @@ import 'package:move_to_background/move_to_background.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/state/navigation.dart' as navigation;
 import 'package:moxxyv2/ui/state/share_selection.dart';
-import 'package:moxxyv2/ui/widgets/conversation.dart';
+import 'package:moxxyv2/ui/widgets/conversation_card.dart';
 
 class ShareSelectionPage extends StatelessWidget {
   const ShareSelectionPage({super.key});
@@ -31,13 +32,13 @@ class ShareSelectionPage extends StatelessWidget {
         prev.type != next.type;
   }
 
-  IconData? _getSuffixIcon(ShareListItem item) {
+  Widget? _getSuffixIcon(ShareListItem item) {
     if (item.pseudoRosterItem) {
-      return Icons.smartphone;
+      return const Icon(Icons.smartphone);
     }
 
     if (item.isEncrypted) {
-      return Icons.lock;
+      return const Icon(Icons.lock);
     }
 
     return null;
@@ -68,11 +69,22 @@ class ShareSelectionPage extends StatelessWidget {
             itemBuilder: (context, index) {
               final item = state.items[index];
 
-              return ConversationsListRow(
-                Conversation(
+              return ConversationCard(
+                conversation: Conversation(
                   '',
                   item.titleWithOptionalContact,
-                  null,
+                  Message(
+                    '',
+                    '',
+                    '',
+                    item.jid,
+                    0,
+                    '',
+                    '',
+                    false,
+                    false,
+                    false,
+                  ),
                   item.avatarPath,
                   item.avatarHash,
                   item.jid,
@@ -89,11 +101,10 @@ class ShareSelectionPage extends StatelessWidget {
                   contactAvatarPath: item.contactAvatarPath,
                   contactDisplayName: item.contactDisplayName,
                 ),
-                false,
                 titleSuffixIcon: _getSuffixIcon(item),
                 showTimestamp: false,
-                isSelected: state.selection.contains(index),
-                onPressed: () {
+                selected: state.selection.contains(index),
+                onTap: () {
                   context.read<ShareSelectionCubit>().selectionToggled(index);
                 },
               );

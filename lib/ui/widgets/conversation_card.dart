@@ -28,6 +28,84 @@ IconData? _messageStateToIcon(Message msg) {
   return null;
 }
 
+class AnimatedMaterialColor extends StatefulWidget {
+  const AnimatedMaterialColor({
+    required this.color,
+    required this.child,
+    super.key,
+  });
+
+  /// The color attribute of the [Material] widget.
+  final Color color;
+
+  /// The child widget of the [Material] widget.
+  final Widget child;
+
+  @override
+  AnimatedMaterialColorState createState() => AnimatedMaterialColorState();
+}
+
+class AnimatedMaterialColorState extends State<AnimatedMaterialColor>
+    with TickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final ColorTween _tween;
+  late final Animation<Color?> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _tween = ColorTween(
+      begin: widget.color,
+      end: widget.color,
+    );
+
+    _animation = _tween.animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOutCubic,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(AnimatedMaterialColor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.color != widget.color) {
+      _tween
+        ..begin = oldWidget.color
+        ..end = widget.color;
+
+      _controller
+        ..reset()
+        ..forward();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (_, child) => Material(
+        color: _animation.value,
+        child: child,
+      ),
+      child: widget.child,
+    );
+  }
+}
+
 class _RowIcon extends StatelessWidget {
   const _RowIcon(
     this.icon, {
@@ -139,6 +217,7 @@ class ConversationCard extends StatelessWidget {
     required this.onTap,
     this.highlightWord,
     this.showTimestamp = true,
+    this.selected = false,
     this.titleSuffixIcon,
     super.key,
   });
@@ -157,6 +236,10 @@ class ConversationCard extends StatelessWidget {
 
   /// Icon to show after the conversation title.
   final Widget? titleSuffixIcon;
+
+  /// Flag indicating whether we should show a selection indicator (true) or
+  /// not (false).
+  final bool selected;
 
   Widget _buildLastMessagePreview() {
     Widget? preview;
@@ -283,8 +366,10 @@ class ConversationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final sentBySelf = conversation.lastMessage?.sender ==
         GetIt.I.get<AccountCubit>().state.account.jid;
-    return Material(
-      color: Colors.transparent,
+    return AnimatedMaterialColor(
+      color: selected
+          ? Theme.of(context).colorScheme.secondaryContainer
+          : Colors.transparent,
       child: InkWell(
         onTap: onTap,
         child: SizedBox(
