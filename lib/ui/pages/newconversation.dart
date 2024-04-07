@@ -11,7 +11,7 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/service/connectivity.dart';
 import 'package:moxxyv2/ui/state/newconversation.dart';
-import 'package:moxxyv2/ui/widgets/conversation.dart';
+import 'package:moxxyv2/ui/widgets/conversation_card.dart';
 
 class NewConversationPage extends StatelessWidget {
   const NewConversationPage({super.key});
@@ -128,8 +128,8 @@ class NewConversationPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  child: ConversationsListRow(
-                    Conversation(
+                  child: ConversationCard(
+                    conversation: Conversation(
                       '',
                       item.title,
                       Message(
@@ -160,17 +160,16 @@ class NewConversationPage extends StatelessWidget {
                       contactAvatarPath: item.contactAvatarPath,
                       contactDisplayName: item.contactDisplayName,
                     ),
-                    false,
-                    showTimestamp: false,
-                    isSelected: false,
-                    onPressed: () => context.read<NewConversationCubit>().add(
+                    onTap: () => context.read<NewConversationCubit>().add(
                           item.jid,
                           item.title,
                           item.avatarPath,
                           ConversationType.chat,
                         ),
-                    titleSuffixIcon:
-                        item.pseudoRosterItem ? Icons.smartphone : null,
+                    showTimestamp: false,
+                    titleSuffixIcon: item.pseudoRosterItem
+                        ? const Icon(Icons.smartphone)
+                        : null,
                   ),
                 );
             }

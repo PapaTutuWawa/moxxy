@@ -138,6 +138,8 @@ class ConversationCard extends StatelessWidget {
     required this.conversation,
     required this.onTap,
     this.highlightWord,
+    this.showTimestamp = true,
+    this.titleSuffixIcon,
     super.key,
   });
 
@@ -149,6 +151,12 @@ class ConversationCard extends StatelessWidget {
 
   /// Callback for when the conversation card has been tapped.
   final void Function() onTap;
+
+  /// Flag controlling whether to show the timestamp (true) or not (false).
+  final bool showTimestamp;
+
+  /// Icon to show after the conversation title.
+  final Widget? titleSuffixIcon;
 
   Widget _buildLastMessagePreview() {
     Widget? preview;
@@ -319,13 +327,23 @@ class ConversationCard extends StatelessWidget {
                               const _RowIcon(Icons.notifications_off),
 
                             Expanded(
-                              child: HighlightWord(
-                                text: conversation.titleWithOptionalContact,
-                                word: highlightWord,
-                                style: TextStyle(
-                                  fontSize: ptToFontSize(32),
-                                  fontWeight: FontWeight.w600,
-                                ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  HighlightWord(
+                                    text: conversation.titleWithOptionalContact,
+                                    word: highlightWord,
+                                    style: TextStyle(
+                                      fontSize: ptToFontSize(32),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  if (titleSuffixIcon != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 8),
+                                      child: titleSuffixIcon,
+                                    ),
+                                ],
                               ),
                             ),
                             Offstage(
@@ -356,18 +374,19 @@ class ConversationCard extends StatelessWidget {
                               ),
                             ),
 
-                            Text(
-                              formatConversationTimestamp(
-                                conversation.lastChangeTimestamp,
-                                DateTime.now().millisecondsSinceEpoch,
+                            if (showTimestamp)
+                              Text(
+                                formatConversationTimestamp(
+                                  conversation.lastChangeTimestamp,
+                                  DateTime.now().millisecondsSinceEpoch,
+                                ),
+                                style: TextStyle(
+                                  fontSize: ptToFontSize(24),
+                                  color: conversation.hasUnreads
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context).colorScheme.outline,
+                                ),
                               ),
-                              style: TextStyle(
-                                fontSize: ptToFontSize(24),
-                                color: conversation.hasUnreads
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context).colorScheme.outline,
-                              ),
-                            ),
                           ],
                         ),
                       ),
