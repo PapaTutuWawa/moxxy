@@ -393,91 +393,91 @@ class ConversationCard extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Expanded(
-                        child: Row(
-                          children: [
-                            if (conversation.favourite)
-                              const _RowIcon(Icons.star_outline),
-
-                            if (conversation.isGroupchat)
-                              const _RowIcon(Icons.public),
-
-                            if (conversation.muted)
-                              const _RowIcon(Icons.notifications_off),
-
-                            Expanded(
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  HighlightWord(
-                                    text: conversation.titleWithOptionalContact,
-                                    word: highlightWord,
-                                    style: TextStyle(
-                                      fontSize: ptToFontSize(32),
-                                      fontWeight: FontWeight.w600,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              if (conversation.favourite)
+                                const _RowIcon(Icons.star_outline),
+                              if (conversation.isGroupchat)
+                                const _RowIcon(Icons.public),
+                              if (conversation.muted)
+                                const _RowIcon(Icons.notifications_off),
+                              Expanded(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    HighlightWord(
+                                      text:
+                                          conversation.titleWithOptionalContact,
+                                      word: highlightWord,
+                                      style: TextStyle(
+                                        fontSize: ptToFontSize(32),
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                  ),
-                                  if (titleSuffixIcon != null)
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 8),
-                                      child: titleSuffixIcon,
-                                    ),
-                                ],
-                              ),
-                            ),
-                            Offstage(
-                              offstage: !conversation.hasUnreads,
-                              child: Padding(
-                                padding: EdgeInsets.only(
-                                  left: pxToLp(12),
-                                  right: pxToLp(24),
-                                ),
-                                child: badges.Badge(
-                                  badgeStyle: badges.BadgeStyle(
-                                    badgeColor:
-                                        Theme.of(context).colorScheme.primary,
-                                    padding: EdgeInsets.all(
-                                      pxToLp(16),
-                                    ),
-                                  ),
-                                  badgeContent: Text(
-                                    conversation.unreadsString,
-                                    style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
-                                      fontSize: ptToFontSize(24),
-                                    ),
-                                  ),
+                                    if (titleSuffixIcon != null)
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 8),
+                                        child: titleSuffixIcon,
+                                      ),
+                                  ],
                                 ),
                               ),
-                            ),
-
-                            if (showTimestamp)
-                              Text(
-                                formatConversationTimestamp(
-                                  conversation.lastChangeTimestamp,
-                                  DateTime.now().millisecondsSinceEpoch,
-                                ),
-                                style: TextStyle(
-                                  fontSize: ptToFontSize(24),
-                                  color: conversation.hasUnreads
-                                      ? Theme.of(context).colorScheme.primary
-                                      : Theme.of(context).colorScheme.outline,
+                              Offstage(
+                                offstage: !conversation.hasUnreads,
+                                child: Padding(
+                                  padding: EdgeInsets.only(
+                                    left: pxToLp(12),
+                                    right: pxToLp(24),
+                                  ),
+                                  child: badges.Badge(
+                                    badgeStyle: badges.BadgeStyle(
+                                      badgeColor:
+                                          Theme.of(context).colorScheme.primary,
+                                      padding: EdgeInsets.all(
+                                        pxToLp(16),
+                                      ),
+                                    ),
+                                    badgeContent: Text(
+                                      conversation.unreadsString,
+                                      style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                        fontSize: ptToFontSize(24),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
-                          ],
+                              if (showTimestamp)
+                                Text(
+                                  formatConversationTimestamp(
+                                    conversation.lastChangeTimestamp,
+                                    DateTime.now().millisecondsSinceEpoch,
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: ptToFontSize(24),
+                                    color: conversation.hasUnreads
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context).colorScheme.outline,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Expanded(
-                        child: _renderLastMessage(context, sentBySelf),
-                      ),
-                    ],
+                        Expanded(
+                          child: _renderLastMessage(context, sentBySelf),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
