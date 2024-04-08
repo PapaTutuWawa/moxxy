@@ -459,12 +459,11 @@ class ConversationsPageState extends State<ConversationsPage>
               ),
             ],
           ),
-          floatingActionButton: FloatingActionButton.extended(
+          floatingActionButton: FloatingActionButton(
             onPressed: () => Navigator.pushNamed(context, newConversationRoute),
-            label: Text(t.pages.home.chat),
-            icon: const Icon(Icons.chat_outlined),
             backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
             foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+            child: const Icon(Icons.chat_outlined),
           ),
         ),
       ),
