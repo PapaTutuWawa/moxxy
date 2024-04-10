@@ -351,7 +351,11 @@
                 "viewSourceCode": "View source code",
                 "nMoreToGo": "${n} more to go…",
                 "debugMenuShown": "You are now a developer!",
-                "debugMenuAlreadyShown": "You are already a developer!"
+                "debugMenuAlreadyShown": "You are already a developer!",
+                "specialThanks": {
+                    "iconDesignedBy": "Icon designed by",
+                    "uiDesignedBy": "UI designed by"
+                }
             },
             "appearance": {
                 "title": "Appearance",

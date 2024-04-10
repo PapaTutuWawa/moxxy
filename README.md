@@ -37,6 +37,7 @@ See `./LICENSE`.
 ## Special Thanks
 
 - New logo designed by [Synoh](https://twitter.com/synoh_manda)
+- New app UI designed by [Ailyaut](https://ailyaut.robotfumeur.fr/index.html)
 
 ## Support
 
