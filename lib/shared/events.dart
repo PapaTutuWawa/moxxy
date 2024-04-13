@@ -8,7 +8,7 @@ import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/models/reaction_group.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
-import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
+import 'package:moxxyv2/ui/state/sendfiles.dart';
 
 part 'events.moxxy.dart';
 

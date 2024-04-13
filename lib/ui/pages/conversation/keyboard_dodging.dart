@@ -150,10 +150,17 @@ class KeyboardReplacerController {
 /// A widget for wrapping a given child that should be switching places with the
 /// soft-keyboard.
 class KeyboardReplacerWidget extends StatelessWidget {
-  const KeyboardReplacerWidget(this.controller, this.child, {super.key});
+  const KeyboardReplacerWidget(
+    this.controller,
+    this.child, {
+    this.canPop,
+    super.key,
+  });
 
   /// A controller that feeds this widget with data.
   final KeyboardReplacerController controller;
+
+  final ValueNotifier<bool>? canPop;
 
   /// The child to show or not show.
   final Widget child;
@@ -164,6 +171,7 @@ class KeyboardReplacerWidget extends StatelessWidget {
       initialData: controller.currentData,
       stream: controller.stream,
       builder: (context, snapshot) {
+        canPop?.value = !snapshot.data!.visible && !snapshot.data!.showWidget;
         return SizedBox(
           height: snapshot.data!.visible || snapshot.data!.showWidget
               ? snapshot.data!.height
@@ -189,6 +197,7 @@ class KeyboardReplacerScaffold extends StatelessWidget {
     required this.keyboardWidget,
     required this.background,
     required this.extraStackChildren,
+    this.canPop,
     super.key,
   });
 
@@ -206,6 +215,8 @@ class KeyboardReplacerScaffold extends StatelessWidget {
 
   /// The background of the "scaffold". Useful for displaying a background image.
   final Widget background;
+
+  final ValueNotifier<bool>? canPop;
 
   final List<Widget>? extraStackChildren;
 
@@ -242,6 +253,7 @@ class KeyboardReplacerScaffold extends StatelessWidget {
                   KeyboardReplacerWidget(
                     controller,
                     keyboardWidget,
+                    canPop: canPop,
                   ),
                 ],
               ),

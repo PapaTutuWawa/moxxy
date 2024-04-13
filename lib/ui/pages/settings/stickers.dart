@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
-import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
+import 'package:moxxyv2/ui/state/stickers.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
 
@@ -21,11 +21,9 @@ class StickersSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<StickersBloc, StickersState>(
-      builder: (_, stickersState) => WillPopScope(
-        onWillPop: () async {
-          return !stickersState.isImportRunning;
-        },
+    return BlocBuilder<StickersCubit, StickersState>(
+      builder: (_, stickersState) => PopScope(
+        canPop: !stickersState.isImportRunning,
         child: Stack(
           children: [
             Positioned(
@@ -37,7 +35,7 @@ class StickersSettingsPage extends StatelessWidget {
                 appBar: AppBar(
                   title: Text(t.pages.settings.stickers.title),
                 ),
-                body: BlocBuilder<PreferencesBloc, PreferencesState>(
+                body: BlocBuilder<PreferencesCubit, PreferencesState>(
                   builder: (_, prefs) => Padding(
                     padding: EdgeInsets.zero,
                     child: ListView(
@@ -50,11 +48,9 @@ class StickersSettingsPage extends StatelessWidget {
                           suffix: Switch(
                             value: prefs.enableStickers,
                             onChanged: (value) {
-                              context.read<PreferencesBloc>().add(
-                                    PreferencesChangedEvent(
-                                      prefs.copyWith(
-                                        enableStickers: value,
-                                      ),
+                              context.read<PreferencesCubit>().change(
+                                    prefs.copyWith(
+                                      enableStickers: value,
                                     ),
                                   );
                             },
@@ -67,22 +63,16 @@ class StickersSettingsPage extends StatelessWidget {
                           suffix: Switch(
                             value: prefs.autoDownloadStickersFromContacts,
                             onChanged: (value) {
-                              context.read<PreferencesBloc>().add(
-                                    PreferencesChangedEvent(
-                                      prefs.copyWith(
-                                        autoDownloadStickersFromContacts: value,
-                                      ),
+                              context.read<PreferencesCubit>().change(
+                                    prefs.copyWith(
+                                      autoDownloadStickersFromContacts: value,
                                     ),
                                   );
                             },
                           ),
                         ),
                         SettingsRow(
-                          onTap: () {
-                            GetIt.I.get<StickersBloc>().add(
-                                  StickerPackImportedEvent(),
-                                );
-                          },
+                          onTap: GetIt.I.get<StickersCubit>().import,
                           title: t.pages.settings.stickers.importStickerPack,
                         ),
                         SettingsRow(

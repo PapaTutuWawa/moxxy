@@ -1,4 +1,6 @@
 import 'dart:async';
+
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,26 +12,6 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
-import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart';
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
-import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
-import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
-import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
-import 'package:moxxyv2/ui/bloc/groupchat/joingroupchat_bloc.dart';
-import 'package:moxxyv2/ui/bloc/login_bloc.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/own_devices_bloc.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
-import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
-import 'package:moxxyv2/ui/bloc/request_bloc.dart';
-import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
-import 'package:moxxyv2/ui/bloc/server_info_bloc.dart';
-import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
-import 'package:moxxyv2/ui/bloc/startchat_bloc.dart';
-import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
-import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/events.dart';
@@ -39,8 +21,8 @@ import "package:moxxyv2/ui/pages/postregister/postregister.dart";
 */
 import 'package:moxxyv2/ui/pages/blocklist.dart';
 import 'package:moxxyv2/ui/pages/conversation/conversation.dart';
-import 'package:moxxyv2/ui/pages/conversations.dart';
 import 'package:moxxyv2/ui/pages/crop.dart';
+import 'package:moxxyv2/ui/pages/home/home.dart';
 import 'package:moxxyv2/ui/pages/intro.dart';
 import 'package:moxxyv2/ui/pages/login.dart';
 import 'package:moxxyv2/ui/pages/newconversation.dart';
@@ -71,10 +53,30 @@ import 'package:moxxyv2/ui/pages/sticker_pack.dart';
 import 'package:moxxyv2/ui/pages/util/qrcode.dart';
 import 'package:moxxyv2/ui/service/avatars.dart';
 import 'package:moxxyv2/ui/service/connectivity.dart';
-import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
 import 'package:moxxyv2/ui/service/read.dart';
 import 'package:moxxyv2/ui/service/sharing.dart';
+import 'package:moxxyv2/ui/state/account.dart';
+import 'package:moxxyv2/ui/state/blocklist.dart';
+import 'package:moxxyv2/ui/state/conversation.dart';
+import 'package:moxxyv2/ui/state/conversations.dart';
+import 'package:moxxyv2/ui/state/crop.dart';
+import 'package:moxxyv2/ui/state/cropbackground.dart';
+import 'package:moxxyv2/ui/state/devices.dart';
+import 'package:moxxyv2/ui/state/groupchat/joingroupchat.dart';
+import 'package:moxxyv2/ui/state/login.dart';
+import 'package:moxxyv2/ui/state/navigation.dart';
+import 'package:moxxyv2/ui/state/newconversation.dart';
+import 'package:moxxyv2/ui/state/own_devices.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
+import 'package:moxxyv2/ui/state/profile.dart';
+import 'package:moxxyv2/ui/state/request.dart';
+import 'package:moxxyv2/ui/state/sendfiles.dart';
+import 'package:moxxyv2/ui/state/server_info.dart';
+import 'package:moxxyv2/ui/state/share_selection.dart';
+import 'package:moxxyv2/ui/state/startchat.dart';
+import 'package:moxxyv2/ui/state/sticker_pack.dart';
+import 'package:moxxyv2/ui/state/stickers.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:page_transition/page_transition.dart';
 
@@ -91,7 +93,6 @@ void setupLogging() {
 
 Future<void> setupUIServices() async {
   GetIt.I.registerSingleton<UIProgressService>(UIProgressService());
-  GetIt.I.registerSingleton<UIDataService>(UIDataService());
   GetIt.I.registerSingleton<UIAvatarsService>(UIAvatarsService());
   GetIt.I.registerSingleton<UISharingService>(UISharingService());
   GetIt.I.registerSingleton<UIConnectivityService>(UIConnectivityService());
@@ -102,26 +103,28 @@ Future<void> setupUIServices() async {
 }
 
 void setupBlocs(GlobalKey<NavigatorState> navKey) {
-  GetIt.I
-      .registerSingleton<NavigationBloc>(NavigationBloc(navigationKey: navKey));
-  GetIt.I.registerSingleton<ConversationsBloc>(ConversationsBloc());
-  GetIt.I.registerSingleton<NewConversationBloc>(NewConversationBloc());
-  GetIt.I.registerSingleton<ConversationBloc>(ConversationBloc());
-  GetIt.I.registerSingleton<BlocklistBloc>(BlocklistBloc());
-  GetIt.I.registerSingleton<ProfileBloc>(ProfileBloc());
-  GetIt.I.registerSingleton<PreferencesBloc>(PreferencesBloc());
-  GetIt.I.registerSingleton<StartChatBloc>(StartChatBloc());
-  GetIt.I.registerSingleton<CropBloc>(CropBloc());
-  GetIt.I.registerSingleton<SendFilesBloc>(SendFilesBloc());
-  GetIt.I.registerSingleton<CropBackgroundBloc>(CropBackgroundBloc());
-  GetIt.I.registerSingleton<ShareSelectionBloc>(ShareSelectionBloc());
-  GetIt.I.registerSingleton<ServerInfoBloc>(ServerInfoBloc());
-  GetIt.I.registerSingleton<DevicesBloc>(DevicesBloc());
-  GetIt.I.registerSingleton<OwnDevicesBloc>(OwnDevicesBloc());
-  GetIt.I.registerSingleton<StickersBloc>(StickersBloc());
-  GetIt.I.registerSingleton<StickerPackBloc>(StickerPackBloc());
-  GetIt.I.registerSingleton<RequestBloc>(RequestBloc());
-  GetIt.I.registerSingleton<JoinGroupchatBloc>(JoinGroupchatBloc());
+  GetIt.I.registerSingleton<Navigation>(
+    Navigation(navigationKey: navKey),
+  );
+  GetIt.I.registerSingleton<NewConversationCubit>(NewConversationCubit());
+  GetIt.I.registerSingleton<ConversationCubit>(ConversationCubit());
+  GetIt.I.registerSingleton<BlocklistCubit>(BlocklistCubit());
+  GetIt.I.registerSingleton<ProfileCubit>(ProfileCubit());
+  GetIt.I.registerSingleton<PreferencesCubit>(PreferencesCubit());
+  GetIt.I.registerSingleton<StartChatCubit>(StartChatCubit());
+  GetIt.I.registerSingleton<CropCubit>(CropCubit());
+  GetIt.I.registerSingleton<SendFilesCubit>(SendFilesCubit());
+  GetIt.I.registerSingleton<CropBackgroundCubit>(CropBackgroundCubit());
+  GetIt.I.registerSingleton<ShareSelectionCubit>(ShareSelectionCubit());
+  GetIt.I.registerSingleton<ServerInfoCubit>(ServerInfoCubit());
+  GetIt.I.registerSingleton<DevicesCubit>(DevicesCubit());
+  GetIt.I.registerSingleton<OwnDevicesCubit>(OwnDevicesCubit());
+  GetIt.I.registerSingleton<StickersCubit>(StickersCubit());
+  GetIt.I.registerSingleton<StickerPackCubit>(StickerPackCubit());
+  GetIt.I.registerSingleton<RequestCubit>(RequestCubit());
+  GetIt.I.registerSingleton<JoinGroupchatCubit>(JoinGroupchatCubit());
+  GetIt.I.registerSingleton<ConversationsCubit>(ConversationsCubit());
+  GetIt.I.registerSingleton<AccountCubit>(AccountCubit());
 }
 
 void main() async {
@@ -140,65 +143,65 @@ void main() async {
   runApp(
     MultiBlocProvider(
       providers: [
-        BlocProvider<NavigationBloc>(
-          create: (_) => GetIt.I.get<NavigationBloc>(),
+        BlocProvider<LoginCubit>(
+          create: (_) => LoginCubit(),
         ),
-        BlocProvider<LoginBloc>(
-          create: (_) => LoginBloc(),
+        BlocProvider<ConversationsCubit>(
+          create: (_) => GetIt.I.get<ConversationsCubit>(),
         ),
-        BlocProvider<ConversationsBloc>(
-          create: (_) => GetIt.I.get<ConversationsBloc>(),
+        BlocProvider<NewConversationCubit>(
+          create: (_) => GetIt.I.get<NewConversationCubit>(),
         ),
-        BlocProvider<NewConversationBloc>(
-          create: (_) => GetIt.I.get<NewConversationBloc>(),
+        BlocProvider<ConversationCubit>(
+          create: (_) => GetIt.I.get<ConversationCubit>(),
         ),
-        BlocProvider<ConversationBloc>(
-          create: (_) => GetIt.I.get<ConversationBloc>(),
+        BlocProvider<BlocklistCubit>(
+          create: (_) => GetIt.I.get<BlocklistCubit>(),
         ),
-        BlocProvider<BlocklistBloc>(
-          create: (_) => GetIt.I.get<BlocklistBloc>(),
+        BlocProvider<ProfileCubit>(
+          create: (_) => GetIt.I.get<ProfileCubit>(),
         ),
-        BlocProvider<ProfileBloc>(
-          create: (_) => GetIt.I.get<ProfileBloc>(),
+        BlocProvider<PreferencesCubit>(
+          create: (_) => GetIt.I.get<PreferencesCubit>(),
         ),
-        BlocProvider<PreferencesBloc>(
-          create: (_) => GetIt.I.get<PreferencesBloc>(),
+        BlocProvider<StartChatCubit>(
+          create: (_) => GetIt.I.get<StartChatCubit>(),
         ),
-        BlocProvider<StartChatBloc>(
-          create: (_) => GetIt.I.get<StartChatBloc>(),
+        BlocProvider<CropCubit>(
+          create: (_) => GetIt.I.get<CropCubit>(),
         ),
-        BlocProvider<CropBloc>(
-          create: (_) => GetIt.I.get<CropBloc>(),
+        BlocProvider<SendFilesCubit>(
+          create: (_) => GetIt.I.get<SendFilesCubit>(),
         ),
-        BlocProvider<SendFilesBloc>(
-          create: (_) => GetIt.I.get<SendFilesBloc>(),
+        BlocProvider<CropBackgroundCubit>(
+          create: (_) => GetIt.I.get<CropBackgroundCubit>(),
         ),
-        BlocProvider<CropBackgroundBloc>(
-          create: (_) => GetIt.I.get<CropBackgroundBloc>(),
+        BlocProvider<ShareSelectionCubit>(
+          create: (_) => GetIt.I.get<ShareSelectionCubit>(),
         ),
-        BlocProvider<ShareSelectionBloc>(
-          create: (_) => GetIt.I.get<ShareSelectionBloc>(),
+        BlocProvider<ServerInfoCubit>(
+          create: (_) => GetIt.I.get<ServerInfoCubit>(),
         ),
-        BlocProvider<ServerInfoBloc>(
-          create: (_) => GetIt.I.get<ServerInfoBloc>(),
+        BlocProvider<DevicesCubit>(
+          create: (_) => GetIt.I.get<DevicesCubit>(),
         ),
-        BlocProvider<DevicesBloc>(
-          create: (_) => GetIt.I.get<DevicesBloc>(),
+        BlocProvider<OwnDevicesCubit>(
+          create: (_) => GetIt.I.get<OwnDevicesCubit>(),
         ),
-        BlocProvider<OwnDevicesBloc>(
-          create: (_) => GetIt.I.get<OwnDevicesBloc>(),
+        BlocProvider<StickersCubit>(
+          create: (_) => GetIt.I.get<StickersCubit>(),
         ),
-        BlocProvider<StickersBloc>(
-          create: (_) => GetIt.I.get<StickersBloc>(),
+        BlocProvider<StickerPackCubit>(
+          create: (_) => GetIt.I.get<StickerPackCubit>(),
         ),
-        BlocProvider<StickerPackBloc>(
-          create: (_) => GetIt.I.get<StickerPackBloc>(),
+        BlocProvider<RequestCubit>(
+          create: (_) => GetIt.I.get<RequestCubit>(),
         ),
-        BlocProvider<RequestBloc>(
-          create: (_) => GetIt.I.get<RequestBloc>(),
+        BlocProvider<JoinGroupchatCubit>(
+          create: (_) => GetIt.I.get<JoinGroupchatCubit>(),
         ),
-        BlocProvider<JoinGroupchatBloc>(
-          create: (_) => GetIt.I.get<JoinGroupchatBloc>(),
+        BlocProvider<AccountCubit>(
+          create: (_) => GetIt.I.get<AccountCubit>(),
         ),
       ],
       child: TranslationProvider(
@@ -271,100 +274,125 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      locale: TranslationProvider.of(context).flutterLocale,
-      supportedLocales: AppLocaleUtils.supportedLocales,
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      title: 'Moxxy',
-      theme: getThemeData(context, Brightness.light),
-      darkTheme: getThemeData(context, Brightness.dark),
-      navigatorKey: widget.navigationKey,
-      onGenerateRoute: (settings) {
-        switch (settings.name) {
-          case introRoute:
-            return Intro.route;
-          case loginRoute:
-            return Login.route;
-          case conversationsRoute:
-            return ConversationsPage.route;
-          case newConversationRoute:
-            return NewConversationPage.route;
-          case conversationRoute:
-            final args = settings.arguments! as ConversationPageArguments;
-            return PageTransition<dynamic>(
-              type: PageTransitionType.rightToLeft,
-              settings: settings,
-              child: ConversationPage(
-                conversationJid: args.conversationJid,
-                initialText: args.initialText,
-                conversationType: args.type,
-              ),
+    return DynamicColorBuilder(
+      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+        final light = lightDynamic?.harmonized() ??
+            ColorScheme.fromSeed(seedColor: primaryColor);
+        final dark = darkDynamic?.harmonized() ??
+            ColorScheme.fromSeed(
+              seedColor: primaryColor,
+              brightness: Brightness.dark,
             );
-          // case sharedMediaRoute:
-          //   return SharedMediaPage.getRoute(
-          //     settings.arguments! as SharedMediaPageArguments,
-          //   );
-          case blocklistRoute:
-            return BlocklistPage.route;
-          case profileRoute:
-            return ProfilePage.getRoute(
-              settings.arguments! as ProfileArguments,
-            );
-          case settingsRoute:
-            return SettingsPage.route;
-          case aboutRoute:
-            return SettingsAboutPage.route;
-          case licensesRoute:
-            return SettingsLicensesPage.route;
-          case networkRoute:
-            return NetworkPage.route;
-          case privacyRoute:
-            return PrivacyPage.route;
-          case debuggingRoute:
-            return DebuggingPage.route;
-          case addContactRoute:
-            return StartChatPage.route;
-          case joinGroupchatRoute:
-            return JoinGroupchatPage.getRoute(
-              settings.arguments! as JoinGroupchatArguments,
-            );
-          case cropRoute:
-            return CropPage.route;
-          case sendFilesRoute:
-            return SendFilesPage.route;
-          case backgroundCroppingRoute:
-            return CropBackgroundPage.route;
-          case shareSelectionRoute:
-            return ShareSelectionPage.route;
-          case serverInfoRoute:
-            return ServerInfoPage.route;
-          case conversationSettingsRoute:
-            return ConversationSettingsPage.route;
-          case devicesRoute:
-            return DevicesPage.route;
-          case ownDevicesRoute:
-            return OwnDevicesPage.route;
-          case appearanceRoute:
-            return AppearanceSettingsPage.route;
-          case qrCodeScannerRoute:
-            return QrCodeScanningPage.getRoute(
-              settings.arguments! as QrCodeScanningArguments,
-            );
-          case stickersRoute:
-            return StickersSettingsPage.route;
-          case stickerPacksRoute:
-            return StickerPacksSettingsPage.route;
-          case stickerPackRoute:
-            return StickerPackPage.route;
-          case storageSettingsRoute:
-            return StorageSettingsPage.route;
-          case storageSharedMediaSettingsRoute:
-            return StorageSharedMediaPage.route;
-        }
 
-        return null;
+        return MaterialApp(
+          locale: TranslationProvider.of(context).flutterLocale,
+          supportedLocales: AppLocaleUtils.supportedLocales,
+          localizationsDelegates: GlobalMaterialLocalizations.delegates,
+          title: 'Moxxy',
+          theme: ThemeData(
+            colorScheme: light,
+            extensions: [
+              getMoxxyThemeData(Brightness.light),
+            ],
+          ),
+          darkTheme: ThemeData(
+            colorScheme: dark,
+            extensions: [
+              getMoxxyThemeData(Brightness.dark),
+            ],
+          ),
+          navigatorKey: widget.navigationKey,
+          onGenerateRoute: (settings) {
+            switch (settings.name) {
+              case introRoute:
+                return Intro.route;
+              case loginRoute:
+                return Login.route;
+              case homeRoute:
+                return ConversationsPage.route;
+              case newConversationRoute:
+                return NewConversationPage.route;
+              case conversationRoute:
+                final args = settings.arguments! as ConversationPageArguments;
+                return PageTransition<dynamic>(
+                  type: PageTransitionType.rightToLeft,
+                  settings: settings,
+                  child: ConversationPage(
+                    conversationJid: args.conversationJid,
+                    initialText: args.initialText,
+                    conversationType: args.type,
+                  ),
+                );
+              // case sharedMediaRoute:
+              //   return SharedMediaPage.getRoute(
+              //     settings.arguments! as SharedMediaPageArguments,
+              //   );
+              case blocklistRoute:
+                return BlocklistPage.route;
+              case profileRoute:
+                return ProfilePage.getRoute(
+                  settings.arguments! as ProfileArguments,
+                );
+              case settingsRoute:
+                return PageTransition<dynamic>(
+                  type: PageTransitionType.rightToLeft,
+                  child: const SettingsPage(),
+                );
+              case aboutRoute:
+                return SettingsAboutPage.route;
+              case licensesRoute:
+                return SettingsLicensesPage.route;
+              case networkRoute:
+                return NetworkPage.route;
+              case privacyRoute:
+                return PrivacyPage.route;
+              case debuggingRoute:
+                return DebuggingPage.route;
+              case addContactRoute:
+                return StartChatPage.route;
+              case joinGroupchatRoute:
+                return JoinGroupchatPage.getRoute(
+                  settings.arguments! as JoinGroupchatArguments,
+                );
+              case cropRoute:
+                return CropPage.route;
+              case sendFilesRoute:
+                return SendFilesPage.route;
+              case backgroundCroppingRoute:
+                return CropBackgroundPage.route;
+              case shareSelectionRoute:
+                return ShareSelectionPage.route;
+              case serverInfoRoute:
+                return ServerInfoPage.route;
+              case conversationSettingsRoute:
+                return ConversationSettingsPage.route;
+              case devicesRoute:
+                return DevicesPage.route;
+              case ownDevicesRoute:
+                return OwnDevicesPage.route;
+              case appearanceRoute:
+                return AppearanceSettingsPage.route;
+              case qrCodeScannerRoute:
+                return QrCodeScanningPage.getRoute(
+                  settings.arguments! as QrCodeScanningArguments,
+                );
+              case stickersRoute:
+                return StickersSettingsPage.route;
+              case stickerPacksRoute:
+                return StickerPacksSettingsPage.route;
+              case stickerPackRoute:
+                return StickerPackPage.route;
+              case storageSettingsRoute:
+                return StorageSettingsPage.route;
+              case storageSharedMediaSettingsRoute:
+                return StorageSharedMediaPage.route;
+            }
+
+            return null;
+          },
+          home: const Splashscreen(),
+        );
       },
-      home: const Splashscreen(),
     );
   }
 }

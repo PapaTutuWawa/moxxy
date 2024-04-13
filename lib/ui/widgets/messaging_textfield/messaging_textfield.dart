@@ -6,7 +6,7 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/pages/conversation/keyboard_dodging.dart';
-import 'package:moxxyv2/ui/service/data.dart';
+import 'package:moxxyv2/ui/state/account.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/message.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/constants.dart';
@@ -176,7 +176,11 @@ class MobileMessagingTextFieldState extends State<MobileMessagingTextField>
                                   snapshot.data!.quotedMessage!,
                                   isSent(
                                     snapshot.data!.quotedMessage!,
-                                    GetIt.I.get<UIDataService>().ownJid!,
+                                    GetIt.I
+                                        .get<AccountCubit>()
+                                        .state
+                                        .account
+                                        .jid,
                                   ),
                                   widget.conversationController
                                           .conversationType ==

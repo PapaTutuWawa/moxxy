@@ -156,6 +156,7 @@ Future<void> createDatabase(Database db, int version) async {
       contactId           TEXT,
       contactAvatarPath   TEXT,
       contactDisplayName  TEXT,
+      favourite           INTEGER NOT NULL,
       PRIMARY KEY (jid, accountJid),
       CONSTRAINT fk_last_message
         FOREIGN KEY (lastMessageId)

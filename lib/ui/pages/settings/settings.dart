@@ -4,10 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/state/blocklist.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -28,7 +28,7 @@ class SettingsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(t.pages.settings.settings.title),
       ),
-      body: BlocBuilder<PreferencesBloc, PreferencesState>(
+      body: BlocBuilder<PreferencesCubit, PreferencesState>(
         buildWhen: (prev, next) => prev.showDebugMenu != next.showDebugMenu,
         builder: (context, state) => ListView(
           children: [
@@ -101,9 +101,7 @@ class SettingsPage extends StatelessWidget {
                 child: Icon(Icons.block),
               ),
               onTap: () {
-                GetIt.I.get<BlocklistBloc>().add(
-                      BlocklistRequestedEvent(),
-                    );
+                GetIt.I.get<BlocklistCubit>().requestBlocklist();
               },
             ),
             SectionTitle(t.pages.settings.settings.accountSection),
@@ -121,7 +119,7 @@ class SettingsPage extends StatelessWidget {
                 );
 
                 if (result) {
-                  GetIt.I.get<PreferencesBloc>().add(SignedOutEvent());
+                  await GetIt.I.get<PreferencesCubit>().signOut();
                 }
               },
             ),

@@ -7,11 +7,11 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/groupchat_member.dart';
-import 'package:moxxyv2/ui/bloc/server_info_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/profile/conversationheader.dart';
 import 'package:moxxyv2/ui/pages/profile/profile.dart';
 import 'package:moxxyv2/ui/pages/profile/selfheader.dart';
+import 'package:moxxyv2/ui/state/server_info.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 
 extension AffiliationIntValue on Affiliation {
@@ -71,7 +71,10 @@ class ProfileViewState extends State<ProfileView> {
   Widget _buildMemberTile(GroupchatMember member) {
     if (member.isSelf) {
       return ListTile(
-        leading: CachingXMPPAvatar.self(radius: 20),
+        leading: CachingXMPPAvatar.self(
+          size: 40,
+          borderRadius: 20,
+        ),
         title: Text(
           member.nick,
           overflow: TextOverflow.ellipsis,
@@ -87,8 +90,9 @@ class ProfileViewState extends State<ProfileView> {
     } else {
       return ListTile(
         leading: CachingXMPPAvatar(
+          borderRadius: 20,
+          size: 40,
           jid: '${widget.arguments.jid}/${member.nick}',
-          radius: 20,
           hasContactId: false,
           isGroupchat: true,
           // TODO(Unknown): Request avatars at some point
@@ -159,9 +163,7 @@ class ProfileViewState extends State<ProfileView> {
               child: IconButton(
                 color: Colors.white,
                 icon: const Icon(Icons.info_outline),
-                onPressed: () {
-                  context.read<ServerInfoBloc>().add(ServerInfoPageRequested());
-                },
+                onPressed: context.read<ServerInfoCubit>().request,
               ),
             ),
           ),

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
 
@@ -105,7 +105,7 @@ class NetworkPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(t.pages.settings.network.title),
       ),
-      body: BlocBuilder<PreferencesBloc, PreferencesState>(
+      body: BlocBuilder<PreferencesCubit, PreferencesState>(
         builder: (context, state) => ListView(
           children: [
             SectionTitle(t.pages.settings.network.automaticDownloadsSection),
@@ -120,10 +120,8 @@ class NetworkPage extends StatelessWidget {
               ),
               suffix: Switch(
                 value: state.autoDownloadWifi,
-                onChanged: (value) => context.read<PreferencesBloc>().add(
-                      PreferencesChangedEvent(
-                        state.copyWith(autoDownloadWifi: value),
-                      ),
+                onChanged: (value) => context.read<PreferencesCubit>().change(
+                      state.copyWith(autoDownloadWifi: value),
                     ),
               ),
             ),
@@ -135,10 +133,8 @@ class NetworkPage extends StatelessWidget {
               ),
               suffix: Switch(
                 value: state.autoDownloadMobile,
-                onChanged: (value) => context.read<PreferencesBloc>().add(
-                      PreferencesChangedEvent(
-                        state.copyWith(autoDownloadMobile: value),
-                      ),
+                onChanged: (value) => context.read<PreferencesCubit>().change(
+                      state.copyWith(autoDownloadMobile: value),
                     ),
               ),
             ),
@@ -157,10 +153,8 @@ class NetworkPage extends StatelessWidget {
                 if (state.maximumAutoDownloadSize == result) return;
 
                 // ignore: use_build_context_synchronously
-                context.read<PreferencesBloc>().add(
-                      PreferencesChangedEvent(
-                        state.copyWith(maximumAutoDownloadSize: result),
-                      ),
+                await context.read<PreferencesCubit>().change(
+                      state.copyWith(maximumAutoDownloadSize: result),
                     );
               },
             ),

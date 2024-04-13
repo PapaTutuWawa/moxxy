@@ -5,11 +5,12 @@ import 'package:move_to_background/move_to_background.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as navigation;
-import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
+import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
-import 'package:moxxyv2/ui/widgets/conversation.dart';
+import 'package:moxxyv2/ui/state/navigation.dart' as navigation;
+import 'package:moxxyv2/ui/state/share_selection.dart';
+import 'package:moxxyv2/ui/widgets/conversation_card.dart';
 
 class ShareSelectionPage extends StatelessWidget {
   const ShareSelectionPage({super.key});
@@ -31,13 +32,13 @@ class ShareSelectionPage extends StatelessWidget {
         prev.type != next.type;
   }
 
-  IconData? _getSuffixIcon(ShareListItem item) {
+  Widget? _getSuffixIcon(ShareListItem item) {
     if (item.pseudoRosterItem) {
-      return Icons.smartphone;
+      return const Icon(Icons.smartphone);
     }
 
     if (item.isEncrypted) {
-      return Icons.lock;
+      return const Icon(Icons.lock);
     }
 
     return null;
@@ -45,23 +46,19 @@ class ShareSelectionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        GetIt.I.get<ShareSelectionBloc>().add(ResetEvent());
+    return PopScope(
+      onPopInvoked: (_) {
+        GetIt.I.get<ShareSelectionCubit>().reset();
 
         // Navigate to the conversations page...
-        GetIt.I.get<navigation.NavigationBloc>().add(
-              navigation.PushedNamedAndRemoveUntilEvent(
-                const navigation.NavigationDestination(conversationsRoute),
-                (_) => false,
-              ),
+        GetIt.I.get<navigation.Navigation>().pushNamedAndRemoveUntil(
+              const navigation.NavigationDestination(homeRoute),
+              (_) => false,
             );
         // ...and put the app back into the background
-        await MoveToBackground.moveTaskToBack();
-
-        return false;
+        MoveToBackground.moveTaskToBack();
       },
-      child: BlocBuilder<ShareSelectionBloc, ShareSelectionState>(
+      child: BlocBuilder<ShareSelectionCubit, ShareSelectionState>(
         buildWhen: _buildWhen,
         builder: (context, state) => Scaffold(
           appBar: AppBar(
@@ -72,11 +69,22 @@ class ShareSelectionPage extends StatelessWidget {
             itemBuilder: (context, index) {
               final item = state.items[index];
 
-              return ConversationsListRow(
-                Conversation(
+              return ConversationCard(
+                conversation: Conversation(
                   '',
                   item.titleWithOptionalContact,
-                  null,
+                  Message(
+                    '',
+                    '',
+                    '',
+                    item.jid,
+                    0,
+                    '',
+                    '',
+                    false,
+                    false,
+                    false,
+                  ),
                   item.avatarPath,
                   item.avatarHash,
                   item.jid,
@@ -93,14 +101,11 @@ class ShareSelectionPage extends StatelessWidget {
                   contactAvatarPath: item.contactAvatarPath,
                   contactDisplayName: item.contactDisplayName,
                 ),
-                false,
                 titleSuffixIcon: _getSuffixIcon(item),
                 showTimestamp: false,
-                isSelected: state.selection.contains(index),
-                onPressed: () {
-                  context.read<ShareSelectionBloc>().add(
-                        SelectionToggledEvent(index),
-                      );
+                selected: state.selection.contains(index),
+                onTap: () {
+                  context.read<ShareSelectionCubit>().selectionToggled(index);
                 },
               );
             },
@@ -108,13 +113,13 @@ class ShareSelectionPage extends StatelessWidget {
           floatingActionButton: state.selection.isNotEmpty
               ? FloatingActionButton(
                   onPressed: () async {
-                    final bloc = context.read<ShareSelectionBloc>();
+                    final cubit = context.read<ShareSelectionCubit>();
                     final hasUnencrypted =
-                        bloc.state.selection.any((selection) {
-                      return !bloc.state.items[selection].isEncrypted;
+                        cubit.state.selection.any((selection) {
+                      return !cubit.state.items[selection].isEncrypted;
                     });
-                    final hasEncrypted = bloc.state.selection.any((selection) {
-                      return bloc.state.items[selection].isEncrypted;
+                    final hasEncrypted = cubit.state.selection.any((selection) {
+                      return cubit.state.items[selection].isEncrypted;
                     });
 
                     // Warn the user
@@ -126,12 +131,12 @@ class ShareSelectionPage extends StatelessWidget {
                       );
 
                       if (result) {
-                        bloc.add(SubmittedEvent());
+                        await cubit.submit();
                       }
                       return;
                     }
 
-                    bloc.add(SubmittedEvent());
+                    await cubit.submit();
                   },
                   child: const Icon(
                     Icons.send,

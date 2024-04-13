@@ -1,17 +1,18 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/service/avatars.dart';
-import 'package:moxxyv2/ui/theme.dart';
+import 'package:moxxyv2/ui/state/account.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
 
 class CachingXMPPAvatar extends StatefulWidget {
   const CachingXMPPAvatar({
     required this.jid,
-    required this.radius,
+    required this.size,
+    required this.borderRadius,
     required this.hasContactId,
     required this.isGroupchat,
     this.altIcon,
@@ -24,19 +25,23 @@ class CachingXMPPAvatar extends StatefulWidget {
   });
 
   static Widget self({
-    required double radius,
+    required double size,
+    required double borderRadius,
     VoidCallback? onTap,
   }) {
-    return BlocBuilder<ConversationsBloc, ConversationsState>(
-      buildWhen: (prev, next) => prev.avatarPath != next.avatarPath,
+    return BlocBuilder<AccountCubit, AccountState>(
+      buildWhen: (prev, next) =>
+          prev.account.avatarPath != next.account.avatarPath,
       builder: (context, state) {
         return CachingXMPPAvatar(
-          radius: radius,
-          path: state.avatarPath,
+          size: size,
+          borderRadius: borderRadius,
+          path: state.account.avatarPath,
+          hash: state.account.avatarHash,
           altIcon: Icons.person,
           hasContactId: false,
           isGroupchat: false,
-          jid: state.jid,
+          jid: state.account.jid,
           ownAvatar: true,
           onTap: onTap,
         );
@@ -53,8 +58,11 @@ class CachingXMPPAvatar extends StatefulWidget {
   /// The (potentially null) path to the avatar image.
   final String? path;
 
-  /// The radius of the avatar widget.
-  final double radius;
+  /// The width and height of the avatar.
+  final double size;
+
+  /// The border radius of the avatar
+  final double borderRadius;
 
   /// Flag indicating that the avatar is a groupchat avatar.
   final bool isGroupchat;
@@ -81,7 +89,7 @@ class CachingXMPPAvatar extends StatefulWidget {
 class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
   void _performRequest() {
     // Only request the avatar if we don't have a contact integration avatar already.
-    if (!GetIt.I.get<PreferencesBloc>().state.enableContactIntegration ||
+    if (!GetIt.I.get<PreferencesCubit>().state.enableContactIntegration ||
         !widget.hasContactId) {
       GetIt.I.get<UIAvatarsService>().requestAvatarIfRequired(
             widget.jid,
@@ -114,10 +122,7 @@ class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
     if (widget.altIcon != null) {
       return Icon(
         widget.altIcon,
-        // NOTE: 62/87 is 2*31/87, of which 31/87 has been pixel measured from how it was
-        // before this size attribute has been set. The multiplication with 2 just makes
-        // it look better.
-        size: widget.radius * (62 / 87),
+        size: widget.size * (38 / 87),
       );
     }
 
@@ -125,24 +130,29 @@ class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
     if (widget.isGroupchat) {
       return Icon(
         Icons.group,
-        size: widget.radius * (62 / 87),
+        size: widget.size * (38 / 87),
       );
     } else {
       assert(
         widget.jid.length >= 2,
         '${widget.jid} must be longer longer than 1 character',
       );
-      return Text(widget.jid.substring(0, 2).toUpperCase());
+      return Text(
+        widget.jid.substring(0, 2).toUpperCase(),
+        style: TextStyle(
+          fontSize: widget.size * (38 / 87),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(widget.radius),
+      borderRadius: BorderRadius.circular(widget.borderRadius),
       child: SizedBox(
-        width: widget.radius * 2,
-        height: widget.radius * 2,
+        width: widget.size,
+        height: widget.size,
         child: Material(
           color: Colors.transparent,
           child: StreamBuilder<AvatarUpdatedEvent>(
@@ -155,9 +165,7 @@ class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
               // TODO(Unknown): Remove once we can handle groupchat avatars
               if (path == null) {
                 return Ink(
-                  color: Theme.of(context)
-                      .extension<MoxxyThemeData>()!
-                      .profileFallbackBackgroundColor,
+                  color: Theme.of(context).colorScheme.outline,
                   child: InkWell(
                     onTap: widget.onTap,
                     child: Center(

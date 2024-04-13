@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/bloc/startchat_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/state/startchat.dart';
 
 class StartChatPage extends StatefulWidget {
   const StartChatPage({super.key});
@@ -24,17 +24,13 @@ class StartChatPageState extends State<StartChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<StartChatBloc, StartChatState>(
-      builder: (context, state) => WillPopScope(
-        onWillPop: () async {
-          if (state.isWorking) {
-            return false;
+    return BlocBuilder<StartChatCubit, StartChatState>(
+      builder: (context, state) => PopScope(
+        canPop: !state.isWorking,
+        onPopInvoked: (didPop) {
+          if (didPop) {
+            context.read<StartChatCubit>().reset();
           }
-
-          context.read<StartChatBloc>().add(
-                PageResetEvent(),
-              );
-          return true;
         },
         child: Scaffold(
           appBar: AppBar(
@@ -51,9 +47,7 @@ class StartChatPageState extends State<StartChatPage> {
                     const EdgeInsets.symmetric(horizontal: paddingVeryLarge)
                         .add(const EdgeInsets.only(top: 8)),
                 child: TextField(
-                  onChanged: (value) => context.read<StartChatBloc>().add(
-                        JidChangedEvent(value),
-                      ),
+                  onChanged: context.read<StartChatCubit>().onJidChanged,
                   controller: _controller,
                   enabled: !state.isWorking,
                   decoration: InputDecoration(
@@ -69,9 +63,7 @@ class StartChatPageState extends State<StartChatPage> {
 
                         _controller.text = jid.path;
                         // ignore: use_build_context_synchronously
-                        context.read<StartChatBloc>().add(
-                              JidChangedEvent(jid.path),
-                            );
+                        context.read<StartChatCubit>().onJidChanged(jid.path);
                       },
                     ),
                   ),
@@ -93,9 +85,7 @@ class StartChatPageState extends State<StartChatPage> {
                       child: FilledButton(
                         onPressed: state.isWorking
                             ? null
-                            : () => context
-                                .read<StartChatBloc>()
-                                .add(AddedContactEvent()),
+                            : context.read<StartChatCubit>().addContact,
                         child: Text(t.pages.startchat.buttonAddToContact),
                       ),
                     ),

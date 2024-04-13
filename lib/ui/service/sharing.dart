@@ -1,10 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/shared/constants.dart';
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
-import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
-import 'package:moxxyv2/ui/service/data.dart';
+import 'package:moxxyv2/ui/state/account.dart';
+import 'package:moxxyv2/ui/state/conversation.dart';
+import 'package:moxxyv2/ui/state/sendfiles.dart';
+import 'package:moxxyv2/ui/state/share_selection.dart';
 import 'package:share_handler/share_handler.dart';
 
 /// This service is responsible for storing a sharing request and or executing it.
@@ -38,14 +38,12 @@ class UISharingService {
 
       // Handle direct shares
       if (media.content != null) {
-        GetIt.I.get<ConversationBloc>().add(
-              RequestedConversationEvent(
-                conversationJid!,
-                '',
-                null,
-                removeUntilConversations: true,
-                initialText: media.content,
-              ),
+        await GetIt.I.get<ConversationCubit>().request(
+              conversationJid!,
+              '',
+              null,
+              removeUntilConversations: true,
+              initialText: media.content,
             );
       } else {
         final isMedia = attachments.every(
@@ -53,35 +51,30 @@ class UISharingService {
               attachment!.type == SharedAttachmentType.image ||
               attachment.type == SharedAttachmentType.video,
         );
-        GetIt.I.get<SendFilesBloc>().add(
-              SendFilesPageRequestedEvent(
-                [
-                  // NOTE: We put in some stub values (except for the JID) as the UI will fetch it.
-                  SendFilesRecipient(
-                    conversationJid!,
-                    conversationJid,
-                    null,
-                    null,
-                    false,
-                  ),
-                ],
-                isMedia ? SendFilesType.media : SendFilesType.generic,
-                paths:
-                    attachments.map((attachment) => attachment!.path).toList(),
-                hasRecipientData: false,
-                popEntireStack: true,
-              ),
-            );
+        await GetIt.I.get<SendFilesCubit>().request(
+          [
+            // NOTE: We put in some stub values (except for the JID) as the UI will fetch it.
+            SendFilesRecipient(
+              conversationJid!,
+              conversationJid,
+              null,
+              null,
+              false,
+            ),
+          ],
+          isMedia ? SendFilesType.media : SendFilesType.generic,
+          paths: attachments.map((attachment) => attachment!.path).toList(),
+          hasRecipientData: false,
+          popEntireStack: true,
+        );
       }
     } else {
-      GetIt.I.get<ShareSelectionBloc>().add(
-            ShareSelectionRequestedEvent(
-              attachments.map((a) => a!.path).toList(),
-              media.content,
-              media.content != null
-                  ? ShareSelectionType.text
-                  : ShareSelectionType.media,
-            ),
+      GetIt.I.get<ShareSelectionCubit>().request(
+            attachments.map((a) => a!.path).toList(),
+            media.content,
+            media.content != null
+                ? ShareSelectionType.text
+                : ShareSelectionType.media,
           );
     }
 
@@ -117,7 +110,7 @@ class UISharingService {
 
     ShareHandlerPlatform.instance.sharedMediaStream
         .listen((SharedMedia media) async {
-      if (GetIt.I.get<UIDataService>().isLoggedIn) {
+      if (GetIt.I.get<AccountCubit>().hasActiveAccount()) {
         _log.finest('stream: Handle shared media via stream');
         await _handleSharedMedia(media);
       }

@@ -47,7 +47,7 @@ import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:moxxyv2/shared/models/sticker_pack.dart' as sticker_pack;
 import 'package:moxxyv2/shared/models/xmpp_state.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
-import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
+import 'package:moxxyv2/ui/state/sendfiles.dart';
 
 void setupBackgroundEventHandler() {
   final handler = EventHandler()
@@ -119,6 +119,10 @@ void setupBackgroundEventHandler() {
       ),
       EventTypeMatcher<ExitConversationCommand>(performConversationExited),
       EventTypeMatcher<GetMembersForGroupchatCommand>(performGetMembers),
+      EventTypeMatcher<PerformConversationSearch>(performConversationSearch),
+      EventTypeMatcher<ConversationSetFavourite>(
+        performSetConversationFavourite,
+      ),
     ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -1762,5 +1766,41 @@ Future<void> performGetMembers(
       ),
     ),
     id: extra as String,
+  );
+}
+
+Future<void> performConversationSearch(
+  PerformConversationSearch command, {
+  dynamic extra,
+}) async {
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
+  final cs = GetIt.I.get<ConversationService>();
+
+  sendEvent(
+    ConversationSearchResult(
+      results: await cs.searchConversations(accountJid!, command.text),
+    ),
+    id: extra as String,
+  );
+}
+
+Future<void> performSetConversationFavourite(
+  ConversationSetFavourite command, {
+  dynamic extra,
+}) async {
+  final cs = GetIt.I.get<ConversationService>();
+  final newConversation = await cs.createOrUpdateConversation(
+    command.jid,
+    command.accountJid,
+    update: (Conversation conversation) {
+      return cs.updateConversation(
+        command.jid,
+        command.accountJid,
+        favourite: command.state,
+      );
+    },
+  );
+  sendEvent(
+    ConversationUpdatedEvent(conversation: newConversation!),
   );
 }

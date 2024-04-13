@@ -89,6 +89,34 @@ MaterialStateProperty<Color> _makeEnabledDisabledProperty(
   });
 }
 
+/// Helper function to construct the ThemeData extension for Moxxy-specific theming.
+// TODO(Unknown): Remove once we have an actual design for everything
+MoxxyThemeData getMoxxyThemeData(Brightness brightness) {
+  if (brightness == Brightness.dark) {
+    return const MoxxyThemeData(
+      conversationTextFieldColor: conversationTextFieldColorDark,
+      profileFallbackBackgroundColor: profileFallbackBackgroundColorDark,
+      profileFallbackTextColor: profileFallbackTextColorDark,
+      bubbleQuoteInTextFieldColor: bubbleQuoteInTextFieldColorDark,
+      bubbleQuoteInTextFieldTextColor: bubbleQuoteInTextFieldTextColorDark,
+      conversationTextFieldHintTextColor: textFieldHintTextColorDark,
+      conversationTextFieldTextColor: textFieldTextColorDark,
+      conversationOverlayTextColor: conversationOverlayButtonTextColor,
+    );
+  } else {
+    return const MoxxyThemeData(
+      conversationTextFieldColor: conversationTextFieldColorLight,
+      profileFallbackBackgroundColor: profileFallbackBackgroundColorLight,
+      profileFallbackTextColor: profileFallbackTextColorLight,
+      bubbleQuoteInTextFieldColor: bubbleQuoteInTextFieldColorLight,
+      bubbleQuoteInTextFieldTextColor: bubbleQuoteInTextFieldTextColorLight,
+      conversationTextFieldHintTextColor: textFieldHintTextColorLight,
+      conversationTextFieldTextColor: textFieldTextColorLight,
+      conversationOverlayTextColor: conversationOverlayButtonTextColor,
+    );
+  }
+}
+
 // NOTE: Inspired by syphon's code: https://github.com/syphon-org/syphon/blob/dev/lib/global/themes.dart
 ThemeData getThemeData(BuildContext context, Brightness brightness) {
   return ThemeData(
@@ -143,28 +171,7 @@ ThemeData getThemeData(BuildContext context, Brightness brightness) {
     ),
 
     extensions: [
-      if (brightness == Brightness.dark)
-        const MoxxyThemeData(
-          conversationTextFieldColor: conversationTextFieldColorDark,
-          profileFallbackBackgroundColor: profileFallbackBackgroundColorDark,
-          profileFallbackTextColor: profileFallbackTextColorDark,
-          bubbleQuoteInTextFieldColor: bubbleQuoteInTextFieldColorDark,
-          bubbleQuoteInTextFieldTextColor: bubbleQuoteInTextFieldTextColorDark,
-          conversationTextFieldHintTextColor: textFieldHintTextColorDark,
-          conversationTextFieldTextColor: textFieldTextColorDark,
-          conversationOverlayTextColor: conversationOverlayButtonTextColor,
-        )
-      else
-        const MoxxyThemeData(
-          conversationTextFieldColor: conversationTextFieldColorLight,
-          profileFallbackBackgroundColor: profileFallbackBackgroundColorLight,
-          profileFallbackTextColor: profileFallbackTextColorLight,
-          bubbleQuoteInTextFieldColor: bubbleQuoteInTextFieldColorLight,
-          bubbleQuoteInTextFieldTextColor: bubbleQuoteInTextFieldTextColorLight,
-          conversationTextFieldHintTextColor: textFieldHintTextColorLight,
-          conversationTextFieldTextColor: textFieldTextColorLight,
-          conversationOverlayTextColor: conversationOverlayButtonTextColor,
-        ),
+      getMoxxyThemeData(brightness),
     ],
   );
 }

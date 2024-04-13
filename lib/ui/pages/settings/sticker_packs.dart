@@ -3,9 +3,9 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
-import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/sticker_pack_controller.dart';
+import 'package:moxxyv2/ui/state/sticker_pack.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -99,10 +99,8 @@ class StickerPacksSettingsState extends State<StickerPacksSettingsPage> {
                   ),
                 ),
                 onTap: () {
-                  GetIt.I.get<StickerPackBloc>().add(
-                        LocallyAvailableStickerPackRequested(
-                          snapshot.data![index].id,
-                        ),
+                  GetIt.I.get<StickerPackCubit>().requestLocalStickerPack(
+                        snapshot.data![index].id,
                       );
                 },
               );

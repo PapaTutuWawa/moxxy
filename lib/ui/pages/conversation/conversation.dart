@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
@@ -13,17 +14,18 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
-import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/keyboard_dodging.dart';
 import 'package:moxxyv2/ui/pages/conversation/selected_message.dart';
 import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
-import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/read.dart';
+import 'package:moxxyv2/ui/state/account.dart';
+import 'package:moxxyv2/ui/state/conversation.dart';
+import 'package:moxxyv2/ui/state/conversations.dart';
+import 'package:moxxyv2/ui/state/navigation.dart';
+import 'package:moxxyv2/ui/state/sendfiles.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/bubbles.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
@@ -32,6 +34,7 @@ import 'package:moxxyv2/ui/widgets/chat/typing_indicator.dart';
 import 'package:moxxyv2/ui/widgets/combined_picker.dart';
 import 'package:moxxyv2/ui/widgets/context_menu.dart';
 import 'package:moxxyv2/ui/widgets/messaging_textfield/messaging_textfield.dart';
+import 'package:moxxyv2/ui/widgets/quirks/pop_scope.dart';
 import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
 
@@ -110,6 +113,8 @@ class ConversationPageState extends State<ConversationPage>
 
   final Map<String, GlobalKey> _messageKeys = {};
 
+  final ValueNotifier<bool> _canPopNotifier = ValueNotifier(true);
+
   @override
   void initState() {
     super.initState();
@@ -121,6 +126,8 @@ class ConversationPageState extends State<ConversationPage>
       _textfieldFocusNode,
       initialText: widget.initialText,
     );
+    _conversationController.messagingController.isRecordingNotifier
+        .addListener(_onRecordingStateChanged);
     _conversationController.fetchOlderData();
 
     // Tabbing inside the combined picker
@@ -166,6 +173,8 @@ class ConversationPageState extends State<ConversationPage>
   void dispose() {
     // Controllers
     _tabController.dispose();
+    _conversationController.messagingController.isRecordingNotifier
+        .removeListener(_onRecordingStateChanged);
     _conversationController.dispose();
     _keyboardController.dispose();
 
@@ -176,6 +185,11 @@ class ConversationPageState extends State<ConversationPage>
     _scrollToBottomAnimationController.dispose();
     _scrolledToBottomStateSubscription.cancel();
     super.dispose();
+  }
+
+  void _onRecordingStateChanged() {
+    _canPopNotifier.value =
+        !_conversationController.messagingController.isRecordingNotifier.value;
   }
 
   /// Called when we should show or hide the "scroll to bottom" button.
@@ -220,9 +234,7 @@ class ConversationPageState extends State<ConversationPage>
 
                   if (result) {
                     // ignore: use_build_context_synchronously
-                    context.read<ConversationBloc>().add(
-                          JidAddedEvent(jid),
-                        );
+                    await context.read<ConversationCubit>().add(jid);
                   }
                 },
               ),
@@ -270,7 +282,7 @@ class ConversationPageState extends State<ConversationPage>
       );
     }
 
-    final ownJid = GetIt.I.get<UIDataService>().ownJid!;
+    final ownJid = GetIt.I.get<AccountCubit>().state.account.jid;
     final start = index - 1 < 0
         ? true
         : isSent(messages[index - 1], ownJid) != isSent(item, ownJid);
@@ -326,6 +338,7 @@ class ConversationPageState extends State<ConversationPage>
 
         // Dismiss the soft-keyboard
         dismissSoftKeyboard(context);
+        _canPopNotifier.value = false;
 
         // Start the actual animation
         _selectionController.selectMessage(
@@ -366,19 +379,21 @@ class ConversationPageState extends State<ConversationPage>
   @override
   Widget build(BuildContext context) {
     final maxWidth = MediaQuery.of(context).size.width * 0.6;
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScopeNotifier(
+      canPopNotifier: _canPopNotifier,
+      onPopInvoked: (didPop) async {
+        final wasRecording = _conversationController
+            .messagingController.isRecordingNotifier.value;
         if (_keyboardController.currentData.visible) {
           // If the keyboard is open, dismiss it.
           dismissSoftKeyboard(context);
-          return false;
+          return;
         } else if (_keyboardController.currentData.showWidget) {
           // If the emoji/sticker picker is open, dismiss it.
           _keyboardController.hideWidget();
           _textfieldFocusNode.unfocus();
-          return false;
-        } else if (_conversationController
-            .messagingController.isRecordingNotifier.value) {
+          return;
+        } else if (wasRecording) {
           // If we are recording a voice message, ask if we should continue or discard it.
           final result = await showConfirmationDialog(
             t.pages.conversation.voiceRecording.leaveConfirmation.title,
@@ -390,7 +405,7 @@ class ConversationPageState extends State<ConversationPage>
                 t.pages.conversation.voiceRecording.leaveConfirmation.negative,
           );
           if (!result) {
-            return false;
+            return;
           }
 
           // Cancel the recording
@@ -401,15 +416,17 @@ class ConversationPageState extends State<ConversationPage>
         GetIt.I.get<UIReadMarkerService>().clear();
 
         // Tell the backend that the chat is no longer open
-        GetIt.I.get<ConversationsBloc>().add(
-              ConversationExitedEvent(
-                widget.conversationType,
-              ),
+        await GetIt.I.get<ConversationsCubit>().exitConversation(
+              widget.conversationType,
             );
-        return true;
+
+        if (wasRecording) {
+          GetIt.I.get<Navigation>().pop();
+        }
       },
       child: KeyboardReplacerScaffold(
         controller: _keyboardController,
+        canPop: _canPopNotifier,
         keyboardWidget: CombinedPicker(
           tabController: _tabController,
           onEmojiTapped: (emoji) {
@@ -491,7 +508,7 @@ class ConversationPageState extends State<ConversationPage>
             conversationController: _conversationController,
           ),
         ],
-        background: BlocBuilder<ConversationBloc, ConversationState>(
+        background: BlocBuilder<ConversationCubit, ConversationState>(
           buildWhen: (prev, next) => prev.backgroundPath != next.backgroundPath,
           builder: (context, state) {
             final query = MediaQuery.of(context);
@@ -515,7 +532,7 @@ class ConversationPageState extends State<ConversationPage>
           },
         ),
         children: [
-          BlocBuilder<ConversationBloc, ConversationState>(
+          BlocBuilder<ConversationCubit, ConversationState>(
             buildWhen: (prev, next) =>
                 prev.conversation?.showAddToRoster !=
                 next.conversation?.showAddToRoster,
@@ -565,7 +582,7 @@ class ConversationPageState extends State<ConversationPage>
                           ),
                           indexedItemBuilder: (context, message, index) =>
                               _renderBubble(
-                            context.read<ConversationBloc>().state,
+                            context.read<ConversationCubit>().state,
                             message,
                             snapshot.data!,
                             index,
@@ -608,7 +625,7 @@ class ConversationPageState extends State<ConversationPage>
               ],
             ),
           ),
-          BlocBuilder<ConversationBloc, ConversationState>(
+          BlocBuilder<ConversationCubit, ConversationState>(
             buildWhen: (prev, next) =>
                 prev.conversation?.chatState != next.conversation?.chatState,
             builder: (context, state) {
@@ -618,7 +635,7 @@ class ConversationPageState extends State<ConversationPage>
               );
             },
           ),
-          BlocBuilder<ConversationBloc, ConversationState>(
+          BlocBuilder<ConversationCubit, ConversationState>(
             buildWhen: (prev, next) =>
                 prev.conversation?.encrypted != next.conversation?.encrypted,
             builder: (context, state) => MobileMessagingTextField(
@@ -645,20 +662,18 @@ class ConversationPageState extends State<ConversationPage>
                 await File(tempFile).writeAsBytes(content.data!);
 
                 // Open the SendFiles page
-                GetIt.I.get<SendFilesBloc>().add(
-                      SendFilesPageRequestedEvent(
-                        [
-                          SendFilesRecipient(
-                            state.conversation!.jid,
-                            state.conversation!.titleWithOptionalContact,
-                            state.conversation!.avatarPath,
-                            state.conversation!.avatarHash,
-                            state.conversation!.contactId != null,
-                          ),
-                        ],
-                        SendFilesType.media,
-                        paths: [tempFile],
-                      ),
+                return GetIt.I.get<SendFilesCubit>().request(
+                      [
+                        SendFilesRecipient(
+                          state.conversation!.jid,
+                          state.conversation!.titleWithOptionalContact,
+                          state.conversation!.avatarPath,
+                          state.conversation!.avatarHash,
+                          state.conversation!.contactId != null,
+                        ),
+                      ],
+                      SendFilesType.media,
+                      paths: [tempFile],
                     );
               },
             ),

@@ -3,8 +3,8 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxmpp_color/moxxmpp_color.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/state/conversation.dart';
 
 class SenderName extends StatelessWidget {
   const SenderName(
@@ -35,7 +35,7 @@ class SenderName extends StatelessWidget {
       false => sent
           ? t.messages.you
           : GetIt.I
-              .get<ConversationBloc>()
+              .get<ConversationCubit>()
               .state
               .conversation!
               .titleWithOptionalContact,

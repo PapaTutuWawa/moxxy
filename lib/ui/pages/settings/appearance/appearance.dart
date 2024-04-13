@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
 
@@ -52,7 +52,7 @@ class AppearanceSettingsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(t.pages.settings.appearance.title),
       ),
-      body: BlocBuilder<PreferencesBloc, PreferencesState>(
+      body: BlocBuilder<PreferencesCubit, PreferencesState>(
         builder: (context, state) => ListView(
           children: [
             SectionTitle(t.pages.settings.appearance.languageSection),
@@ -88,10 +88,8 @@ class AppearanceSettingsPage extends StatelessWidget {
 
                 // Change preferences and set the app's locale
                 // ignore: use_build_context_synchronously
-                context.read<PreferencesBloc>().add(
-                      PreferencesChangedEvent(
-                        state.copyWith(languageLocaleCode: result),
-                      ),
+                await context.read<PreferencesCubit>().change(
+                      state.copyWith(languageLocaleCode: result),
                     );
 
                 if (result == 'default') {

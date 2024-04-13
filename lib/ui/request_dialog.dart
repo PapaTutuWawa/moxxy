@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxy_native/moxxy_native.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/bloc/request_bloc.dart';
+import 'package:moxxyv2/ui/state/request.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class RequestDialog extends StatelessWidget {
@@ -12,7 +12,7 @@ class RequestDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      child: BlocConsumer<RequestBloc, RequestState>(
+      child: BlocConsumer<RequestCubit, RequestState>(
         listener: (_, state) {
           // Automatically dismiss the dialog when we're done
           if (!state.shouldShow) {
@@ -45,13 +45,13 @@ class RequestDialog extends StatelessWidget {
                                 .openBatteryOptimisationSettings();
                         }
 
-                        GetIt.I.get<RequestBloc>().add(NextRequestEvent());
+                        GetIt.I.get<RequestCubit>().nextRequest();
                       },
                       child: Text(t.permissions.allow),
                     ),
                     TextButton(
                       onPressed: () {
-                        context.read<RequestBloc>().add(NextRequestEvent());
+                        context.read<RequestCubit>().nextRequest();
                       },
                       child: Text(t.permissions.skip),
                     ),

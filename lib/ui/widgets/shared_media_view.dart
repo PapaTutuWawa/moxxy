@@ -48,7 +48,7 @@ class SharedMediaView extends StatelessWidget {
     final now = DateTime.now();
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: showBackButton,
         title: title != null
             ? Padding(
                 padding: const EdgeInsets.all(8),

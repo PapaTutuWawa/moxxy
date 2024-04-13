@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/state/blocklist.dart';
 
 enum BlocklistOptions { unblockAll }
 
@@ -74,9 +74,7 @@ class BlocklistPage extends StatelessWidget {
 
                       if (result) {
                         // ignore: use_build_context_synchronously
-                        context
-                            .read<BlocklistBloc>()
-                            .add(UnblockedJidEvent(jid));
+                        await context.read<BlocklistCubit>().unblockJid(jid);
                       }
                     },
                   ),
@@ -91,7 +89,7 @@ class BlocklistPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BlocklistBloc, BlocklistState>(
+    return BlocBuilder<BlocklistCubit, BlocklistState>(
       builder: (context, state) => Scaffold(
         appBar: AppBar(
           title: Text(t.pages.blocklist.title),
@@ -107,7 +105,7 @@ class BlocklistPage extends StatelessWidget {
 
                   if (result) {
                     // ignore: use_build_context_synchronously
-                    context.read<BlocklistBloc>().add(UnblockedAllEvent());
+                    await context.read<BlocklistCubit>().unblockAll();
 
                     // ignore: use_build_context_synchronously
                     Navigator.of(context).pop();

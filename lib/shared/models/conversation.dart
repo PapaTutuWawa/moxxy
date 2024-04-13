@@ -5,7 +5,7 @@ import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/shared/models/groupchat.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
 
 part 'conversation.freezed.dart';
 part 'conversation.g.dart';
@@ -175,6 +175,9 @@ class Conversation with _$Conversation {
 
     // The contact's display name, if it exists
     String? contactDisplayName,
+
+    // Whether the chat has been pinned (marked as favourite) or not
+    @Default(false) bool favourite,
   }) = _Conversation;
 
   const Conversation._();
@@ -195,6 +198,7 @@ class Conversation with _$Conversation {
       'open': intToBool(json['open']! as int),
       'showAddToRoster': showAddToRoster,
       'encrypted': intToBool(json['encrypted']! as int),
+      'favourite': intToBool(json['favourite']! as int),
       'chatState':
           const ConversationChatStateConverter().toJson(ChatState.gone),
     }).copyWith(
@@ -216,6 +220,7 @@ class Conversation with _$Conversation {
       'open': boolToInt(open),
       'muted': boolToInt(muted),
       'encrypted': boolToInt(encrypted),
+      'favourite': boolToInt(favourite),
       'lastMessageId': lastMessage?.id,
     };
   }
@@ -235,10 +240,10 @@ class Conversation with _$Conversation {
   }
 
   /// This getter is a short-hand for [getAvatarPathWithOptionalContact] with the
-  /// contact integration enablement status extracted from the [PreferencesBloc].
+  /// contact integration enablement status extracted from the [PreferencesCubit].
   /// NOTE: This method only works in the UI.
   String? get avatarPathWithOptionalContact => getAvatarPathWithOptionalContact(
-        GetIt.I.get<PreferencesBloc>().state.enableContactIntegration,
+        GetIt.I.get<PreferencesCubit>().state.enableContactIntegration,
       );
 
   /// This getter is a short-hand for [getAvatarPathWithOptionalContact] with the
@@ -262,10 +267,10 @@ class Conversation with _$Conversation {
   }
 
   /// This getter is a short-hand for [getTitleWithOptionalContact] with the
-  /// contact integration enablement status extracted from the [PreferencesBloc].
+  /// contact integration enablement status extracted from the [PreferencesCubit].
   /// NOTE: This method only works in the UI.
   String get titleWithOptionalContact => getTitleWithOptionalContact(
-        GetIt.I.get<PreferencesBloc>().state.enableContactIntegration,
+        GetIt.I.get<PreferencesCubit>().state.enableContactIntegration,
       );
 
   /// This getter is a short-hand for [getTitleWithOptionalContact] with the
@@ -285,6 +290,18 @@ class Conversation with _$Conversation {
 
   /// True, if the conversation is a groupchat. False, if not.
   bool get isGroupchat => type == ConversationType.groupchat;
+
+  /// True, if we have unread messages. False, if not.
+  bool get hasUnreads => unreadCounter > 0;
+
+  /// A string that is either "99+" if unreadsCounter > 99 or unreadsCounter.
+  String get unreadsString {
+    if (unreadCounter > 99) {
+      return '99+';
+    } else {
+      return unreadCounter.toString();
+    }
+  }
 }
 
 /// Sorts conversations in descending order by their last change timestamp.

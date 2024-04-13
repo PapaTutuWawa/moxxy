@@ -65,9 +65,9 @@ class AvatarService {
           $conversationsTable as c,
           $groupchatMembersTable as p
         WHERE
-          avatarPath = ?
+          c.avatarPath = ? OR p.avatarPath = ?
       ''',
-      [path],
+      [path, path],
     );
 
     final ownModifier =
@@ -75,7 +75,12 @@ class AvatarService {
                 !ignoreSelf
             ? 1
             : 0;
-    return (result.first['usage']! as int) + ownModifier == 0;
+    final usageConversation = result.first['usage_conversation']! as int;
+    final usageGroupchat = result.first['usage_members']! as int;
+    _log.finest(
+      'Avatar usage for $path: $usageConversation (conversations) + $usageGroupchat (groupchat)',
+    );
+    return usageConversation + usageGroupchat + ownModifier == 0;
   }
 
   /// Remove the avatar file at [path], if [path] is non-null and [canRemoveAvatar] approves.

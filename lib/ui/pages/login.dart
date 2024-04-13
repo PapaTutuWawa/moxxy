@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/bloc/login_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/state/login.dart';
 
 class Login extends StatelessWidget {
   const Login({super.key});
@@ -16,9 +16,9 @@ class Login extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LoginBloc, LoginState>(
-      builder: (BuildContext context, LoginState state) => WillPopScope(
-        onWillPop: () async => !state.working,
+    return BlocBuilder<LoginCubit, LoginState>(
+      builder: (BuildContext context, LoginState state) => PopScope(
+        canPop: !state.working,
         child: Scaffold(
           appBar: AppBar(
             title: Text(t.pages.login.title),
@@ -44,9 +44,7 @@ class Login extends StatelessWidget {
                     labelText: t.pages.login.xmppAddress,
                     errorText: state.jidState.error,
                   ),
-                  onChanged: (value) => context
-                      .read<LoginBloc>()
-                      .add(LoginJidChangedEvent(value)),
+                  onChanged: context.read<LoginCubit>().onJidChanged,
                 ),
               ),
               Padding(
@@ -65,8 +63,8 @@ class Login extends StatelessWidget {
                       padding: const EdgeInsetsDirectional.only(end: 8),
                       child: InkWell(
                         onTap: () => context
-                            .read<LoginBloc>()
-                            .add(LoginPasswordVisibilityToggledEvent()),
+                            .read<LoginCubit>()
+                            .onPasswordVisibilityToggled(),
                         child: Icon(
                           state.passwordVisible
                               ? Icons.visibility
@@ -76,9 +74,7 @@ class Login extends StatelessWidget {
                     ),
                   ),
                   obscureText: !state.passwordVisible,
-                  onChanged: (value) => context
-                      .read<LoginBloc>()
-                      .add(LoginPasswordChangedEvent(value)),
+                  onChanged: context.read<LoginCubit>().onPasswordChanged,
                 ),
               ),
               Padding(
@@ -111,9 +107,7 @@ class Login extends StatelessWidget {
                       child: FilledButton(
                         onPressed: state.working
                             ? null
-                            : () => context
-                                .read<LoginBloc>()
-                                .add(LoginSubmittedEvent()),
+                            : context.read<LoginCubit>().submit,
                         child: Text(
                           t.pages.login.login,
                         ),

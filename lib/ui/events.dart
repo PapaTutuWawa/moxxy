@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -8,15 +9,15 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
-import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart' as blocklist;
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart' as conversations;
-import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart' as new_conversation;
-import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/prestart.dart';
 import 'package:moxxyv2/ui/service/avatars.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
+import 'package:moxxyv2/ui/state/blocklist.dart' as blocklist;
+import 'package:moxxyv2/ui/state/conversation.dart' as conversation;
+import 'package:moxxyv2/ui/state/conversations.dart' as conversations;
+import 'package:moxxyv2/ui/state/newconversation.dart' as new_conversation;
+import 'package:moxxyv2/ui/state/profile.dart' as profile;
 
 void setupEventHandler() {
   final handler = EventHandler()
@@ -80,8 +81,8 @@ Future<void> onConversationAdded(
   ConversationAddedEvent event, {
   dynamic extra,
 }) async {
-  GetIt.I.get<conversations.ConversationsBloc>().add(
-        conversations.ConversationsAddedEvent(event.conversation),
+  await GetIt.I.get<conversations.ConversationsCubit>().addConversation(
+        event.conversation,
       );
 }
 
@@ -89,14 +90,12 @@ Future<void> onConversationUpdated(
   ConversationUpdatedEvent event, {
   dynamic extra,
 }) async {
-  GetIt.I.get<conversations.ConversationsBloc>().add(
-        conversations.ConversationsUpdatedEvent(event.conversation),
+  await GetIt.I.get<conversations.ConversationsCubit>().updateConversation(
+        event.conversation,
       );
-  GetIt.I.get<conversation.ConversationBloc>().add(
-        conversation.ConversationUpdatedEvent(event.conversation),
-      );
-  GetIt.I.get<profile.ProfileBloc>().add(
-        profile.ConversationUpdatedEvent(event.conversation),
+  GetIt.I.get<conversation.ConversationCubit>().update(event.conversation);
+  return GetIt.I.get<profile.ProfileCubit>().updateConversation(
+        event.conversation,
       );
 }
 
@@ -120,21 +119,17 @@ Future<void> onBlocklistPushed(
   BlocklistPushEvent event, {
   dynamic extra,
 }) async {
-  GetIt.I.get<blocklist.BlocklistBloc>().add(
-        blocklist.BlocklistPushedEvent(
-          event.added,
-          event.removed,
-        ),
+  return GetIt.I.get<blocklist.BlocklistCubit>().blocklistPushed(
+        event.added,
+        event.removed,
       );
 }
 
 Future<void> onRosterPush(RosterDiffEvent event, {dynamic extra}) async {
-  GetIt.I.get<new_conversation.NewConversationBloc>().add(
-        new_conversation.RosterPushedEvent(
-          event.added,
-          event.modified,
-          event.removed,
-        ),
+  return GetIt.I.get<new_conversation.NewConversationCubit>().onRosterPushed(
+        event.added,
+        event.modified,
+        event.removed,
       );
 }
 
@@ -146,8 +141,10 @@ Future<void> onSelfAvatarChanged(
   SelfAvatarChangedEvent event, {
   dynamic extra,
 }) async {
-  GetIt.I.get<profile.ProfileBloc>().add(
-        profile.AvatarSetEvent(event.path, event.hash, false),
+  return GetIt.I.get<profile.ProfileCubit>().setAvatar(
+        event.path,
+        event.hash,
+        false,
       );
 }
 
@@ -165,12 +162,10 @@ Future<void> onNotificationTappend(
   MessageNotificationTappedEvent event, {
   dynamic extra,
 }) async {
-  GetIt.I.get<conversation.ConversationBloc>().add(
-        conversation.RequestedConversationEvent(
-          event.conversationJid,
-          event.title,
-          event.avatarPath,
-        ),
+  await GetIt.I.get<conversation.ConversationCubit>().request(
+        event.conversationJid,
+        event.title,
+        event.avatarPath,
       );
 }
 

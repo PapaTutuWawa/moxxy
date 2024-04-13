@@ -1,16 +1,18 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
+import 'package:get_it/get_it.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as nav;
-import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
-import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/sticker_pack_controller.dart';
+import 'package:moxxyv2/ui/state/navigation.dart' as nav;
+import 'package:moxxyv2/ui/state/sticker_pack.dart';
+import 'package:moxxyv2/ui/state/stickers.dart';
 
 /// A wrapper data class to group by a sticker pack's id, but display its title.
 @immutable
@@ -77,7 +79,7 @@ class StickerPickerState extends State<StickerPicker> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<StickersBloc, StickersState>(
+    return BlocBuilder<StickersCubit, StickersState>(
       builder: (context, state) {
         return Padding(
           padding: const EdgeInsets.only(top: 16),
@@ -100,11 +102,9 @@ class StickerPickerState extends State<StickerPicker> {
                         ),
                         TextButton(
                           onPressed: () {
-                            context.read<nav.NavigationBloc>().add(
-                                  nav.PushedNamedEvent(
-                                    const nav.NavigationDestination(
-                                      stickersRoute,
-                                    ),
+                            GetIt.I.get<nav.Navigation>().pushNamed(
+                                  const nav.NavigationDestination(
+                                    stickersRoute,
                                   ),
                                 );
                           },
@@ -158,10 +158,10 @@ class StickerPickerState extends State<StickerPicker> {
                         onLongPress: () {
                           Vibrate.feedback(FeedbackType.medium);
 
-                          context.read<StickerPackBloc>().add(
-                                LocallyAvailableStickerPackRequested(
-                                  stickerPack.id,
-                                ),
+                          context
+                              .read<StickerPackCubit>()
+                              .requestLocalStickerPack(
+                                stickerPack.id,
                               );
                         },
                         child: Image.file(

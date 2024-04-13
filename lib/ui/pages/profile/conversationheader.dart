@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
-import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
+import 'package:moxxyv2/ui/state/devices.dart';
+import 'package:moxxyv2/ui/state/profile.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/contact_helper.dart';
 import 'package:moxxyv2/ui/widgets/profile/options.dart';
@@ -29,7 +29,8 @@ class ConversationProfileHeader extends StatelessWidget {
       builder: () {
         final path = conversation.avatarPathWithOptionalContact;
         final avatar = CachingXMPPAvatar(
-          radius: 110,
+          borderRadius: 110,
+          size: 220,
           jid: conversation.jid,
           hasContactId: conversation.contactId != null,
           path: path,
@@ -53,7 +54,7 @@ class ConversationProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ProfileBloc, ProfileState>(
+    return BlocBuilder<ProfileCubit, ProfileState>(
       builder: (context, state) {
         final conversation = state.conversation!;
         return Column(
@@ -102,9 +103,9 @@ class ConversationProfileHeader extends StatelessWidget {
                         icon: Icons.security_outlined,
                         title: t.pages.profile.general.omemo,
                         onTap: () {
-                          context.read<DevicesBloc>().add(
-                                DevicesRequestedEvent(conversation.jid),
-                              );
+                          context
+                              .read<DevicesCubit>()
+                              .request(conversation.jid);
                         },
                       ),
                     ProfileOption(
@@ -116,11 +117,9 @@ class ConversationProfileHeader extends StatelessWidget {
                           ? t.pages.profile.conversation.notificationsMuted
                           : t.pages.profile.conversation.notificationsEnabled,
                       onTap: () {
-                        context.read<ProfileBloc>().add(
-                              MuteStateSetEvent(
-                                conversation.jid,
-                                !conversation.muted,
-                              ),
+                        context.read<ProfileCubit>().setMuteState(
+                              conversation.jid,
+                              !conversation.muted,
                             );
                       },
                     ),

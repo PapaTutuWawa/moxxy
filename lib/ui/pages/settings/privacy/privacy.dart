@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/settings/privacy/tile.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
 
@@ -24,7 +24,7 @@ class PrivacyPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(t.pages.settings.privacy.title),
       ),
-      body: BlocBuilder<PreferencesBloc, PreferencesState>(
+      body: BlocBuilder<PreferencesCubit, PreferencesState>(
         builder: (context, state) => ListView(
           children: [
             SectionTitle(t.pages.settings.privacy.generalSection),
@@ -34,10 +34,8 @@ class PrivacyPage extends StatelessWidget {
               suffix: Switch(
                 value: state.showSubscriptionRequests,
                 onChanged: (value) {
-                  context.read<PreferencesBloc>().add(
-                        PreferencesChangedEvent(
-                          state.copyWith(showSubscriptionRequests: value),
-                        ),
+                  context.read<PreferencesCubit>().change(
+                        state.copyWith(showSubscriptionRequests: value),
                       );
                 },
               ),
@@ -49,10 +47,8 @@ class PrivacyPage extends StatelessWidget {
               suffix: Switch(
                 value: state.isAvatarPublic,
                 onChanged: (value) {
-                  context.read<PreferencesBloc>().add(
-                        PreferencesChangedEvent(
-                          state.copyWith(isAvatarPublic: value),
-                        ),
+                  context.read<PreferencesCubit>().change(
+                        state.copyWith(isAvatarPublic: value),
                       );
                 },
               ),
@@ -63,10 +59,8 @@ class PrivacyPage extends StatelessWidget {
               suffix: Switch(
                 value: state.isStickersNodePublic,
                 onChanged: (value) {
-                  context.read<PreferencesBloc>().add(
-                        PreferencesChangedEvent(
-                          state.copyWith(isStickersNodePublic: value),
-                        ),
+                  context.read<PreferencesCubit>().change(
+                        state.copyWith(isStickersNodePublic: value),
                       );
                 },
               ),
@@ -78,10 +72,8 @@ class PrivacyPage extends StatelessWidget {
               suffix: Switch(
                 value: state.sendChatMarkers,
                 onChanged: (value) {
-                  context.read<PreferencesBloc>().add(
-                        PreferencesChangedEvent(
-                          state.copyWith(sendChatMarkers: value),
-                        ),
+                  context.read<PreferencesCubit>().change(
+                        state.copyWith(sendChatMarkers: value),
                       );
                 },
               ),
@@ -92,10 +84,8 @@ class PrivacyPage extends StatelessWidget {
               suffix: Switch(
                 value: state.sendChatStates,
                 onChanged: (value) {
-                  context.read<PreferencesBloc>().add(
-                        PreferencesChangedEvent(
-                          state.copyWith(sendChatStates: value),
-                        ),
+                  context.read<PreferencesCubit>().change(
+                        state.copyWith(sendChatStates: value),
                       );
                 },
               ),

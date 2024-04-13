@@ -7,12 +7,12 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as nav;
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/storage_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/state/conversations.dart';
+import 'package:moxxyv2/ui/state/navigation.dart' as nav;
+import 'package:moxxyv2/ui/state/preferences.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:moxxyv2/ui/widgets/stacked_bar_chart.dart';
@@ -162,7 +162,7 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
       appBar: AppBar(
         title: Text(t.pages.settings.storage.title),
       ),
-      body: BlocBuilder<PreferencesBloc, PreferencesState>(
+      body: BlocBuilder<PreferencesCubit, PreferencesState>(
         builder: (context, state) => ListView(
           children: [
             Padding(
@@ -214,11 +214,9 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
               child: TextButton(
                 child: Text(t.pages.settings.storage.viewMediaFiles),
                 onPressed: () {
-                  context.read<nav.NavigationBloc>().add(
-                        nav.PushedNamedEvent(
-                          const nav.NavigationDestination(
-                            storageSharedMediaSettingsRoute,
-                          ),
+                  GetIt.I.get<nav.Navigation>().pushNamed(
+                        const nav.NavigationDestination(
+                          storageSharedMediaSettingsRoute,
                         ),
                       );
                 },
@@ -248,8 +246,8 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
                   );
 
                   // Show the new conversations list
-                  GetIt.I.get<ConversationsBloc>().add(
-                        ConversationsSetEvent(deleteResult.conversations),
+                  await GetIt.I.get<ConversationsCubit>().setConversations(
+                        deleteResult.conversations,
                       );
                 }
               },

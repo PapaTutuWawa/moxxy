@@ -6,8 +6,8 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/debug.dart' as debug;
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
 
@@ -33,7 +33,7 @@ class DebuggingPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(t.pages.settings.debugging.title),
       ),
-      body: BlocBuilder<PreferencesBloc, PreferencesState>(
+      body: BlocBuilder<PreferencesCubit, PreferencesState>(
         builder: (context, state) => ListView(
           children: [
             SectionTitle(t.pages.settings.debugging.generalSection),
@@ -42,10 +42,8 @@ class DebuggingPage extends StatelessWidget {
               suffix: Switch(
                 value: state.debugEnabled,
                 onChanged: (value) {
-                  context.read<PreferencesBloc>().add(
-                        PreferencesChangedEvent(
-                          state.copyWith(debugEnabled: value),
-                        ),
+                  context.read<PreferencesCubit>().change(
+                        state.copyWith(debugEnabled: value),
                       );
                 },
               ),
@@ -70,11 +68,9 @@ class DebuggingPage extends StatelessWidget {
                       TextButton(
                         child: Text(t.global.dialogAccept),
                         onPressed: () {
-                          context.read<PreferencesBloc>().add(
-                                PreferencesChangedEvent(
-                                  state.copyWith(
-                                    debugPassphrase: _passphraseController.text,
-                                  ),
+                          context.read<PreferencesCubit>().change(
+                                state.copyWith(
+                                  debugPassphrase: _passphraseController.text,
                                 ),
                               );
                           Navigator.of(context).pop();
@@ -102,10 +98,8 @@ class DebuggingPage extends StatelessWidget {
                       TextButton(
                         child: Text(t.global.dialogAccept),
                         onPressed: () {
-                          context.read<PreferencesBloc>().add(
-                                PreferencesChangedEvent(
-                                  state.copyWith(debugIp: _ipController.text),
-                                ),
+                          context.read<PreferencesCubit>().change(
+                                state.copyWith(debugIp: _ipController.text),
                               );
                           Navigator.of(context).pop();
                         },
@@ -132,11 +126,9 @@ class DebuggingPage extends StatelessWidget {
                       TextButton(
                         child: Text(t.global.dialogAccept),
                         onPressed: () {
-                          context.read<PreferencesBloc>().add(
-                                PreferencesChangedEvent(
-                                  state.copyWith(
-                                    debugPort: int.parse(_portController.text),
-                                  ),
+                          context.read<PreferencesCubit>().change(
+                                state.copyWith(
+                                  debugPort: int.parse(_portController.text),
                                 ),
                               );
                           Navigator.of(context).pop();
@@ -188,11 +180,9 @@ class DebuggingPage extends StatelessWidget {
                     SettingsRow(
                       title: 'Reset showDebugMenu state',
                       onTap: () {
-                        context.read<PreferencesBloc>().add(
-                              PreferencesChangedEvent(
-                                state.copyWith(
-                                  showDebugMenu: false,
-                                ),
+                        context.read<PreferencesCubit>().change(
+                              state.copyWith(
+                                showDebugMenu: false,
                               ),
                             );
                       },

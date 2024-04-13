@@ -1,20 +1,21 @@
 import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/quirks/quirks.g.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
-import 'package:moxxyv2/ui/bloc/request_bloc.dart';
-import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/events.dart';
-import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/sharing.dart';
+import 'package:moxxyv2/ui/state/account.dart';
+import 'package:moxxyv2/ui/state/conversations.dart';
+import 'package:moxxyv2/ui/state/navigation.dart';
+import 'package:moxxyv2/ui/state/newconversation.dart';
+import 'package:moxxyv2/ui/state/preferences.dart';
+import 'package:moxxyv2/ui/state/request.dart';
+import 'package:moxxyv2/ui/state/share_selection.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 Future<void> _requestPermissions() async {
@@ -25,11 +26,9 @@ Future<void> _requestPermissions() async {
 
 /// Handler for when we received a [PreStartDoneEvent].
 Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
-  GetIt.I.get<PreferencesBloc>().add(
-        PreferencesChangedEvent(
-          result.preferences,
-          notify: false,
-        ),
+  await GetIt.I.get<PreferencesCubit>().change(
+        result.preferences,
+        notify: false,
       );
 
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,40 +39,37 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
   }
 
   if (result.state == preStartLoggedInState) {
-    // Set up the data service
-    GetIt.I.get<UIDataService>().processPreStartDoneEvent(result);
-
     // Set up the BLoCs
-    GetIt.I.get<ConversationsBloc>().add(
-          ConversationsInitEvent(
-            result.displayName!,
-            result.jid!,
-            result.conversations!,
-            avatarUrl: result.avatarUrl,
-          ),
+    await GetIt.I.get<ConversationsCubit>().setConversations(
+          result.conversations!,
         );
-    GetIt.I.get<NewConversationBloc>().add(
-          NewConversationInitEvent(
-            result.roster!,
-          ),
+    GetIt.I.get<AccountCubit>().setAccounts(
+      [
+        Account(
+          displayName: result.displayName!,
+          avatarPath: result.avatarUrl,
+          avatarHash: result.avatarHash,
+          jid: result.jid!,
+        ),
+      ],
+      0,
+    );
+    GetIt.I.get<NewConversationCubit>().init(
+          result.roster!,
         );
-    GetIt.I.get<ShareSelectionBloc>().add(
-          ShareSelectionInitEvent(
-            result.conversations!,
-            result.roster!,
-          ),
+    GetIt.I.get<ShareSelectionCubit>().init(
+          result.conversations!,
+          result.roster!,
         );
 
     // Handle requesting permissions
-    GetIt.I.get<RequestBloc>().add(
-          RequestsSetEvent(
-            [
-              if (result.requestNotificationPermission) Request.notifications,
-              if (result.excludeFromBatteryOptimisation)
-                Request.batterySavingExcemption,
-            ],
-          ),
-        );
+    GetIt.I.get<RequestCubit>().setRequests(
+      [
+        if (result.requestNotificationPermission) Request.notifications,
+        if (result.excludeFromBatteryOptimisation)
+          Request.batterySavingExcemption,
+      ],
+    );
 
     // Handle (direct) shares
     final sharing = GetIt.I.get<UISharingService>();
@@ -92,11 +88,9 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
     }
 
     GetIt.I.get<Logger>().finest('Navigating to conversations');
-    GetIt.I.get<NavigationBloc>().add(
-          PushedNamedAndRemoveUntilEvent(
-            const NavigationDestination(conversationsRoute),
-            (_) => false,
-          ),
+    GetIt.I.get<Navigation>().pushNamedAndRemoveUntil(
+          const NavigationDestination(homeRoute),
+          (_) => false,
         );
 
     // TODO(Unknown): A bit messy. It would be cool to handle this before navigating
@@ -116,19 +110,14 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
       );
     }
   } else if (result.state == preStartNotLoggedInState) {
-    // Set UI data
-    GetIt.I.get<UIDataService>().isLoggedIn = false;
-
     // Clear shared media data
     await GetIt.I.get<UISharingService>().clearSharedMedia();
 
     // Navigate to the intro page
     GetIt.I.get<Logger>().finest('Navigating to intro');
-    GetIt.I.get<NavigationBloc>().add(
-          PushedNamedAndRemoveUntilEvent(
-            const NavigationDestination(introRoute),
-            (_) => false,
-          ),
+    GetIt.I.get<Navigation>().pushNamedAndRemoveUntil(
+          const NavigationDestination(introRoute),
+          (_) => false,
         );
   }
 }

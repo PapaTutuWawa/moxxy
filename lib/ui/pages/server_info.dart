@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/bloc/server_info_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/state/server_info.dart';
 
 const TextStyle _labelStyle = TextStyle(
   fontSize: 18,
@@ -48,7 +48,7 @@ class ServerInfoPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(t.pages.profile.serverInfo.title),
       ),
-      body: BlocBuilder<ServerInfoBloc, ServerInfoState>(
+      body: BlocBuilder<ServerInfoCubit, ServerInfoState>(
         builder: (BuildContext context, ServerInfoState state) {
           if (state.working) {
             return const Column(

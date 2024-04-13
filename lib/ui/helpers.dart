@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:better_open_file/better_open_file.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
@@ -15,11 +16,11 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart';
-import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
-import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/util/qrcode.dart';
 import 'package:moxxyv2/ui/redirects.dart';
+import 'package:moxxyv2/ui/state/crop.dart';
+import 'package:moxxyv2/ui/state/sticker_pack.dart';
 import 'package:path/path.dart' as p;
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -180,7 +181,7 @@ Future<Uint8List?> pickAndCropImage(BuildContext context) async {
   );
 
   if (result != null) {
-    return GetIt.I.get<CropBloc>().cropImageWithData(result.data!);
+    return GetIt.I.get<CropCubit>().cropImageWithData(result.data!);
   }
 
   return null;
@@ -414,11 +415,9 @@ Future<void> handleUri(String uriString) async {
 
       if (node == moxxmpp.stickersXmlns && item != null) {
         // Retrieve a sticker pack
-        GetIt.I.get<StickerPackBloc>().add(
-              StickerPackRequested(
-                uri.path,
-                item,
-              ),
+        await GetIt.I.get<StickerPackCubit>().request(
+              uri.path,
+              item,
             );
       }
     }
@@ -546,3 +545,10 @@ void shareMessage(Message message) {
     );
   }
 }
+
+/// Computes the size in logical pixels based on the size in physical
+/// "design" pixels @px.
+double pxToLp(int px) => px * (3 / 8);
+
+/// Computes the font size based on the "design" pt size @pt.
+double ptToFontSize(int pt) => pt * (5 / 8);

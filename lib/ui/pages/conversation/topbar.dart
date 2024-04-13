@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
-import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
+import 'package:moxxyv2/ui/state/conversation.dart';
+import 'package:moxxyv2/ui/state/conversations.dart';
+import 'package:moxxyv2/ui/state/navigation.dart';
+import 'package:moxxyv2/ui/state/profile.dart' as profile;
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/contact_helper.dart';
 
@@ -81,17 +82,15 @@ class ConversationTopbar extends StatelessWidget
 
   /// Summon the profile page of the currently open conversation
   void _openProfile(BuildContext context, ConversationState state) {
-    context.read<profile.ProfileBloc>().add(
-          profile.ProfilePageRequestedEvent(
-            false,
-            conversation: state.conversation,
-          ),
+    context.read<profile.ProfileCubit>().requestProfile(
+          false,
+          conversation: state.conversation,
         );
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ConversationBloc, ConversationState>(
+    return BlocBuilder<ConversationCubit, ConversationState>(
       buildWhen: _shouldRebuild,
       builder: (context, state) {
         final chatState = state.conversation?.chatState ?? ChatState.gone;
@@ -116,7 +115,8 @@ class ConversationTopbar extends StatelessWidget
                             child: RebuildOnContactIntegrationChange(
                               builder: () => CachingXMPPAvatar(
                                 jid: state.conversation?.jid ?? '',
-                                radius: 25,
+                                borderRadius: 25,
+                                size: 50,
                                 hasContactId:
                                     state.conversation?.contactId != null,
                                 isGroupchat:
@@ -179,10 +179,10 @@ class ConversationTopbar extends StatelessWidget
                 onSelected: (result) {
                   if (result == EncryptionOption.omemo &&
                       state.conversation!.encrypted == false) {
-                    context.read<ConversationBloc>().add(OmemoSetEvent(true));
+                    context.read<ConversationCubit>().setOmemo(true);
                   } else if (result == EncryptionOption.none &&
                       state.conversation!.encrypted == true) {
-                    context.read<ConversationBloc>().add(OmemoSetEvent(false));
+                    context.read<ConversationCubit>().setOmemo(false);
                   }
                 },
                 icon: (state.conversation?.encrypted ?? false)
@@ -213,17 +213,15 @@ class ConversationTopbar extends StatelessWidget
 
                     if (result) {
                       // ignore: use_build_context_synchronously
-                      context.read<ConversationsBloc>().add(
-                            ConversationClosedEvent(
-                              state.conversation!.jid,
-                            ),
+                      await context
+                          .read<ConversationsCubit>()
+                          .closeConversation(
+                            state.conversation!.jid,
+                            state.conversation!.accountJid,
                           );
 
                       // Navigate back
-                      // ignore: use_build_context_synchronously
-                      context.read<NavigationBloc>().add(
-                            PoppedRouteEvent(),
-                          );
+                      GetIt.I.get<Navigation>().pop();
                     }
                   case ConversationOption.block:
                     // ignore: use_build_context_synchronously
