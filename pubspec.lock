@@ -1009,10 +1009,11 @@ packages:
   moxxmpp:
     dependency: "direct main"
     description:
-      name: moxxmpp
-      sha256: "38f49522782e54c6e1899a715cd1ab1f9a4c3aa5cf521ff4db8ee0a9429c0328"
-      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
-    source: hosted
+      path: "packages/moxxmpp"
+      ref: HEAD
+      resolved-ref: "365ff2f23850b1808d3f6ea39c3789badf39ad7b"
+      url: "https://codeberg.org/moxxy/moxxmpp.git"
+    source: git
     version: "0.4.0"
   moxxmpp_color:
     dependency: "direct main"

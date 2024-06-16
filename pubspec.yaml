@@ -1,7 +1,7 @@
 name: moxxyv2
 description: An experimental XMPP client
 
-publish_to: 'none'
+publish_to: "none"
 
 version: 0.5.1+14
 
@@ -129,19 +129,19 @@ dependency_overrides:
   # omemo_dart:
   #   path: ../../Personal/omemo_dart
 
-  #moxxmpp:
-  #  git:
-  #    url: https://codeberg.org/moxxy/moxxmpp.git
-  #    rev: 814f99436b4bc5ff53136dfce73c2735b140b474
-  #    path: packages/moxxmpp
+  moxxmpp:
+    git:
+      url: https://codeberg.org/moxxy/moxxmpp.git
+      rev: 365ff2f23850b1808d3f6ea39c3789badf39ad7b
+      path: packages/moxxmpp
 
-  # NOTE: Leave here for development purposes 
+  # NOTE: Leave here for development purposes
   # moxxy_native:
   #   path: ../moxxy_native
 
   # moxxyv2_builders:
   #   path: ../moxxyv2_builders
- 
+
 extra_licenses:
   - name: undraw.co
     license: "custom license"
@@ -150,7 +150,7 @@ extra_licenses:
     # TODO: Dangerous
     license: "unknown license"
     url: "https://invent.kde.org/melvo/xmpp-providers"
- 
+
 flutter:
   uses-material-design: true
   fonts:

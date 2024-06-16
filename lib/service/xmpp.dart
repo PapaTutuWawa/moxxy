@@ -302,6 +302,7 @@ class XmppService {
                   createFallbackBodyForQuotedMessage(quotedMessage),
                   body,
                 ),
+                jid: quotedMessage.senderJid,
               ),
           ]),
           type: conversation!.type.value,
