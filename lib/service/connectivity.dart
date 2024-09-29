@@ -18,12 +18,12 @@ class ConnectivityService {
   final Logger _log = Logger('ConnectivityService');
 
   /// Caches the current connectivity state
-  late ConnectivityResult _connectivity;
+  late List<ConnectivityResult> _connectivity;
 
   Stream<ConnectivityEvent> get stream => _controller.stream;
 
   @visibleForTesting
-  void setConnectivity(ConnectivityResult result) {
+  void setConnectivity(List<ConnectivityResult> result) {
     _log.warning(
       'Internal connectivity state changed by request originating from outside ConnectivityService',
     );
@@ -34,10 +34,10 @@ class ConnectivityService {
     final conn = Connectivity();
     _connectivity = await conn.checkConnectivity();
 
-    conn.onConnectivityChanged.listen((ConnectivityResult result) {
-      final regained = _connectivity == ConnectivityResult.none &&
-          result != ConnectivityResult.none;
-      final lost = result == ConnectivityResult.none;
+    conn.onConnectivityChanged.listen((List<ConnectivityResult> result) {
+      final regained = _connectivity.contains(ConnectivityResult.none) &&
+          !result.contains(ConnectivityResult.none);
+      final lost = result.contains(ConnectivityResult.none);
       _connectivity = result;
 
       _controller.add(
@@ -49,9 +49,9 @@ class ConnectivityService {
     });
   }
 
-  ConnectivityResult get currentState => _connectivity;
+  List<ConnectivityResult> get currentState => _connectivity;
 
   Future<bool> hasConnection() async {
-    return _connectivity != ConnectivityResult.none;
+    return !_connectivity.contains(ConnectivityResult.none);
   }
 }

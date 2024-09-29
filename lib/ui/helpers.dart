@@ -457,12 +457,14 @@ Future<void> openFile(String path) async {
 /// bgColor attribute.
 Config getEmojiPickerConfig(Color backgroundColor) {
   return Config(
-    bgColor: backgroundColor,
-    // Make the "no recents" text translatable.
-    noRecents: Text(
-      t.emojiPicker.noRecents,
-      style: const TextStyle(fontSize: 20),
-      textAlign: TextAlign.center,
+    emojiViewConfig: EmojiViewConfig(
+      backgroundColor: backgroundColor,
+      // Make the "no recents" text translatable.
+      noRecents: Text(
+        t.emojiPicker.noRecents,
+        style: const TextStyle(fontSize: 20),
+        textAlign: TextAlign.center,
+      ),
     ),
   );
 }

@@ -48,7 +48,7 @@ class EmojiStickerPickerIcon extends StatelessWidget {
                       ? Icons.keyboard
                       : (tabController.index == 0
                           ? Icons.emoji_emotions
-                          : PhosphorIcons.regular.sticker),
+                          : PhosphorIconsRegular.sticker),
                   size: iconSize,
                   color: primaryColor,
                 ),

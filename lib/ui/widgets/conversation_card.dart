@@ -251,8 +251,8 @@ class ConversationCard extends StatelessWidget {
           size: 20,
         );
       } else {
-        preview = Icon(
-          PhosphorIcons.regular.sticker,
+        preview = const Icon(
+          PhosphorIconsRegular.sticker,
           size: 20,
         );
       }

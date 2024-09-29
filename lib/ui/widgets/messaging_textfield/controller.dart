@@ -59,7 +59,7 @@ class MobileMessagingTextFieldController {
   bool requestingPermission = false;
 
   /// The audio recorder.
-  final Record _recorder = Record();
+  final AudioRecorder _recorder = AudioRecorder();
 
   /// The JID of the currently opened chat.
   final String conversationJid;
@@ -107,6 +107,7 @@ class MobileMessagingTextFieldController {
       filename,
     );
     await _recorder.start(
+      const RecordConfig(),
       path: recordingFilePath,
     );
   }

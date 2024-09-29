@@ -45,9 +45,9 @@ class CombinedPicker extends StatelessWidget {
                 TabBar(
                   controller: tabController,
                   indicatorColor: primaryColor,
-                  tabs: [
-                    const Tab(icon: Icon(Icons.insert_emoticon)),
-                    Tab(icon: Icon(PhosphorIcons.regular.sticker)),
+                  tabs: const [
+                    Tab(icon: Icon(Icons.insert_emoticon)),
+                    Tab(icon: Icon(PhosphorIconsRegular.sticker)),
                   ],
                 ),
                 Expanded(

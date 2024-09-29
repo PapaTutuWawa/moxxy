@@ -80,18 +80,18 @@ class StickerPacksSettingsState extends State<StickerPacksSettingsPage> {
                 ),
                 description: snapshot.data![index].description,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                prefix: Padding(
-                  padding: const EdgeInsets.only(right: 16),
+                prefix: const Padding(
+                  padding: EdgeInsets.only(right: 16),
                   child: SizedBox(
                     width: 48,
                     height: 48,
                     // TODO(PapaTutuWawa): Sticker pack thumbnails would be nice
                     child: ClipRRect(
-                      borderRadius: const BorderRadius.all(radiusLarge),
+                      borderRadius: BorderRadius.all(radiusLarge),
                       child: ColoredBox(
                         color: Colors.white60,
                         child: Icon(
-                          PhosphorIcons.regular.sticker,
+                          PhosphorIconsRegular.sticker,
                           size: 32,
                         ),
                       ),

@@ -7,13 +7,13 @@ class UIConnectivityService {
   final _conn = Connectivity();
 
   /// The cached connection state.
-  ConnectivityResult _state = ConnectivityResult.none;
-  ConnectivityResult get status => _state;
+  List<ConnectivityResult> _state = [ConnectivityResult.none];
+  List<ConnectivityResult> get status => _state;
 
   /// The subscription to the event stream
-  late StreamSubscription<ConnectivityResult> _subscription;
+  late StreamSubscription<List<ConnectivityResult>> _subscription;
 
-  bool get hasConnection => _state != ConnectivityResult.none;
+  bool get hasConnection => !_state.contains(ConnectivityResult.none);
 
   /// Initializes the event stream and populates the cache.
   Future<void> initialize() async {
