@@ -90,7 +90,6 @@
           --apksigner ${android.androidsdk}/libexec/android-sdk/build-tools/34.0.0/apksigner \
           --pigeon ./pigeon/quirks.dart \
           --flutter ${flutterVersion}/bin/flutter \
-          --dart ${flutterVersion}/bin/dart \
           --provider-config ${providerArg} ${lib.optionalString skipBuild "--skip-build"}
       '';
     in {
