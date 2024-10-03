@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
@@ -292,7 +292,7 @@ class ConversationsPageState extends State<ConversationsPage>
             item: item,
             child: GestureDetector(
               onLongPressStart: (event) async {
-                Vibrate.feedback(FeedbackType.medium);
+                await HapticFeedback.mediumImpact();
 
                 final widgetRect = getWidgetPositionOnScreen(key);
                 final height = MediaQuery.of(context).size.height;

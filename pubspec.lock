@@ -70,14 +70,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
-  better_open_file:
-    dependency: "direct main"
-    description:
-      name: better_open_file
-      sha256: "975d700240a1529105b32fb5ff3fe127719e6d980ad8bbf07a43fdc326d71413"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.6.5"
   bloc:
     dependency: "direct main"
     description:
@@ -677,14 +669,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_vibrate:
-    dependency: "direct main"
-    description:
-      name: flutter_vibrate
-      sha256: "9cc9b32cf52c90dd34c1cf396ed40010b2c74e69adbb0ff16005afa900971ad8"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.3.0"
   flutter_web_plugins:
     dependency: transitive
     description: flutter
@@ -1103,10 +1087,11 @@ packages:
   native_imaging:
     dependency: "direct main"
     description:
-      name: native_imaging
-      sha256: "182ccd8e0815a8a2158500ef66c828c030f6b9e05783e41e22f33bbcfd46a3d5"
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: HEAD
+      resolved-ref: d76335e2039c041585df8103f5d4f5924e9e2add
+      url: "https://github.com/famedly/dart_native_imaging.git"
+    source: git
     version: "0.1.1"
   nested:
     dependency: transitive
@@ -1141,6 +1126,70 @@ packages:
       url: "https://github.com/PapaTutuWawa/omemo_dart.git"
     source: git
     version: "0.6.0"
+  open_file:
+    dependency: "direct main"
+    description:
+      name: open_file
+      sha256: a070625d8684aa35a35d6701b91d684592f1ea03f5a737ee0d39332526d09421
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.5.7"
+  open_file_android:
+    dependency: transitive
+    description:
+      name: open_file_android
+      sha256: eaa52421c5e10ba42eb3958d2632be0fc8b4f7e53556296064339d363caa2233
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.3"
+  open_file_ios:
+    dependency: transitive
+    description:
+      name: open_file_ios
+      sha256: "8d9c03495cf14ca70bdbf191894b822ba3b2629cc0046ee311cbbe504db66c44"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.2"
+  open_file_linux:
+    dependency: transitive
+    description:
+      name: open_file_linux
+      sha256: cd2088722048b9c40f8615c6d83005fe0726e0e447e9cdfb40c2b65477291f7d
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.4"
+  open_file_mac:
+    dependency: transitive
+    description:
+      name: open_file_mac
+      sha256: "9d809f528cccc6dc9390caf50893eae9a6944e0f3b8a2558c7ad19e91c9244a1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
+  open_file_platform_interface:
+    dependency: transitive
+    description:
+      name: open_file_platform_interface
+      sha256: "14c50efb1a9667cb96e4fa68d601e6ad348fe337b02789834029b37ae3631498"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.2"
+  open_file_web:
+    dependency: transitive
+    description:
+      name: open_file_web
+      sha256: cfc9d6091a844e305a3698c45f47f5cd88aabb143665dcfb0f5fd6f7524d357e
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.3"
+  open_file_windows:
+    dependency: transitive
+    description:
+      name: open_file_windows
+      sha256: "2f4318d2d3958ec8d63b6dd4430c15b1fcb2fe7a2113e83c734584501a5c6d81"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
   package_config:
     dependency: transitive
     description:

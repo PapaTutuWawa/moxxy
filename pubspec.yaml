@@ -14,7 +14,7 @@ dependencies:
   audiofileplayer: 2.1.1
   auto_size_text: 3.0.0
   badges: ^3.1.2
-  better_open_file: ^3.6.5
+  open_file: ^3.5.7
   bloc: ^8.1.4
   collection: ^1.18.0
   connectivity_plus: ^6.0.5
@@ -38,7 +38,6 @@ dependencies:
   flutter_parsed_text: 2.2.1
   flutter_secure_storage: ^9.2.2
   flutter_speed_dial: ^7.0.0
-  flutter_vibrate: 1.3.0
   flutter_zxing: ^1.7.0
   fluttertoast: ^8.2.8
   freezed_annotation: ^2.4.4
@@ -139,6 +138,11 @@ dependency_overrides:
     git:
       url: https://github.com/PapaTutuWawa/omemo_dart.git
       rev: 124c997fa3f0792fa50ff66b80f43c3b71382f89
+
+  native_imaging:
+    git:
+      url: https://github.com/famedly/dart_native_imaging.git
+      rev: d76335e2039c041585df8103f5d4f5924e9e2add
 
   # NOTE: Leave here for development purposes
   # moxxy_native:

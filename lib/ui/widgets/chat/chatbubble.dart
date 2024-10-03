@@ -1,7 +1,7 @@
 // TODO(Unknown): The timestamp may be too light
 // TODO(Unknown): The timestamp is too small
 import 'package:flutter/material.dart';
-import 'package:flutter_vibrate/flutter_vibrate.dart';
+import 'package:flutter/services.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/message.dart';
@@ -211,7 +211,7 @@ class ChatBubbleState extends State<ChatBubble>
             animation: progress,
             builder: (_, __) {
               if (progress.value > 0.9999 && !vibrated) {
-                Vibrate.feedback(FeedbackType.light);
+                HapticFeedback.lightImpact();
                 vibrated = true;
               } else if (progress.value < 0.9999) {
                 vibrated = false;

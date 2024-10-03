@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:better_open_file/better_open_file.dart';
+import 'package:open_file/open_file.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';

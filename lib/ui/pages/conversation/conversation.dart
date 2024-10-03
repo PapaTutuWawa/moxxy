@@ -3,8 +3,8 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:mime/mime.dart';
@@ -324,7 +324,7 @@ class ConversationPageState extends State<ConversationPage>
           return;
         }
 
-        Vibrate.feedback(FeedbackType.medium);
+        HapticFeedback.mediumImpact();
 
         // Get the position of the message on screen
         final widgetRect = getWidgetPositionOnScreen(key);

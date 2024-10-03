@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_vibrate/flutter_vibrate.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_zxing/flutter_zxing.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
@@ -29,7 +29,7 @@ class QrCodeScanningPage extends StatelessWidget {
         onScan: (value) {
           final content = value.text;
           if (args.validator(content)) {
-            Vibrate.feedback(FeedbackType.heavy);
+            HapticFeedback.heavyImpact();
             Navigator.of(context).pop(content);
           }
         },
