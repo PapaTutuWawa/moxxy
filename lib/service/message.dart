@@ -185,6 +185,7 @@ SELECT
   quote.stickerPackId AS quote_stickerPackId,
   quote.pseudoMessageType AS quote_pseudoMessageType,
   quote.pseudoMessageData AS quote_pseudoMessageData,
+  quote.accountJid AS quote_accountJid,
   fm.id as fm_id,
   fm.path as fm_path,
   fm.sourceUrls as fm_sourceUrls,
