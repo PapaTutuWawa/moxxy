@@ -61,6 +61,10 @@ class MobileMessagingTextFieldController {
   /// The audio recorder.
   final AudioRecorder _recorder = AudioRecorder();
 
+  /// Tracks whether we have used the recoder to prevent freeing it before it has created
+  /// resources.
+  bool _recorderInitialised = false;
+
   /// The JID of the currently opened chat.
   final String conversationJid;
 
@@ -81,7 +85,9 @@ class MobileMessagingTextFieldController {
     if (await _recorder.isRecording()) {
       await _cancelAudioRecording();
     }
-    await _recorder.dispose();
+    if (_recorderInitialised) {
+      await _recorder.dispose();
+    }
   }
 
   void _onIsCancellingChanged() {
@@ -106,6 +112,7 @@ class MobileMessagingTextFieldController {
       await MoxxyPlatformApi().getCacheDataPath(),
       filename,
     );
+    _recorderInitialised = true;
     await _recorder.start(
       const RecordConfig(),
       path: recordingFilePath,
