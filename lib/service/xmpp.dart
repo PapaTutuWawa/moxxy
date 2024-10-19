@@ -241,7 +241,7 @@ class XmppService {
             // TODO(Unknown): Maybe make this depend on some setting
             false,
             originId: originId,
-            quoteId: quotedMessage?.sid,
+            quoteId: quotedMessage?.id,
             stickerPackId: sticker?.stickerPackId,
             fileMetadata: sticker?.fileMetadata,
             received: c.type == ConversationType.note ? true : false,
