@@ -421,6 +421,10 @@ class AvatarService {
         .get<XmppConnection>()
         .getManagerById<UserAvatarManager>(userAvatarManager)!
         .getLatestMetadata(jid);
+    if (rawMetadata.isType<AvatarError>()) {
+      _log.warning('rawMetadata is an AvatarError');
+      return false;
+    }
 
     // Find the first metadata item that advertises a PNG avatar.
     final id = rawMetadata
