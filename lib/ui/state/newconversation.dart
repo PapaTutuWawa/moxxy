@@ -51,6 +51,7 @@ class NewConversationCubit extends Cubit<NewConversationState> {
       ),
     );
 
+    print('NEW CONVERSATION: $result');
     if (result is NoConversationModifiedEvent) {
       // Fall through
     } else if (result is ConversationUpdatedEvent) {

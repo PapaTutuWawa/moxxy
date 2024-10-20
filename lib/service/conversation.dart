@@ -61,15 +61,34 @@ class ConversationService {
         await preRun(conversation);
       }
 
+      _log.finest(
+        '[createOrUpdateConversation] Got conversation: $conversation',
+      );
       if (conversation != null) {
         // Conversation exists
         if (update != null) {
-          return update(conversation);
+          final updatedConversation = await update(conversation);
+          assert(
+            updatedConversation.jid == conversation.jid,
+            'Cannot change the JID of a conversation',
+          );
+          assert(
+            _conversationCache!.containsKey(updatedConversation.jid),
+            'Conversation JID must already be in cache',
+          );
+
+          // Update the cache
+          _conversationCache![updatedConversation.jid] = updatedConversation;
+          return updatedConversation;
         }
       } else {
         // Conversation does not exist
         if (create != null) {
-          return create();
+          final newConversation = await create();
+
+          // Update the cache
+          _conversationCache![newConversation.jid] = newConversation;
+          return newConversation;
         }
       }
 
@@ -210,6 +229,10 @@ ORDER BY
     _conversationCache = Map<String, Conversation>.fromEntries(
       conversations.map((c) => MapEntry(c.jid, c)),
     );
+
+    _log.finest(
+      'Conversation Cache loaded: ${_conversationCache!.keys.toList()}',
+    );
   }
 
   /// Returns the conversation with jid [jid] or null if not found.
@@ -218,6 +241,8 @@ ORDER BY
     String accountJid,
   ) async {
     await _loadConversationsIfNeeded(accountJid);
+
+    _log.finest('[_getConversationByJid] Requested JID $jid');
     return _conversationCache![jid];
   }
 

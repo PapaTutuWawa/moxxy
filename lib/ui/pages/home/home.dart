@@ -46,8 +46,8 @@ class ConversationsRowDismissibleState
       onDismissed: (direction) {
         // TODO(Unknown): Show a snackbar allowing the user to revert the action
         GetIt.I.get<ConversationsCubit>().closeConversation(
-              GetIt.I.get<AccountCubit>().state.account.jid,
               widget.item.jid,
+              GetIt.I.get<AccountCubit>().state.account.jid,
             );
       },
       onUpdate: (details) {

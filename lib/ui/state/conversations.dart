@@ -86,9 +86,8 @@ class ConversationsCubit extends Cubit<ConversationsState> {
     emit(
       state.copyWith(
         conversations: List.from(
-          <Conversation>[...state.conversations, conversation]
-            ..sort(compareConversation),
-        ),
+          <Conversation>[...state.conversations, conversation],
+        )..sort(compareConversation),
       ),
     );
   }
@@ -139,7 +138,7 @@ class ConversationsCubit extends Cubit<ConversationsState> {
       state.copyWith(
         conversations: List<Conversation>.from(
           state.conversations
-              .where((c) => c.jid != jid && c.accountJid != accountJid)
+              .where((c) => c.jid != jid && c.accountJid == accountJid)
               .toList(),
         ),
       ),

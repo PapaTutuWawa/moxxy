@@ -821,6 +821,7 @@ Future<void> performCloseConversation(
   final cs = GetIt.I.get<ConversationService>();
   final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
 
+  Logger.root.finest('Attempting to close ${command.jid}');
   final conversation = await cs.createOrUpdateConversation(
     command.jid,
     accountJid!,
@@ -833,6 +834,7 @@ Future<void> performCloseConversation(
     },
   );
 
+  assert(conversation != null, 'Conversation must be non-null');
   if (conversation?.type == ConversationType.groupchat) {
     await GetIt.I
         .get<XmppConnection>()
