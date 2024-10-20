@@ -36,7 +36,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       emit(
         state.copyWith(
           jid: jid!,
-          avatarUrl: avatarUrl!,
+          avatarUrl: avatarUrl ?? '',
           displayName: displayName!,
         ),
       );
