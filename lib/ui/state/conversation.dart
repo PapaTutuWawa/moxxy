@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter/widgets.dart' as widgets;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxy_native/moxxy_native.dart';
@@ -88,7 +89,7 @@ class ConversationCubit extends Cubit<ConversationState> {
     if (removeUntilConversations) {
       cubit.pushNamedAndRemoveUntil(
         destination,
-        (route) => false,
+        widgets.ModalRoute.withName(homeRoute),
       );
     } else {
       cubit.pushNamed(destination);
@@ -188,3 +189,5 @@ class ConversationCubit extends Cubit<ConversationState> {
     );
   }
 }
+
+class ModalRoute {}
