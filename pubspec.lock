@@ -1048,7 +1048,7 @@ packages:
     description:
       path: "packages/moxxmpp"
       ref: HEAD
-      resolved-ref: "9eb94e5f488f795e74f46ceb3ec62fc355f2e1d4"
+      resolved-ref: e2515e25e4372912117b2fb6231fa7e8d44e17ce
       url: "https://codeberg.org/moxxy/moxxmpp.git"
     source: git
     version: "0.4.0"
@@ -1486,14 +1486,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.3"
-  saslprep:
-    dependency: transitive
-    description:
-      name: saslprep
-      sha256: "3d421d10be9513bf4459c17c5e70e7b8bc718c9fc5ad4ba5eb4f5fd27396f740"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.3"
   share_handler:
     dependency: "direct main"
     description:
@@ -1804,14 +1796,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.3"
-  unorm_dart:
-    dependency: transitive
-    description:
-      name: unorm_dart
-      sha256: "23d8bf65605401a6a32cff99435fed66ef3dab3ddcad3454059165df46496a3b"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.3.0"
   url_launcher:
     dependency: "direct main"
     description:

@@ -131,7 +131,7 @@ dependency_overrides:
   moxxmpp:
     git:
       url: https://codeberg.org/moxxy/moxxmpp.git
-      rev: 9eb94e5f488f795e74f46ceb3ec62fc355f2e1d4
+      rev: e2515e25e4372912117b2fb6231fa7e8d44e17ce
       path: packages/moxxmpp
 
   omemo_dart:
